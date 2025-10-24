@@ -132,8 +132,10 @@ if (System.env.TRAVIS == "true") {
 description = """Sherlock"""
 
 tasks.register('printVersion') {
+    def projectName = project.name
+    def projectVersion = project.version
     doLast {
-        println "${project.name}-${project.version}"
+        println "${projectName}-${projectVersion}"
     }
 }
 
