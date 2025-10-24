@@ -1,9 +1,13 @@
 sourceSets {
     webTest {
-        java.srcDir file('src/webTest/java')
-        resources.srcDir file('src/webTest/resources')
-        compileClasspath +=  sourceSets.main.output + configurations.testRuntimeClasspath
-        runtimeClasspath +=  sourceSets.main.output + compileClasspath
+        java {
+            srcDir(file('src/webTest/java'))
+        }
+        resources {
+            srcDir(file('src/webTest/resources'))
+        }
+        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+        runtimeClasspath += sourceSets.main.output + compileClasspath
     }
 }
 
@@ -21,21 +25,35 @@ dependencies {
     )
 }
 
-task generateWebTestSources(type: Copy) {
+tasks.register('generateWebTestSources', Copy) {
     from("src/webTest/java")
-    exclude "**/sherlock/deprecated/**"
-    into "$buildDir/tmp/src/webTest/java"
+    exclude("**/sherlock/deprecated/**")
+    into(layout.buildDirectory.dir("tmp/src/webTest/java"))
 }
-sourceSets.webTest.java.srcDirs = ["$buildDir/tmp/src/webTest/java"]
-compileWebTestJava.dependsOn generateWebTestSources
 
-task webTest(type: Test){
-    delete 'screenshots'
-    useJUnitPlatform()
+sourceSets {
+    webTest {
+        java {
+            srcDirs = [layout.buildDirectory.dir("tmp/src/webTest/java").get().asFile]
+        }
+    }
+}
+
+tasks.named('compileWebTestJava') {
+    dependsOn(tasks.named('generateWebTestSources'))
+}
+
+tasks.register('webTest', Test) {
     description = 'Runs web tests.'
     group = 'verification'
-
+    
+    useJUnitPlatform()
+    
     testClassesDirs = sourceSets.webTest.output.classesDirs
     classpath = sourceSets.webTest.runtimeClasspath
-    shouldRunAfter test
+    shouldRunAfter(tasks.named('test'))
+    
+    doFirst {
+        delete('screenshots')
+    }
 }

@@ -10,9 +10,9 @@ plugins {
     id "io.spring.dependency-management" version "1.1.7"
     id "org.ajoberstar.grgit" version "5.3.3"
     id 'io.miret.etienne.sass' version '1.6.0'
+    id 'project-report'
 }
 
-apply plugin: 'project-report'
 apply from: 'web-test.gradle'
 
 /*buildScan {
@@ -27,10 +27,16 @@ repositories {
     }
 }
 
-dependencies {
-    antlr 'org.antlr:antlr4:4.13.2'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
 
-    implementation (
+dependencies {
+    antlr('org.antlr:antlr4:4.13.2')
+
+    implementation(
             'org.flywaydb:flyway-core:11.14.1',
             'org.flywaydb:flyway-database-hsqldb:11.14.1',
             'org.flywaydb:flyway-mysql:11.14.1',
@@ -60,13 +66,12 @@ dependencies {
             'jakarta.xml.bind:jakarta.xml.bind-api:4.0.4',
             'com.h2database:h2',
             'com.mysql:mysql-connector-j',
-            'org.json:json:20250517'
+            'org.json:json:20250517',
+            'org.seleniumhq.selenium:selenium-java:4.37.0'
     )
 
-    if (project.getGradle().startParameter.taskNames.contains("bootWar")) {
-        providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
-    }
-    implementation 'org.seleniumhq.selenium:selenium-java:4.37.0'
+    providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
+    
     testImplementation(
             'io.github.bonigarcia:webdrivermanager:6.3.2',
             'org.springframework.boot:spring-boot-starter-test',
@@ -75,17 +80,14 @@ dependencies {
             'org.junit.jupiter:junit-jupiter-params:5.12.2'
     )
 
-    testRuntimeOnly(
-        'org.junit.jupiter:junit-jupiter-engine:5.12.2'
-    )
+    testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.12.2')
 
-    compileOnly "org.springframework.boot:spring-boot-configuration-processor"
+    compileOnly('org.springframework.boot:spring-boot-configuration-processor')
+    annotationProcessor('org.springframework.boot:spring-boot-configuration-processor')
 }
 
-configurations {
-    all {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    }
+configurations.configureEach {
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 }
 
 idea {
@@ -95,16 +97,16 @@ idea {
         sourceDirs += file("src/main/java")
         sourceDirs += file("src/main/antlr")
 
-        testSources.from file("src/test/java")
-        testSources.from file("src/webTest/java")
+        testSources.from(file("src/test/java"))
+        testSources.from(file("src/webTest/java"))
 
         resourceDirs += file("src/main/resources")
 
         //generatedSourceDirs
-        generatedSourceDirs += file("${buildDir}/tmp/src/main/antlr")
+        generatedSourceDirs += layout.buildDirectory.dir("tmp/src/main/antlr").get().asFile
 
-        excludeDirs += file("${buildDir}/tmp/src/main/java")
-        excludeDirs += file("${buildDir}/tmp/src/test/java")
+        excludeDirs += layout.buildDirectory.dir("tmp/src/main/java").get().asFile
+        excludeDirs += layout.buildDirectory.dir("tmp/src/test/java").get().asFile
     }
 }
 
@@ -129,180 +131,214 @@ if (System.env.TRAVIS == "true") {
 
 description = """Sherlock"""
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_25
-    targetCompatibility = JavaVersion.VERSION_25
+tasks.register('printVersion') {
+    doLast {
+        println "${project.name}-${project.version}"
+    }
 }
 
-task printVersion {
-    println project.name + '-' + project.version
-}
-
-javadoc {
+tasks.named('javadoc') {
     source = sourceSets.main.allJava
     destinationDir = file("${projectDir}/docs")
     // options.memberLevel = JavadocMemberLevel.PRIVATE
     classpath += configurations.compileClasspath
 }
 
-generateGrammarSource {
-    outputDirectory = file("${buildDir}/tmp/src/main/antlr/uk/ac/warwick/dcs/sherlock/module/model/base/lang")
+tasks.named('generateGrammarSource') {
+    outputDirectory = layout.buildDirectory.dir("tmp/src/main/antlr/uk/ac/warwick/dcs/sherlock/module/model/base/lang").get().asFile
 }
 
-task generateSources(type: Copy) {
+tasks.register('generateSources', Copy) {
     from("src/main/java")
-    exclude "**/sherlock/deprecated/**"
-    into "$buildDir/tmp/src/main/java"
+    exclude("**/sherlock/deprecated/**")
+    into(layout.buildDirectory.dir("tmp/src/main/java"))
     filter(ReplaceTokens, tokens: [VERSION: project.version.toString()])
+    dependsOn(tasks.named('generateGrammarSource'))
 }
-sourceSets.main.java.srcDirs = ["$buildDir/tmp/src/main/java", "$buildDir/tmp/src/main/antlr"]
-generateSources.dependsOn generateGrammarSource
-compileJava.dependsOn generateSources
 
-task generateTestSources(type: Copy) {
+sourceSets {
+    main {
+        java {
+            srcDirs = [layout.buildDirectory.dir("tmp/src/main/java").get().asFile, 
+                       layout.buildDirectory.dir("tmp/src/main/antlr").get().asFile]
+        }
+    }
+    test {
+        java {
+            srcDirs = [layout.buildDirectory.dir("tmp/src/test/java").get().asFile]
+        }
+    }
+}
+
+tasks.named('compileJava') {
+    dependsOn(tasks.named('generateSources'))
+}
+
+tasks.register('generateTestSources', Copy) {
     from("src/test/java")
-    exclude "**/sherlock/deprecated/**"
-    into "$buildDir/tmp/src/test/java"
+    exclude("**/sherlock/deprecated/**")
+    into(layout.buildDirectory.dir("tmp/src/test/java"))
 }
-sourceSets.test.java.srcDirs = ["$buildDir/tmp/src/test/java"]
-compileTestJava.dependsOn generateTestSources
 
-task deps(type: Copy) {
-    from configurations.runtimeClasspath
-    into "$buildDir/out/lib"
+tasks.named('compileTestJava') {
+    dependsOn(tasks.named('generateTestSources'))
+}
+
+tasks.register('deps', Copy) {
+    from(configurations.runtimeClasspath)
+    into(layout.buildDirectory.dir("out/lib"))
 }
 
 // Combine and minify JS files
-task combineJs {
-    doFirst {
-        delete "${projectDir}/src/main/resources/static/js/default.js"
-    }
+tasks.register('combineJs') {
     def jsFiles = [
-            "${projectDir}/src/main/javascript/jquery.min.js",
-            "${projectDir}/src/main/javascript/popper.min.js",
-            "${projectDir}/src/main/javascript/bootstrap.min.js",
-            "${projectDir}/src/main/javascript/datatables.min.js",
-            "${projectDir}/src/main/javascript/loader.js",
-            "${projectDir}/src/main/javascript/vis.min.js",
-            "${projectDir}/src/main/javascript/prism.js",
-            "${projectDir}/src/main/javascript/js.cookie.js",
-            "${projectDir}/src/main/javascript/cookieconsent.min.js",
-            "${projectDir}/src/main/javascript/custom.js"
-    ]
+            "jquery.min.js",
+            "popper.min.js",
+            "bootstrap.min.js",
+            "datatables.min.js",
+            "loader.js",
+            "vis.min.js",
+            "prism.js",
+            "js.cookie.js",
+            "cookieconsent.min.js",
+            "custom.js"
+    ].collect { file("${projectDir}/src/main/javascript/${it}") }
+    
+    inputs.files(jsFiles)
+    outputs.file("${projectDir}/src/main/resources/static/js/default.js")
+    
+    doFirst {
+        delete("${projectDir}/src/main/resources/static/js/default.js")
+    }
     
     doLast {
         def outputDir = file("${projectDir}/src/main/resources/static/js")
         outputDir.mkdirs()
-        def combinedFile = file("${projectDir}/src/main/resources/static/js/default.js")
-        combinedFile.text = jsFiles.collect { file(it).text }.join('\n')
+        def combinedFile = outputs.files.singleFile
+        combinedFile.text = jsFiles.collect { it.text }.join('\n')
     }
 }
 
 // For now, just copy the combined JS as the minified version
-task minifyJs(type: Copy) {
-    dependsOn combineJs
+tasks.register('minifyJs', Copy) {
+    dependsOn(tasks.named('combineJs'))
+    
     doFirst {
-        delete "${projectDir}/src/main/resources/static/js/default.min.js"
+        delete("${projectDir}/src/main/resources/static/js/default.min.js")
     }
-    from "${projectDir}/src/main/resources/static/js/default.js"
-    into "${projectDir}/src/main/resources/static/js"
-    rename 'default.js', 'default.min.js'
+    
+    from("${projectDir}/src/main/resources/static/js/default.js")
+    into("${projectDir}/src/main/resources/static/js")
+    rename('default.js', 'default.min.js')
 }
 
 // Compile SASS files
 tasks.named('compileSass') {
     sourceDir = file("${projectDir}/src/main/sass")
-    outputDir = file("${buildDir}/generated/sass")
+    outputDir = layout.buildDirectory.dir("generated/sass").get().asFile
     destPath = "static/css"
-    entryPoint "default.scss", "default.css"
-    entryPoint "blank.scss", "blank.css"
+    entryPoint("default.scss", "default.css")
+    entryPoint("blank.scss", "blank.css")
     style = 'compressed'
 }
 
 tasks.named('processResources') {
-    dependsOn tasks.named('compileSass')
+    dependsOn(tasks.named('compileSass'), tasks.named('minifyJs'))
     from(tasks.named('compileSass').map { it.outputDir }) {
-        into 'static/css'
+        into('static/css')
     }
 }
 
-task buildJsAssets {
-    dependsOn minifyJs
-    dependsOn tasks.named('compileSass')
-}
-
-processResources.dependsOn buildJsAssets
-
-jar {
-    from sourceSets.main.output
-    include 'uk/ac/warwick/dcs/sherlock/api/**'
-    include 'uk/ac/warwick/dcs/sherlock/module/model/base/**'
+tasks.named('jar', Jar) {
+    from(sourceSets.main.output)
+    include('uk/ac/warwick/dcs/sherlock/api/**')
+    include('uk/ac/warwick/dcs/sherlock/module/model/base/**')
 
     enabled = true //enable to build a standard jar
-    destinationDirectory = file("$buildDir/out")
+    destinationDirectory = layout.buildDirectory.dir("out")
     archiveClassifier = 'dev'
+    
     manifest {
         attributes(
                 'Implementation-Version': version,
         )
     }
-    delete fileTree("$buildDir/out") {
-        include '*-dev.jar'
-        exclude jar.archiveFileName.get()
-        exclude jar.archiveFile.get().asFile.getName()
+    
+    doLast {
+        delete(fileTree(layout.buildDirectory.dir("out").get().asFile) {
+            include('*-dev.jar')
+            exclude(archiveFileName.get())
+            exclude(archiveFile.get().asFile.getName())
+        })
     }
 }
 
-bootJar {
-    dependsOn buildJsAssets
-    destinationDirectory = file("$buildDir/out")
+tasks.named('bootJar') {
+    destinationDirectory = layout.buildDirectory.dir("out")
     mainClass = 'uk.ac.warwick.dcs.sherlock.launch.SherlockClient'
+    
     manifest {
         attributes(
                 'Implementation-Version': version
         )
     }
-    delete fileTree("$buildDir/out") {
-        include '*.jar'
-        exclude bootJar.archiveFileName.get()
-        exclude jar.archiveFile.get().asFile.getName()
-        exclude '*-dev.jar'
+    
+    doLast {
+        delete(fileTree(layout.buildDirectory.dir("out").get().asFile) {
+            include('*.jar')
+            exclude(archiveFileName.get())
+            exclude(tasks.named('jar').get().archiveFile.get().asFile.getName())
+            exclude('*-dev.jar')
+        })
     }
 }
-jar.dependsOn bootJar
 
-bootWar {
-    dependsOn buildJsAssets
-    destinationDirectory = file("$buildDir/out")
+tasks.named('jar') {
+    dependsOn(tasks.named('bootJar'))
+}
+
+tasks.named('bootWar') {
+    destinationDirectory = layout.buildDirectory.dir("out")
     mainClass = 'uk.ac.warwick.dcs.sherlock.launch.SherlockServer'
+    
     manifest {
         attributes(
                 'Implementation-Version': version
         )
     }
-    delete fileTree("$buildDir/out") {
-        include '*.war'
-        exclude bootJar.archiveFileName.get()
-        exclude war.archiveFile.get().asFile.getName()
+    
+    doLast {
+        delete(fileTree(layout.buildDirectory.dir("out").get().asFile) {
+            include('*.war')
+            exclude(archiveFileName.get())
+            exclude(tasks.named('jar').get().archiveFile.get().asFile.getName())
+        })
     }
 }
-war.dependsOn bootWar
-assemble.dependsOn jar
 
-bootRun {
-    dependsOn buildJsAssets
+tasks.named('war') {
+    dependsOn(tasks.named('bootWar'))
+}
+
+tasks.named('assemble') {
+    dependsOn(tasks.named('jar'))
+}
+
+tasks.named('bootRun') {
     mainClass = 'uk.ac.warwick.dcs.sherlock.launch.SherlockClient'
     jvmArgs = ["-Dspring.profiles.active=dev", "-Dspring.output.ansi.enabled=ALWAYS"]
 }
 
-test {
+tasks.named('test') {
     useJUnitPlatform()
 }
 
-task branchSetup {
-    if (grgit != null) {
-        ant.replaceregexp(match: '# Sherlock(.*)', replace: "# Sherlock  [![Build Status: ${grgit.branch.current().name}](https://travis-ci.org/DCS-Sherlock/Sherlock.svg?branch=${grgit.branch.current().name})](https://travis-ci.org/DCS-Sherlock/Sherlock?branch=${grgit.branch.current().name})", flags: 's', byline: true) {
-            fileset(dir: project.projectDir, includes: 'README.md')
+tasks.register('branchSetup') {
+    doLast {
+        if (grgit != null) {
+            ant.replaceregexp(match: '# Sherlock(.*)', replace: "# Sherlock  [![Build Status: ${grgit.branch.current().name}](https://travis-ci.org/DCS-Sherlock/Sherlock.svg?branch=${grgit.branch.current().name})](https://travis-ci.org/DCS-Sherlock/Sherlock?branch=${grgit.branch.current().name})", flags: 's', byline: true) {
+                fileset(dir: project.projectDir, includes: 'README.md')
+            }
         }
     }
 }
