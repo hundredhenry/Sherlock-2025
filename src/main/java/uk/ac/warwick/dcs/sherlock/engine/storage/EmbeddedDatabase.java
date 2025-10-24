@@ -2,7 +2,7 @@ package uk.ac.warwick.dcs.sherlock.engine.storage;
 
 import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.File;
 import java.util.*;
 
@@ -15,11 +15,25 @@ public class EmbeddedDatabase {
 	private EntityManager em;
 
 	public EmbeddedDatabase() {
-		Map<String, String> properties = new HashMap<>();
-		properties.put("javax.persistence.jdbc.user", "admin");
-		properties.put("javax.persistence.jdbc.password", "admin");
+		String dataPath = SherlockEngine.configuration.getDataPath();
+		File dataDir = new File(dataPath);
+		if (!dataDir.exists() && !dataDir.mkdirs()) {
+			throw new IllegalStateException("Failed to create data directory: " + dataDir.getAbsolutePath());
+		}
+		// Ensure ObjectDB writes outside the nested boot jar
+		System.setProperty("objectdb.home", dataDir.getAbsolutePath());
+		File logDir = new File(dataDir, "log");
+		if (!logDir.exists()) {
+			logDir.mkdirs();
+		}
 
-		this.dbFactory = Persistence.createEntityManagerFactory("objectdb:" + SherlockEngine.configuration.getDataPath() + File.separator + "Sherlock.odb", properties);
+		Map<String, String> properties = new HashMap<>();
+		properties.put("jakarta.persistence.jdbc.user", "admin");
+		properties.put("jakarta.persistence.jdbc.password", "admin");
+		File dbFile = new File(dataDir, "Sherlock.odb");
+		properties.put("jakarta.persistence.jdbc.url", "objectdb:" + dbFile.getAbsolutePath());
+
+		this.dbFactory = Persistence.createEntityManagerFactory("objectdb", properties);
 		this.em = this.dbFactory.createEntityManager();
 		this.em.flush();
 	}

@@ -15,7 +15,7 @@ import uk.ac.warwick.dcs.sherlock.api.exception.WorkspaceUnsupportedException;
 import uk.ac.warwick.dcs.sherlock.engine.report.ReportManager;
 import uk.ac.warwick.dcs.sherlock.api.storage.IStorageWrapper;
 
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 import java.util.*;
 import java.util.stream.*;
 

@@ -6,7 +6,7 @@ import uk.ac.warwick.dcs.sherlock.api.component.IJob;
 import uk.ac.warwick.dcs.sherlock.api.component.WorkStatus;
 import uk.ac.warwick.dcs.sherlock.engine.storage.BaseStorageFilesystem.IStorable;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.sql.Timestamp;

@@ -1,4 +1,4 @@
-# Sherlock  [![Build Status: master](https://travis-ci.org/DCS-Sherlock/Sherlock.svg?branch=master)](https://travis-ci.org/DCS-Sherlock/Sherlock?branch=master)
+# Sherlock  [![Build Status: preliminary-updates](https://travis-ci.org/DCS-Sherlock/Sherlock.svg?branch=preliminary-updates)](https://travis-ci.org/DCS-Sherlock/Sherlock?branch=preliminary-updates)
 
 <!----- Branch: --->
 
@@ -10,8 +10,8 @@ The latest built documentation can be found at: https://dcs-sherlock.github.io/S
 User guide can be found at: https://github.com/DCS-Sherlock/Sherlock/wiki
 
 ## Requirements
-  - JDK 1.8, 1.9 or 11
-  - Gradle (5.4.1 included in repo)
+  - JDK 25
+  - Gradle (9.1.0 included in repo)
 
 
 ## IDEA support

@@ -4,6 +4,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -24,7 +25,6 @@ import uk.ac.warwick.dcs.sherlock.engine.storage.BaseStorage;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
@@ -40,7 +40,7 @@ public class SherlockEngine {
 	public static Configuration configuration = null;
 	public static IStorageWrapper storage = null;
 	public static IExecutor executor = null;
-	public static URLClassLoader classloader;
+	public static ModuleClassLoader classloader;
 
 	static EventBus eventBus = null;
 	static Registry registry = null;
@@ -60,7 +60,7 @@ public class SherlockEngine {
 	 * @param side Client or Server
 	 */
 	public SherlockEngine(Side side) {
-		SherlockEngine.classloader = new URLClassLoader(new URL[0], this.getClass().getClassLoader()); // Custom classloader for the modules
+	SherlockEngine.classloader = new ModuleClassLoader(new URL[0], this.getClass().getClassLoader()); // Custom classloader for the modules
 
 		this.valid = false;
 		Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
@@ -136,7 +136,8 @@ public class SherlockEngine {
 		}
 		else {
 			try {
-				Constructor constructor = new Constructor();
+				LoaderOptions loaderOptions = new LoaderOptions();
+				Constructor constructor = new Constructor(Configuration.class, loaderOptions);
 				constructor.addTypeDescription(new TypeDescription(Configuration.class, "!Sherlock"));
 				Yaml yaml = new Yaml(constructor);
 				SherlockEngine.configuration = yaml.loadAs(new FileInputStream(configFile), Configuration.class);
@@ -179,11 +180,11 @@ public class SherlockEngine {
 	 */
 	private static void writeConfiguration(File configFile) {
 		try {
-			Representer representer = new Representer();
+			DumperOptions dumperOptions = new DumperOptions();
+			dumperOptions.setPrettyFlow(true);
+			Representer representer = new Representer(dumperOptions);
 			representer.addClassTag(Configuration.class, new Tag("!Sherlock"));
-			DumperOptions options = new DumperOptions();
-			options.setPrettyFlow(true);
-			Yaml yaml = new Yaml(representer, options);
+			Yaml yaml = new Yaml(representer, dumperOptions);
 			FileWriter writer = new FileWriter(configFile);
 			yaml.dump(SherlockEngine.configuration, writer);
 		}

@@ -1,6 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.module.web.data.models.db;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
