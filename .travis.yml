@@ -43,4 +43,4 @@ deploy:
 #    on:
 #      tags: true
 #      branch: master
-#      jdk: oraclejdk8
+#      jdk: openjdk25
