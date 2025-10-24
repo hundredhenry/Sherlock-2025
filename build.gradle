@@ -5,11 +5,11 @@ plugins {
     id "java"
     id "antlr"
     id "war"
+    id "idea"
     id "org.springframework.boot" version "3.5.6"
     id "io.spring.dependency-management" version "1.1.7"
     id "org.ajoberstar.grgit" version "5.3.3"
-    id "idea"
-    id "com.github.node-gradle.node" version "7.1.0"
+    id 'io.miret.etienne.sass' version '1.6.0'
 }
 
 apply plugin: 'project-report'
@@ -210,15 +210,25 @@ task minifyJs(type: Copy) {
 }
 
 // Compile SASS files
-task sassCompile {
-    doLast {
-        println "SASS compilation placeholder - configure dart-sass or use a build tool"
+tasks.named('compileSass') {
+    sourceDir = file("${projectDir}/src/main/sass")
+    outputDir = file("${buildDir}/generated/sass")
+    destPath = "static/css"
+    entryPoint "default.scss", "default.css"
+    entryPoint "blank.scss", "blank.css"
+    style = 'compressed'
+}
+
+tasks.named('processResources') {
+    dependsOn tasks.named('compileSass')
+    from(tasks.named('compileSass').map { it.outputDir }) {
+        into 'static/css'
     }
 }
 
 task buildJsAssets {
     dependsOn minifyJs
-    dependsOn sassCompile
+    dependsOn tasks.named('compileSass')
 }
 
 processResources.dependsOn buildJsAssets
