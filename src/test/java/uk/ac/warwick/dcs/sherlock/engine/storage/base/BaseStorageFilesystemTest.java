@@ -36,7 +36,7 @@ class BaseStorageFilesystemTest {
     void tearDown() {
     }
 
-    @Disabled("loading a file is not working on travis")
+    @Disabled("loading a file is not working")
     @Test
     void storeAndLoadFile() {
         MultipartFile inputFile = null;
@@ -80,7 +80,7 @@ class BaseStorageFilesystemTest {
         assertEquals(Arrays.toString(inputFileBytes), Arrays.toString(returnedFileBytes));
     }
 
-    @Disabled("loading a file is not working on travis")
+    @Disabled("loading a file is not working")
     @Test
     void storeAndLoadFileAsString() {
         MultipartFile inputFile = null;

@@ -122,13 +122,6 @@ if (grgit != null) {
     }
 }
 
-if (System.env.TRAVIS == "true") {
-    println "Building on travis"
-    build.dependsOn javadoc
-    new File("version.txt").text = """build/${project.version}"""
-}
-
-
 description = """Sherlock"""
 
 tasks.register('printVersion') {
@@ -333,16 +326,6 @@ tasks.named('bootRun') {
 
 tasks.named('test') {
     useJUnitPlatform()
-}
-
-tasks.register('branchSetup') {
-    doLast {
-        if (grgit != null) {
-            ant.replaceregexp(match: '# Sherlock(.*)', replace: "# Sherlock  [![Build Status: ${grgit.branch.current().name}](https://travis-ci.org/DCS-Sherlock/Sherlock.svg?branch=${grgit.branch.current().name})](https://travis-ci.org/DCS-Sherlock/Sherlock?branch=${grgit.branch.current().name})", flags: 's', byline: true) {
-                fileset(dir: project.projectDir, includes: 'README.md')
-            }
-        }
-    }
 }
 
 class TagSupport {

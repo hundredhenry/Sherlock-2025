@@ -1,4 +1,4 @@
-# Sherlock  [![Build Status: master](https://travis-ci.org/hundredhenry/Sherlock-2025.svg?branch=master)](https://travis-ci.org/hundredhenry/Sherlock-2025?branch=master)
+# Sherlock
 
 <!----- Branch: --->
 
