@@ -8,18 +8,16 @@ sourceSets {
 }
 
 dependencies {
-    webTestCompile(
-            "io.github.bonigarcia:webdrivermanager:3.3.0"
-    )
-
     webTestImplementation(
+            'io.github.bonigarcia:webdrivermanager:5.9.2',
             'org.springframework.boot:spring-boot-starter-test',
             'org.springframework.security:spring-security-test',
-            'org.junit.jupiter:junit-jupiter-api:5.3.1',
-            'org.junit.jupiter:junit-jupiter-params:5.3.1'
+            'org.junit.jupiter:junit-jupiter-api:5.11.2',
+            'org.junit.jupiter:junit-jupiter-params:5.11.2'
     )
+
     webTestRuntimeOnly(
-            'org.junit.jupiter:junit-jupiter-engine:5.1.0'
+            'org.junit.jupiter:junit-jupiter-engine:5.11.2'
     )
 }
 

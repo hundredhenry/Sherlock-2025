@@ -1,6 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.module.web.data.models.db;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * The database table storing the roles assigned to each account

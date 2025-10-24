@@ -12,7 +12,7 @@ import uk.ac.warwick.dcs.sherlock.api.component.ITask;
 import uk.ac.warwick.dcs.sherlock.api.component.WorkStatus;
 import uk.ac.warwick.dcs.sherlock.engine.storage.BaseStorageFilesystem.IStorable;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.*;

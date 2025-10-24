@@ -13,11 +13,8 @@ import org.slf4j.LoggerFactory;
 import uk.ac.warwick.dcs.sherlock.api.annotation.SherlockModule;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
 import java.util.stream.*;
 
@@ -86,17 +83,7 @@ public class AnnotationLoader {
 			});
 
 
-			try {
-				Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-				method.setAccessible(true);
-
-				for (URL url : classpathURLs) {
-					method.invoke(SherlockEngine.classloader, url);
-				}
-			}
-			catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-				e.printStackTrace();
-			}
+			classpathURLs.forEach(SherlockEngine.classloader::addModuleUrl);
 		}
 
 		moduleURLS.addAll(ClasspathHelper.forPackage("uk.ac.warwick.dcs.sherlock.engine"));
@@ -104,7 +91,7 @@ public class AnnotationLoader {
 		moduleURLS.addAll(ClasspathHelper.forPackage("uk.ac.warwick.dcs.sherlock.launch"));
 
 		ConfigurationBuilder config = new ConfigurationBuilder();
-		config.addClassLoader(SherlockEngine.classloader);
+		config.addClassLoaders(SherlockEngine.classloader);
 		config.setUrls(moduleURLS);
 		config.setScanners(new SubTypesScanner(), new TypeAnnotationsScanner(), new MethodAnnotationsScanner());
 		config.filterInputsBy(new FilterBuilder().include(".*class"));

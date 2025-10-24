@@ -5,8 +5,8 @@ import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.component.IResultTask;
 import uk.ac.warwick.dcs.sherlock.api.component.ITask;
 
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
+import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
 import java.io.Serializable;
 import java.util.*;
 

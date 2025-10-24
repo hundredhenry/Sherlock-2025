@@ -5,11 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import uk.ac.warwick.dcs.sherlock.module.web.data.models.db.Account;
 import uk.ac.warwick.dcs.sherlock.module.web.data.models.db.Role;
 import uk.ac.warwick.dcs.sherlock.module.web.configuration.properties.SecurityProperties;
@@ -25,7 +26,8 @@ import java.util.Random;
  * Sets up both the web and http security to prevent unauthorised access to account/admin pages
  */
 @Configuration
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+@EnableWebSecurity
+public class SecurityConfig {
 	//All @Autowired variables are automatically loaded by Spring
 	@Autowired
 	private AccountRepository accountRepository;
@@ -61,15 +63,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	/**
-	 * Configures the web security by configuring the authentication manager to
-	 * use the custom user details service that links into the datbase
+	 * Configures the authentication provider to use the custom user details service
 	 *
-	 * @param auth Spring's authentication manager
-	 *
-	 * @throws Exception if there was an issue with the user details service
+	 * @return the authentication provider
 	 */
-	@Autowired
-	public void configure(AuthenticationManagerBuilder auth) throws Exception {
+	@Bean
+	public DaoAuthenticationProvider authenticationProvider() {
 		//Check if running as a client
 		if (Arrays.asList(environment.getActiveProfiles()).contains("client")) {
 			//Try to find the "local user"
@@ -100,8 +99,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			}
 		}
 
-		//Make the authentication manager use the custom user details service
-		auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
+		//Make the authentication provider use the custom user details service
+		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+		authProvider.setUserDetailsService(userDetailsService);
+		authProvider.setPasswordEncoder(passwordEncoder);
+		return authProvider;
 	}
 
 	/**
@@ -110,25 +112,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	 *
 	 * @param http Spring's http security object that allows configuring web based security for specific http requests
 	 *
+	 * @return the security filter chain
 	 * @throws Exception if there was an issue with http security
 	 */
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
-		//Allow access to the static resources
-		http
-				.authorizeRequests()
-				.antMatchers(
-						"/css/**",
-						"/js/**",
-						"/image/**")
-				.permitAll();
-
-		String requiredRole = "USER"; //the required role to access the account settings page
-
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		//Check if running as a client
 		if (Arrays.asList(environment.getActiveProfiles()).contains("client")) {
 			//Set the required role to "ADMIN" to prevent the local user seeing the account page
-			requiredRole = "ADMIN";
+			final String requiredRole = "ADMIN";
 
 			/*
 				If running locally, make all pages require authentication to ensure that the
@@ -136,69 +128,60 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				start on
 			*/
 			http
-					.authorizeRequests()
-					.antMatchers(
-							"/",
-							"/terms",
-							"/privacy",
-							"/help/**")
-					.hasAuthority("USER");
+					.authorizeHttpRequests(auth -> auth
+							.requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
+							.requestMatchers("/", "/terms", "/privacy", "/help/**").hasAuthority("USER")
+							.requestMatchers("/dashboard/**").hasAuthority("USER")
+							.requestMatchers("/account/**").hasAuthority(requiredRole)
+							.requestMatchers("/admin/**").hasAuthority("ADMIN")
+							.anyRequest().authenticated()
+					);
 		} else {
 			//If running as a server, allow access to the home/help pages
+			final String requiredRole = "USER";
+			
 			http
-					.authorizeRequests()
-					.antMatchers(
-							"/",
-							"/terms",
-							"/privacy",
-							"/help/**")
-					.permitAll();
+					.authorizeHttpRequests(auth -> auth
+							.requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
+							.requestMatchers("/", "/terms", "/privacy", "/help/**").permitAll()
+							.requestMatchers("/dashboard/**").hasAuthority("USER")
+							.requestMatchers("/account/**").hasAuthority(requiredRole)
+							.requestMatchers("/admin/**").hasAuthority("ADMIN")
+							.anyRequest().authenticated()
+					);
 		}
-
-		//Only users can access the dashboard
-		http
-				.authorizeRequests()
-				.antMatchers("/dashboard/**")
-				.hasAuthority("USER");
-
-		//Only "server" based users can modify their account settings
-		http
-				.authorizeRequests()
-				.antMatchers("/account/**")
-				.hasAuthority(requiredRole);
-
-		//Only admins can access the admin settings
-		http
-				.authorizeRequests()
-				.antMatchers("/admin/**")
-				.hasAuthority("ADMIN");
 
 		//Set the login page
 		http
-				.formLogin()
-                .defaultSuccessUrl("/dashboard/index")
-				.loginPage("/login")
-				.usernameParameter("username")
-				.passwordParameter("password")
-				.permitAll();
+				.formLogin(form -> form
+						.defaultSuccessUrl("/dashboard/index")
+						.loginPage("/login")
+						.usernameParameter("username")
+						.passwordParameter("password")
+						.permitAll()
+				);
 
 		//Delete the cookies on logout
 		http
-				.logout()
-				.deleteCookies("JSESSIONID");
+				.logout(logout -> logout
+						.deleteCookies("JSESSIONID")
+				);
 
 		//Enable "remember me" support
 		http
-				.rememberMe()
-				.key(securityProperties.getKey());
+				.rememberMe(remember -> remember
+						.key(securityProperties.getKey())
+				);
 
 		//Check if running in development mode
 		if (Arrays.asList(environment.getActiveProfiles()).contains("dev")){
-			//Fixes access to h2 databsae console
-			http.authorizeRequests().antMatchers("/h2-console/**").permitAll();
-			http.headers().frameOptions().disable();
-			http.csrf().disable();
+			//Fixes access to h2 database console
+			http.authorizeHttpRequests(auth -> auth.requestMatchers("/h2-console/**").permitAll());
+			http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()));
+			http.csrf(csrf -> csrf.disable());
 		}
+
+		return http.build();
 	}
 
 	/**

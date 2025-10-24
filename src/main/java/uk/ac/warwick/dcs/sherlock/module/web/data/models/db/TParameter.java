@@ -1,6 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.module.web.data.models.db;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * The database table storing parameters for a template detector
@@ -17,7 +17,7 @@ public class TParameter {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "value")
+    @Column(name = "param_value")
     private double value;
 
     @Column(name = "postprocessing")
