@@ -4,7 +4,7 @@ sourceSets {
             srcDir(file('src/webTest/java'))
         }
         resources {
-            srcDir(file('src/webTest/resources'))
+            setSrcDirs([file('src/webTest/resources')])
         }
         compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
         runtimeClasspath += sourceSets.main.output + compileClasspath

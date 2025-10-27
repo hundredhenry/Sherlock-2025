@@ -7,6 +7,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 
+import java.time.Duration;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
@@ -74,7 +75,7 @@ public abstract class AbstractWebTest {
 
     public static void setDefaultTestSettings() {
         browser = getChromeDriver();
-        wait = new WebDriverWait(browser, 30);
+        wait = new WebDriverWait(browser, Duration.ofSeconds(30));
         messageProperties = loadPropertiesFromFile(defaultMessagePropertiesPath);
         applicationServerProperties = loadPropertiesFromFile(defaultApplicationServerPropertiesPath);
     }

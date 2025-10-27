@@ -239,7 +239,7 @@ tasks.named('compileSass') {
 
 tasks.named('processResources') {
     dependsOn(tasks.named('compileSass'), tasks.named('minifyJs'))
-    from(tasks.named('compileSass').map { it.outputDir }) {
+    from(tasks.named('compileSass').map { new File(it.outputDir, 'static/css') }) {
         into('static/css')
     }
 }
