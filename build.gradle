@@ -186,6 +186,10 @@ tasks.register('deps', Copy) {
 
 // Combine and minify JS files
 tasks.register('combineJs') {
+    doFirst {
+        delete("${projectDir}/src/main/resources/static/js/default.js")
+    }
+
     def jsFiles = [
             "jquery.min.js",
             "popper.min.js",
@@ -201,10 +205,6 @@ tasks.register('combineJs') {
     
     inputs.files(jsFiles)
     outputs.file("${projectDir}/src/main/resources/static/js/default.js")
-    
-    doFirst {
-        delete("${projectDir}/src/main/resources/static/js/default.js")
-    }
     
     doLast {
         def outputDir = file("${projectDir}/src/main/resources/static/js")
@@ -229,8 +229,9 @@ tasks.register('minifyJs', Copy) {
 
 // Compile SASS files
 tasks.named('compileSass') {
+    dependsOn(tasks.named('minifyJs'))
     sourceDir = file("${projectDir}/src/main/sass")
-    outputDir = layout.buildDirectory.dir("generated/sass").get().asFile
+    outputDir = file("${projectDir}/src/main/resources")
     destPath = "static/css"
     entryPoint("default.scss", "default.css")
     entryPoint("blank.scss", "blank.css")
@@ -238,10 +239,7 @@ tasks.named('compileSass') {
 }
 
 tasks.named('processResources') {
-    dependsOn(tasks.named('compileSass'), tasks.named('minifyJs'))
-    from(tasks.named('compileSass').map { new File(it.outputDir, 'static/css') }) {
-        into('static/css')
-    }
+    dependsOn(tasks.named('compileSass'))
 }
 
 tasks.named('jar', Jar) {
