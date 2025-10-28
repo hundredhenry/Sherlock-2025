@@ -2,12 +2,9 @@ package uk.ac.warwick.dcs.sherlock.engine;
 
 import org.apache.commons.io.FilenameUtils;
 import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
+import org.reflections.scanners.Scanners;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
-import org.reflections.util.FilterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.warwick.dcs.sherlock.api.annotation.SherlockModule;
@@ -93,8 +90,8 @@ public class AnnotationLoader {
 		ConfigurationBuilder config = new ConfigurationBuilder();
 		config.addClassLoaders(SherlockEngine.classloader);
 		config.setUrls(moduleURLS);
-		config.setScanners(new SubTypesScanner(), new TypeAnnotationsScanner(), new MethodAnnotationsScanner());
-		config.filterInputsBy(new FilterBuilder().include(".*class"));
+		config.setScanners(Scanners.SubTypes, Scanners.TypesAnnotated, Scanners.MethodsAnnotated);
+		config.filterInputsBy(input -> input != null && input.endsWith(".class"));
 		this.ref = new Reflections(config);
 	}
 
