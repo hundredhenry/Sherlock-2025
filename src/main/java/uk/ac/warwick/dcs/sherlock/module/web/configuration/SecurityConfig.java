@@ -116,6 +116,9 @@ public class SecurityConfig {
 	 */
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		//Check if running in development mode
+		boolean isDevMode = Arrays.asList(environment.getActiveProfiles()).contains("dev");
+		
 		//Check if running as a client
 		if (Arrays.asList(environment.getActiveProfiles()).contains("client")) {
 			//Set the required role to "ADMIN" to prevent the local user seeing the account page
@@ -127,27 +130,40 @@ public class SecurityConfig {
 				start on
 			*/
 			http
-					.authorizeHttpRequests(auth -> auth
-							.requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
+					.authorizeHttpRequests(auth -> {
+						if (isDevMode) {
+							//Development mode - fixes access to h2 database console
+							auth.requestMatchers("/h2-console/**").permitAll();
+						}
+						auth.requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
 							.requestMatchers("/", "/terms", "/privacy", "/help/**").hasAuthority("USER")
 							.requestMatchers("/dashboard/**").hasAuthority("USER")
 							.requestMatchers("/account/**").hasAuthority(requiredRole)
 							.requestMatchers("/admin/**").hasAuthority("ADMIN")
-							.anyRequest().authenticated()
-					);
+							.anyRequest().authenticated();
+					});
 		} else {
 			//If running as a server, allow access to the home/help pages
 			final String requiredRole = "USER";
 			
 			http
-					.authorizeHttpRequests(auth -> auth
-							.requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
+					.authorizeHttpRequests(auth -> {
+						if (isDevMode) {
+							auth.requestMatchers("/h2-console/**").permitAll();
+						}
+						auth.requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
 							.requestMatchers("/", "/terms", "/privacy", "/help/**").permitAll()
 							.requestMatchers("/dashboard/**").hasAuthority("USER")
 							.requestMatchers("/account/**").hasAuthority(requiredRole)
 							.requestMatchers("/admin/**").hasAuthority("ADMIN")
-							.anyRequest().authenticated()
-					);
+							.anyRequest().authenticated();
+					});
+		}
+
+		//Check if running in development mode - fixes for h2 database console
+		if (isDevMode){
+			http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()));
+			http.csrf(csrf -> csrf.disable());
 		}
 
 		//Set the login page
@@ -171,14 +187,6 @@ public class SecurityConfig {
 				.rememberMe(remember -> remember
 						.key(securityProperties.getKey())
 				);
-
-		//Check if running in development mode
-		if (Arrays.asList(environment.getActiveProfiles()).contains("dev")){
-			//Fixes access to h2 database console
-			http.authorizeHttpRequests(auth -> auth.requestMatchers("/h2-console/**").permitAll());
-			http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()));
-			http.csrf(csrf -> csrf.disable());
-		}
 
 		return http.build();
 	}
