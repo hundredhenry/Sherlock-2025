@@ -11,7 +11,7 @@ public class LocalDashboard extends JFrame {
 
 	public LocalDashboard() {
 		super("Sherlock");
-		initUI();
+		// initUI();
 	}
 
 	private void initUI() {
@@ -60,13 +60,13 @@ public class LocalDashboard extends JFrame {
 	public void setReady() {
 		this.setVisible(true);
 
-		/*try {
-			if (Desktop.isDesktopSupported()) {
-				Desktop.getDesktop().browse(new URI("http://localhost:2218"));
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}*/
+		// try {
+		// 	if (Desktop.isDesktopSupported()) {
+		// 		Desktop.getDesktop().browse(new URI("http://localhost:2218"));
+		// 	}
+		// }
+		// catch (Exception e) {
+		// 	e.printStackTrace();
+		// }
 	}
 }
