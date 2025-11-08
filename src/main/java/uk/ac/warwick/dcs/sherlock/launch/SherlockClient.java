@@ -9,7 +9,6 @@ import uk.ac.warwick.dcs.sherlock.api.event.EventPostInitialisation;
 import uk.ac.warwick.dcs.sherlock.api.event.EventPreInitialisation;
 import uk.ac.warwick.dcs.sherlock.api.util.Side;
 import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
-import uk.ac.warwick.dcs.sherlock.module.client.LocalDashboard;
 import uk.ac.warwick.dcs.sherlock.module.client.Splash;
 
 import javax.swing.*;
