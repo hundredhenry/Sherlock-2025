@@ -13,6 +13,8 @@ import uk.ac.warwick.dcs.sherlock.module.client.LocalDashboard;
 import uk.ac.warwick.dcs.sherlock.module.client.Splash;
 
 import javax.swing.*;
+import java.awt.*;
+import java.net.URI;
 
 @SherlockModule(side = Side.CLIENT)
 public class SherlockClient {
@@ -20,7 +22,6 @@ public class SherlockClient {
 	@Instance
 	public static SherlockClient instance;
 
-	private static LocalDashboard dash;
 	private static Splash splash;
 
 	public static void main(String[] args) {
@@ -37,7 +38,6 @@ public class SherlockClient {
 			System.exit(1);
 		}
 		else {
-			SherlockClient.dash = new LocalDashboard();
 
 			//If "-Dmodules" is in the JVM arguments, set the path to provided
 			String modulesPath = System.getProperty("modules");
@@ -64,7 +64,14 @@ public class SherlockClient {
 	@EventHandler
 	public void postInitialisation(EventPostInitialisation event) {
 		SherlockClient.splash.close();
-		SherlockClient.dash.setReady();
+		try {
+			if (Desktop.isDesktopSupported()) {
+				Desktop.getDesktop().browse(new URI("http://localhost:2218"));
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@EventHandler
