@@ -84,7 +84,6 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 		for (Ngram ngram : string2) {
 			string2List.add(ngram.getNgram());
 		}
-
 		// for each N-gram in the reference list count the number that match and that don't
 		for (String ngram : string1List) {
 			if (string2List.contains(ngram)) {
@@ -382,6 +381,8 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 				}
 			}
 			// performs comparison if EOF for reference is reached
+			System.out.println("Comparison Value: " + compare(reference, check));
+			System.out.println("Threshold: " + threshold);
 			if (compare(reference, check) > threshold && reference.size() >= minimum_window) {
 				// if at EOF there is a match then output it
 				matchFound(reference, check, head, last_peak, since_last_peak, this.file1.getFile(), this.file2.getFile());
