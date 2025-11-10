@@ -11,8 +11,9 @@ import uk.ac.warwick.dcs.sherlock.api.util.Side;
 import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
 import uk.ac.warwick.dcs.sherlock.module.client.Splash;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import java.awt.Desktop;
 import java.net.URI;
 
 @SherlockModule(side = Side.CLIENT)
@@ -30,7 +31,7 @@ public class SherlockClient {
 		SherlockServer.engine = new SherlockEngine(Side.CLIENT);
 
 		if (!SherlockServer.engine.isValidInstance()) {
-			JFrame jf=new JFrame();
+			JFrame jf = new JFrame();
 			jf.setAlwaysOnTop(true);
 			JOptionPane.showMessageDialog(jf, "Sherlock is already running", "Sherlock error", JOptionPane.ERROR_MESSAGE);
 			splash.close();
@@ -40,11 +41,11 @@ public class SherlockClient {
 
 			//If "-Dmodules" is in the JVM arguments, set the path to provided
 			String modulesPath = System.getProperty("modules");
-			if (modulesPath != null && !modulesPath.equals("")) {
+			if (modulesPath != null && !modulesPath.isEmpty()) {
 				SherlockEngine.setOverrideModulesPath(modulesPath);
 			}
 
-			//If "-Doverride=True" is in the JVM arguments, make Spring thing it is running as a server
+			//If "-Doverride=True" is in the JVM arguments, make Spring think it is running as a server
 			String override = System.getProperty("override");
 			if (override != null && override.equals("True")) {
 				new SpringApplicationBuilder(SherlockServer.class).headless(false).profiles("server").run(args);
