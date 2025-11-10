@@ -383,6 +383,10 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 			// performs comparison if EOF for reference is reached
 			System.out.println("Comparison Value: " + compare(reference, check));
 			System.out.println("Threshold: " + threshold);
+			System.out.println("Reference Size: " + reference.size());
+			System.out.println("Reference List: " + reference.toString());
+			System.out.println("Minimum Window: " + minimum_window);
+			// REFERENCE SIZE IS LOWERRRR
 			if (compare(reference, check) > threshold && reference.size() >= minimum_window) {
 				// if at EOF there is a match then output it
 				matchFound(reference, check, head, last_peak, since_last_peak, this.file1.getFile(), this.file2.getFile());
