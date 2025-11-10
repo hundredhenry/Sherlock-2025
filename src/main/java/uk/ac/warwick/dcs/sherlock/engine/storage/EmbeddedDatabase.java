@@ -23,8 +23,8 @@ public class EmbeddedDatabase {
 		// Ensure ObjectDB writes outside the nested boot jar
 		System.setProperty("objectdb.home", dataDir.getAbsolutePath());
 		File logDir = new File(dataDir, "log");
-		if (!logDir.exists()) {
-			logDir.mkdirs();
+		if (!logDir.exists() && !logDir.mkdirs()) {
+    		throw new IllegalStateException("Failed to create log directory: " + logDir.getAbsolutePath());
 		}
 
 		Map<String, String> properties = new HashMap<>();
