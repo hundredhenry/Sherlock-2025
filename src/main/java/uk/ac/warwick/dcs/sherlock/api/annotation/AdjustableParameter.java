@@ -40,7 +40,7 @@ public @interface AdjustableParameter {
 	 *
 	 * @return the max bound
 	 */
-	float maxumumBound();
+	float maximumBound();
 
 	/**
 	 * Minimum bound for field
