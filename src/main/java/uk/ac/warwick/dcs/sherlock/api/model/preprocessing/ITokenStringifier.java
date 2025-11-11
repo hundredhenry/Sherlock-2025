@@ -1,9 +1,10 @@
 package uk.ac.warwick.dcs.sherlock.api.model.preprocessing;
 
-import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.Vocabulary;
 import uk.ac.warwick.dcs.sherlock.api.util.IndexedString;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Interface to define the final step in file preprocessing, it turns the list of tokens into a list of strings paired with their respective line numbers.

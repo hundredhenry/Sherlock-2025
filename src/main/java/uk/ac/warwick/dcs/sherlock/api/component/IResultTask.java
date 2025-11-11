@@ -1,6 +1,8 @@
 package uk.ac.warwick.dcs.sherlock.api.component;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Stores the results of an individual file for an individual task (detector), is used as child of {@link IResultFile}

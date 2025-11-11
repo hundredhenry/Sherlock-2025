@@ -3,26 +3,27 @@ package uk.ac.warwick.dcs.sherlock.engine.report;
 import uk.ac.warwick.dcs.sherlock.api.report.ISubmissionSummary;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SubmissionSummary implements ISubmissionSummary {
 
 	/**
 	 * The persistent id of the submission
 	 */
-	private long persistentId;
+	private final long persistentId;
 
 	/**
 	 * The score of this submission, which is either:
 	 * - the overall score if this object is stored in the key of the results map
 	 * - the relative score if this object is stored in the value of the results map
 	 */
-	private float score;
+	private final float score;
 
 	/**
 	 * A list of matching submissions; each item is a tuple containing that submission's id and the score between them.
 	 */
-	private List<ITuple<Long, Float>> matchingSubmissions;
+	private final List<ITuple<Long, Float>> matchingSubmissions;
 
 	/**
 	 * Initialises the SubmissionSummary object.

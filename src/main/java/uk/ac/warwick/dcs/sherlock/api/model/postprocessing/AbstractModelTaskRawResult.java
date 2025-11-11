@@ -1,5 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.api.model.postprocessing;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -9,6 +10,7 @@ import java.io.Serializable;
  */
 public abstract class AbstractModelTaskRawResult implements Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 24L;
 
 	/**

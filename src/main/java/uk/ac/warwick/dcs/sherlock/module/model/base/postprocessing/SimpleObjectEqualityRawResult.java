@@ -6,18 +6,19 @@ import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.AbstractModelTaskRawR
 import uk.ac.warwick.dcs.sherlock.api.util.PairedTuple;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SimpleObjectEqualityRawResult<T extends Serializable> extends AbstractModelTaskRawResult {
 
-	private long file1id;
-	private long file2id;
+	private final long file1id;
+	private final long file2id;
 
-	private int file1NumObjs;
-	private int file2NumObjs;
+	private final int file1NumObjs;
+	private final int file2NumObjs;
 
-	private List<T> objects;
-	private List<PairedTuple<Integer, Integer, Integer, Integer>> locations;
+	private final List<T> objects;
+	private final List<PairedTuple<Integer, Integer, Integer, Integer>> locations;
 
 	private int size;
 

@@ -2,7 +2,7 @@ package uk.ac.warwick.dcs.sherlock.api.model.postprocessing;
 
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Post process the raw results into the Sherlock formal data storage structure

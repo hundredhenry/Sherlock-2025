@@ -11,7 +11,7 @@ import java.util.Set;
 public class Account {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "account_seq")
     @Column(name="id")
     private long id;
 
@@ -24,7 +24,7 @@ public class Account {
     @Column(name="name")
     private String username;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, mappedBy = "account")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "account", cascade = CascadeType.REMOVE)
     private Set<Role> roles;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "account", cascade = CascadeType.REMOVE)

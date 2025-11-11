@@ -1,8 +1,9 @@
 package uk.ac.warwick.dcs.sherlock.api.model.preprocessing;
 
-import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.Vocabulary;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * General preprocessor interface, used to filer a set of tokens from a lexer which conforms to the provided spec

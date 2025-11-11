@@ -4,7 +4,7 @@ import uk.ac.warwick.dcs.sherlock.api.exception.UnknownDetectionTypeException;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.DetectionType;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * An interface that connects multiple ICodeBlocks where plagiarism is detected between those files.

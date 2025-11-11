@@ -1,6 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.api.component;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Object which stores the set of results from a job execution, organised by file.

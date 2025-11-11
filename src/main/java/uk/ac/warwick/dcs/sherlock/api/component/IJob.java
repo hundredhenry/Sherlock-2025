@@ -3,7 +3,7 @@ package uk.ac.warwick.dcs.sherlock.api.component;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.IDetector;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
 
 /**
  * Interface for an object which defines a detection job. Stores, files, parameters, tasks (detectors) and the job results

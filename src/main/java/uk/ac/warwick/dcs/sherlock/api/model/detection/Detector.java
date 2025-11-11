@@ -2,7 +2,9 @@ package uk.ac.warwick.dcs.sherlock.api.model.detection;
 
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Abstract implementation of the IDetector interface, this should be used as the base to construct all detectors
@@ -13,9 +15,9 @@ import java.util.*;
  */
 public abstract class Detector<T extends DetectorWorker> implements IDetector<T> {
 
-	private String name;
+	private final String name;
+	private final List<PreProcessingStrategy> strategies;
 	private String description;
-	private List<PreProcessingStrategy> strategies;
 
 	/**
 	 * {@link IDetector} implementation without description

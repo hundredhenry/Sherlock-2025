@@ -2,22 +2,17 @@ package uk.ac.warwick.dcs.sherlock.engine.storage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.warwick.dcs.sherlock.api.component.ICodeBlockGroup;
-import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
-import uk.ac.warwick.dcs.sherlock.api.component.ISubmission;
-import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
-import uk.ac.warwick.dcs.sherlock.api.component.IResultJob;
-import uk.ac.warwick.dcs.sherlock.api.component.IWorkspace;
-import uk.ac.warwick.dcs.sherlock.api.component.WorkStatus;
+import uk.ac.warwick.dcs.sherlock.api.component.*;
 import uk.ac.warwick.dcs.sherlock.api.exception.ResultJobUnsupportedException;
 import uk.ac.warwick.dcs.sherlock.api.exception.SubmissionUnsupportedException;
 import uk.ac.warwick.dcs.sherlock.api.exception.WorkspaceUnsupportedException;
-import uk.ac.warwick.dcs.sherlock.engine.report.ReportManager;
 import uk.ac.warwick.dcs.sherlock.api.storage.IStorageWrapper;
+import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
+import uk.ac.warwick.dcs.sherlock.engine.report.ReportManager;
 
 import jakarta.persistence.Query;
 import java.util.*;
-import java.util.stream.*;
+import java.util.stream.Collectors;
 
 /**
  * Basic storage implementation
@@ -26,12 +21,10 @@ public class BaseStorage implements IStorageWrapper {
 
 	static BaseStorage instance;
 	static Logger logger = LoggerFactory.getLogger(BaseStorage.class);
-
+	private final Map<Long, ReportManager> reportManagerCache;
+	private final ArrayDeque<Long> reportManagerCacheQueue;
 	EmbeddedDatabase database;
 	BaseStorageFilesystem filesystem;
-
-	private Map<Long, ReportManager> reportManagerCache;
-	private ArrayDeque<Long> reportManagerCacheQueue;
 
 	public BaseStorage() {
 		instance = this;

@@ -1,10 +1,12 @@
 package uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing;
 
-import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.Vocabulary;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.ITokenStringifier;
 import uk.ac.warwick.dcs.sherlock.api.util.IndexedString;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 
 public class StandardTokeniser implements ITokenStringifier {
 

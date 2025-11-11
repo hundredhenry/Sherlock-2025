@@ -4,7 +4,8 @@ import org.antlr.v4.runtime.*;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.ILexerSpecification;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.IGeneralPreProcessor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CommentRemover implements IGeneralPreProcessor {
 

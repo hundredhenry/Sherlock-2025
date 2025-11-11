@@ -13,7 +13,8 @@ import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.IGeneralPreProcessor;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Static access wrapper for the internal registry, should be used on initialisation to add components into the engine

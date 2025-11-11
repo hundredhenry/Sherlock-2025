@@ -12,7 +12,8 @@ import uk.ac.warwick.dcs.sherlock.module.model.base.detection.NGramDetector.NGra
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.NGramRawResult;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.TrimWhitespaceOnly;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 

@@ -4,7 +4,9 @@ import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
 
 import jakarta.persistence.*;
 import java.io.File;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Database access stuff
@@ -20,7 +22,7 @@ public class EmbeddedDatabase {
 		if (!dataDir.exists() && !dataDir.mkdirs()) {
 			throw new IllegalStateException("Failed to create data directory: " + dataDir.getAbsolutePath());
 		}
-		// Ensure ObjectDB writes outside the nested boot jar
+
 		System.setProperty("objectdb.home", dataDir.getAbsolutePath());
 		File logDir = new File(dataDir, "log");
 		if (!logDir.exists() && !logDir.mkdirs()) {

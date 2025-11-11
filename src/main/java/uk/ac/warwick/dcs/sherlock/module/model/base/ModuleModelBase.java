@@ -12,7 +12,11 @@ import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.NGramPostProc
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.NGramRawResult;
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.SimpleObjectEqualityPostProcessor;
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.SimpleObjectEqualityRawResult;
-import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.*;
+import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.CommentExtractor;
+import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.CommentRemover;
+import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.TrimWhitespaceOnly;
+import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.VariableExtractor;
+import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.VariableExtractorJava;
 
 @SherlockModule
 public class ModuleModelBase {

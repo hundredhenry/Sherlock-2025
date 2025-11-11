@@ -4,11 +4,15 @@ import uk.ac.warwick.dcs.sherlock.api.model.detection.IDetector;
 import uk.ac.warwick.dcs.sherlock.api.component.*;
 
 import jakarta.persistence.*;
+import java.io.Serial;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * IJob object for base storage implementation
@@ -16,7 +20,11 @@ import java.util.stream.*;
 @Entity (name = "Job")
 public class EntityJob implements IJob, Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
+
+	@OneToMany (mappedBy = "job", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<EntityTask> tasks = new ArrayList<>();
 
 	@Id
 	@GeneratedValue (strategy = GenerationType.IDENTITY)
@@ -37,9 +45,6 @@ public class EntityJob implements IJob, Serializable {
 
 	// list of file ids in workspace WHEN creating job, used to warn and prevent report gen if file is removed or updated(remove existing and add updated file as new entity when doing this)
 	private long[] filesPresent;
-
-	@OneToMany (mappedBy = "job", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private List<EntityTask> tasks = new ArrayList<>();
 
 	@OneToOne (mappedBy = "job", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private EntityResultJob results = null;

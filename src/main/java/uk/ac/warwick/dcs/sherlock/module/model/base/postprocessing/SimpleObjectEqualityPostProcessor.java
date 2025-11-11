@@ -6,7 +6,9 @@ import uk.ac.warwick.dcs.sherlock.api.exception.UnknownDetectionTypeException;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.IPostProcessor;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.ModelTaskProcessedResults;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class SimpleObjectEqualityPostProcessor implements IPostProcessor<SimpleObjectEqualityRawResult> {
 

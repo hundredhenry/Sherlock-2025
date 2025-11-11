@@ -1,6 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.api.component;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Interface for accessing data from a single submission, this contains many files and might contain many child submission, which represent directories within the submission

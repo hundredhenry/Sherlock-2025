@@ -1,6 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.api.report;
 
-import java.util.*;
+import java.util.List;
 
 public interface ISubmissionMatchGroup<T extends ISubmissionMatch> {
 

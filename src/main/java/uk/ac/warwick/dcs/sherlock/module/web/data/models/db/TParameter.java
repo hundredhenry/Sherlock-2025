@@ -10,7 +10,7 @@ import jakarta.persistence.*;
 public class TParameter {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "parameter_seq")
     @Column(name="id")
     private long id;
 

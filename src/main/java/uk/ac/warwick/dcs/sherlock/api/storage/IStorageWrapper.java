@@ -7,7 +7,7 @@ import uk.ac.warwick.dcs.sherlock.api.exception.WorkspaceUnsupportedException;
 import uk.ac.warwick.dcs.sherlock.api.report.IReportManager;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Storage module interface, defines a storage implementation, should be self contained and fully manage stored data

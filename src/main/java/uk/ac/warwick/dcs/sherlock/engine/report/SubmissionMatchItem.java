@@ -4,7 +4,7 @@ import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.report.ISubmissionMatchItem;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Stored by SubmissionMatch to ensure data for a given file remains together.

@@ -7,6 +7,7 @@ import uk.ac.warwick.dcs.sherlock.api.component.ITask;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 
@@ -16,6 +17,7 @@ import java.util.*;
 @Entity (name = "ResultTask")
 public class EntityResultTask implements IResultTask, Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	@ManyToOne

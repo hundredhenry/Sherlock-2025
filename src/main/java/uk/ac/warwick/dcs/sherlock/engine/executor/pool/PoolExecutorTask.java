@@ -1,6 +1,7 @@
 package uk.ac.warwick.dcs.sherlock.engine.executor.pool;
 
-import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
+import uk.ac.warwick.dcs.sherlock.api.component.ITask;
+import uk.ac.warwick.dcs.sherlock.api.component.WorkStatus;
 import uk.ac.warwick.dcs.sherlock.api.exception.UnknownDetectionTypeException;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.DetectorWorker;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.IDetector;
@@ -9,8 +10,7 @@ import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.AbstractModelTaskRawR
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.IPostProcessor;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.ModelTaskProcessedResults;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy;
-import uk.ac.warwick.dcs.sherlock.api.component.ITask;
-import uk.ac.warwick.dcs.sherlock.api.component.WorkStatus;
+import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
 import uk.ac.warwick.dcs.sherlock.engine.executor.JobStatus;
 import uk.ac.warwick.dcs.sherlock.engine.executor.common.ExecutorUtils;
 import uk.ac.warwick.dcs.sherlock.engine.executor.common.IPriorityWorkSchedulerWrapper;
@@ -19,27 +19,29 @@ import uk.ac.warwick.dcs.sherlock.engine.executor.work.IWorkTask;
 import uk.ac.warwick.dcs.sherlock.engine.executor.work.WorkDetect;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.stream.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
+
+import org.eclipse.angus.mail.imap.protocol.ID;
 
 /**
  * executor which handles task wide stuff
  */
 public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IWorkTask {
 
+	private final IPriorityWorkSchedulerWrapper scheduler;
+	private final JobStatus status;
+	private final ITask task;
+	private final String language;
 	List<ModelDataItem> dataItems;
 	int callType;
-
-	private IPriorityWorkSchedulerWrapper scheduler;
-	private JobStatus status;
-
-	private ITask task;
-	private String language;
 	private List<PreProcessingStrategy> preProcessingStrategies;
 
 	private List<DetectorWorker> workers;
-	private IDetector detector;
 
 	PoolExecutorTask(JobStatus jobStatus, IPriorityWorkSchedulerWrapper scheduler, ITask task, String language) {
 		this.callType = 1;
@@ -109,18 +111,19 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 	}
 
 	void build() {
+		IDetector detector;
 		try {
-			this.detector = this.task.getDetector().getConstructor().newInstance();
+			detector = this.task.getDetector().getConstructor().newInstance();
 		}
 		catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
 			e.printStackTrace();
 			return;
 		}
 
-		ExecutorUtils.processAdjustableParameters(this.detector, this.task.getParameterMapping());
+		ExecutorUtils.processAdjustableParameters(detector, this.task.getParameterMapping());
 
 		try {
-			this.workers = this.detector.buildWorkers(this.dataItems);
+			this.workers = detector.buildWorkers(this.dataItems);
 		}
 		catch (Exception e) {
 			e.printStackTrace();

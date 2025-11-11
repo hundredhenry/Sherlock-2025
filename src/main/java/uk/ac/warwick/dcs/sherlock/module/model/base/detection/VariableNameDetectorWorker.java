@@ -6,7 +6,8 @@ import uk.ac.warwick.dcs.sherlock.api.model.detection.ModelDataItem;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.PairwiseDetectorWorker;
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.SimpleObjectEqualityRawResult;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 
 public class VariableNameDetectorWorker extends PairwiseDetectorWorker<SimpleObjectEqualityRawResult<String>> {
 

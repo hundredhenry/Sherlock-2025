@@ -10,7 +10,7 @@ import jakarta.persistence.*;
 public class Workspace {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "workspace_seq")
     @Column(name="id")
     private long id;
 

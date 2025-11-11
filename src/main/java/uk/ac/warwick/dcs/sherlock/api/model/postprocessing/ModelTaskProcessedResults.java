@@ -6,8 +6,10 @@ import uk.ac.warwick.dcs.sherlock.api.exception.UnknownDetectionTypeException;
 import uk.ac.warwick.dcs.sherlock.api.util.SherlockHelper;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.stream.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Processed results for a task (for a single IDetector instance)

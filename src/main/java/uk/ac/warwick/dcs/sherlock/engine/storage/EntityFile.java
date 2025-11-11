@@ -8,9 +8,12 @@ import uk.ac.warwick.dcs.sherlock.engine.storage.BaseStorageFilesystem.IStorable
 
 import jakarta.persistence.*;
 import java.io.InputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 /**
  * ISourceFile object for base storage implementation
@@ -18,6 +21,7 @@ import java.util.*;
 @Entity (name = "File")
 public class EntityFile implements ISourceFile, IStorable, Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	@Id

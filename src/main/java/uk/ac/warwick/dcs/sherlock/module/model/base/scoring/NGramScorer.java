@@ -5,25 +5,27 @@ import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
 import uk.ac.warwick.dcs.sherlock.module.model.base.detection.NgramMatch;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
  */
 public class NGramScorer {
 
-	private float threshold;
-
-	// the list of files in the current match group
-	public ArrayList<ISourceFile> file_list;		// public to allow use in external loops
-	// The scoring info for each file
-	private ArrayList<FileInfo> file_info;
+	private final float threshold;
 
 	// List to store file pairs by file index
 	// the list of matched pair object groups (depreciated, was used in general score function)
-	private ArrayList<MatchList> file_matches;
+	private final ArrayList<MatchList> file_matches;
 	// the list of each file the above groups should be attached to (likewise depreciated)
-	private ArrayList<ISourceFile> match_list;
+	private final ArrayList<ISourceFile> match_list;
+
+	// the list of files in the current match group
+	public ArrayList<ISourceFile> file_list;		// public to allow use in external loops
+
+	// The scoring info for each file
+	private ArrayList<FileInfo> file_info;
 
 	/**
 	 * Object constructor.

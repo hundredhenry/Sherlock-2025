@@ -9,8 +9,12 @@ import uk.ac.warwick.dcs.sherlock.api.model.detection.DetectionType;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
 import jakarta.persistence.Entity;
+import java.io.Serial;
 import java.io.Serializable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * ICodeBlockGroup object for base storage implementation
@@ -19,6 +23,7 @@ import java.util.*;
 @Entity (name = "CodeBlockGroup")
 public class EntityCodeBlockGroup implements ICodeBlockGroup, Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	Map<Long, EntityCodeBlock> blockMap;

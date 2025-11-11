@@ -1,6 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.api.component;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Workspace object groups, submission, jobs, results. Is top level access to all database objects

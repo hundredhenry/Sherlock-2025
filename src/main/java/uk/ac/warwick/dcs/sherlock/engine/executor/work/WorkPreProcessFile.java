@@ -14,20 +14,23 @@ import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.StandardTokeni
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.RecursiveAction;
 
 /**
  * Recursive task to preprocess a list of files for a single task
  */
 public class WorkPreProcessFile extends RecursiveAction {
 
-	private List<IWorkTask> tasks;
-	private int begin;
-	private int end;
+	private final List<IWorkTask> tasks;
+	private final int begin;
+	private final int end;
 
-	private ISourceFile file;
-	private String fileContent;
+	private final ISourceFile file;
+	private final String fileContent;
 
 	WorkPreProcessFile(List<IWorkTask> tasks, ISourceFile file) {
 		this(tasks, 0, tasks.size(), file, file.getFileContentsAsString());

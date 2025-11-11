@@ -2,7 +2,7 @@ package uk.ac.warwick.dcs.sherlock.api.executor;
 
 import uk.ac.warwick.dcs.sherlock.api.component.IJob;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Execution Module interface, defines an execution scheme

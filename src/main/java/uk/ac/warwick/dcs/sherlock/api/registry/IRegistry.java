@@ -1,6 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.api.registry;
 
-import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.Lexer;
 import uk.ac.warwick.dcs.sherlock.api.annotation.AdjustableParameterObj;
 import uk.ac.warwick.dcs.sherlock.api.exception.UnknownDetectionTypeException;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.DetectionType;
@@ -13,7 +13,8 @@ import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.IGeneralPreProcessor;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Interface to define API access to the registry via the static wrapper

@@ -3,15 +3,17 @@ package uk.ac.warwick.dcs.sherlock.api.model.detection;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.util.IndexedString;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Object to store the preprocessed data passed to the detector
  */
 public class ModelDataItem {
 
-	private ISourceFile file;
-	private Map<String, List<IndexedString>> mapping;
+	private final ISourceFile file;
+	private final Map<String, List<IndexedString>> mapping;
 
 	/**
 	 * Build data item for file

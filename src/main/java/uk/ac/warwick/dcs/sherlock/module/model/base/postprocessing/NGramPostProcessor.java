@@ -9,7 +9,8 @@ import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.IPostProcessor;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.ModelTaskProcessedResults;
 import uk.ac.warwick.dcs.sherlock.module.model.base.scoring.NGramScorer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 

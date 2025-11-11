@@ -1,11 +1,11 @@
 package uk.ac.warwick.dcs.sherlock.engine.executor;
 
+import jakarta.validation.constraints.NotNull;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import uk.ac.warwick.dcs.sherlock.api.executor.IJobStatus;
 import uk.ac.warwick.dcs.sherlock.engine.executor.common.AtomicFloat;
 import uk.ac.warwick.dcs.sherlock.engine.executor.common.Priority;
 
-import jakarta.validation.constraints.NotNull;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -18,10 +18,10 @@ public class JobStatus implements IJobStatus {
 	private static final float[] stageProgCap = { 0f, 0f, 0.06f, 0.12f, 0.7f, 0.8f, 1.0f, 1.0f, 0f };
 	private final AtomicFloat progress = new AtomicFloat();
 	private final AtomicFloat progressIncrement = new AtomicFloat();
-	private int id;
+	private final int id;
+	private final Priority priority;
 	private Instant startTime;
 	private Duration duration;
-	private Priority priority;
 	private int step;
 	private String message;
 
