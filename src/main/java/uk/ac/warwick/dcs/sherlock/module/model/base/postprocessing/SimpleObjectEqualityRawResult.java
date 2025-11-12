@@ -82,7 +82,7 @@ public class SimpleObjectEqualityRawResult<T extends Serializable> extends Abstr
 
 	public void put(T object, int file1BlockStart, int file1BlockEnd, int file2BlockStart, int file2BlockEnd) {
 		if (this.objects.size() != this.size || this.locations.size() != this.size) {
-			System.out.println("not sized");
+			System.out.println("not sized (SimpleObjectEqualityRawResult)");
 			return;
 		}
 

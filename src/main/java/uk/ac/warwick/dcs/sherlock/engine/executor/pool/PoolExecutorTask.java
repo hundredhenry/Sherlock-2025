@@ -145,7 +145,6 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 
 	private void runDetector() {
 		try {
-
 			int threshold = Math.min(Math.max(this.workers.size() / Runtime.getRuntime().availableProcessors(), 1), 4); //set min and max num workers in a thread
 
 			WorkDetect detect = new WorkDetect(this.status, this.workers, threshold);

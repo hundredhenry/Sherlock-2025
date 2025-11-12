@@ -388,7 +388,9 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 			}
 
 			// data of type Serializable, essentially raw data stored as a variable.
-			this.result = res;
+			this.result = res; 
+			System.out.println("RESULT:"); // NEW-CHANGE
+			System.out.println(this.result); // DISPLAY CHECK	
 		}
 	}
 

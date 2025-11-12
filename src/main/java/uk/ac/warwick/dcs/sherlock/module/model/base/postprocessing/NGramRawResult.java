@@ -115,9 +115,9 @@ public class NGramRawResult<T extends Serializable> extends AbstractModelTaskRaw
 	 */
 	public void put(T object, int file1BlockStart, int file1BlockEnd, int file2BlockStart, int file2BlockEnd) {
 		if (this.objects.size() != this.size || this.locations.size() != this.size) {
-			System.out.println("not sized");
+			System.out.println(String.format("Object Size [%d], Location Size [%d], This Size [%d] not sized (NGramRawResult)",this.objects.size(), this.locations.size(), this.size)); // NEW-CHANGE
 			return;
-		}
+		} 
 
 		this.objects.add(object);
 		this.locations.add(new PairedTuple<>(file1BlockStart, file1BlockEnd, file2BlockStart, file2BlockEnd));
@@ -154,6 +154,10 @@ public class NGramRawResult<T extends Serializable> extends AbstractModelTaskRaw
 	@Override
 	public String toString() {
 		StringBuilder str = new StringBuilder();
+		if (this.size != this.objects.size() || this.size != this.locations.size()) {
+			System.err.printf("[toString() MISMATCH] objects=%d, locations=%d, size=%d%n",
+				this.objects.size(), this.locations.size(), this.size);
+		} // NEW-CHANGE
 		for (int i = 0; i < this.size; i++) {
 			str.append(this.objects.get(i).toString()).append(" - ").append(this.locations.get(i).toString()).append("\n");
 		}
