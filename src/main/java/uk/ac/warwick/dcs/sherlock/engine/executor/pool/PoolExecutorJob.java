@@ -1,15 +1,12 @@
 package uk.ac.warwick.dcs.sherlock.engine.executor.pool;
 
-import uk.ac.warwick.dcs.sherlock.api.component.ICodeBlock;
-import uk.ac.warwick.dcs.sherlock.api.component.ICodeBlockGroup;
-import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
+import uk.ac.warwick.dcs.sherlock.api.component.*;
 import uk.ac.warwick.dcs.sherlock.api.exception.UnknownDetectionTypeException;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.DetectionType;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.ModelTaskProcessedResults;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
 import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
-import uk.ac.warwick.dcs.sherlock.api.component.*;
 import uk.ac.warwick.dcs.sherlock.engine.executor.JobStatus;
 import uk.ac.warwick.dcs.sherlock.engine.executor.common.ExecutorUtils;
 import uk.ac.warwick.dcs.sherlock.engine.executor.common.IPriorityWorkSchedulerWrapper;
@@ -19,17 +16,17 @@ import uk.ac.warwick.dcs.sherlock.engine.executor.work.WorkPreProcessFiles;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
-import java.util.stream.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * Executor which handles job wide tasks, uses 1 task executor per task
  */
 public class PoolExecutorJob implements Runnable {
 
-	private IPriorityWorkSchedulerWrapper scheduler;
-	private IJob job;
-	private JobStatus status;
+	private final IPriorityWorkSchedulerWrapper scheduler;
+	private final IJob job;
+	private final JobStatus status;
 
 	public PoolExecutorJob(IPriorityWorkSchedulerWrapper scheduler, IJob job, JobStatus status) {
 		this.scheduler = scheduler;

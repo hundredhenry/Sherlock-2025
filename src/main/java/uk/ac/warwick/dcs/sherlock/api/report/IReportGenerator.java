@@ -4,7 +4,7 @@ import uk.ac.warwick.dcs.sherlock.api.component.ICodeBlockGroup;
 import uk.ac.warwick.dcs.sherlock.api.component.ISubmission;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Implementations of this interface are used by the Report Manager to generate reports for files where plagiarism is suspected (though it can be run for any file in principle).

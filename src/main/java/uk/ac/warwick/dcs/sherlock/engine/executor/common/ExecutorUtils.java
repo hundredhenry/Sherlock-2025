@@ -2,13 +2,15 @@ package uk.ac.warwick.dcs.sherlock.engine.executor.common;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.warwick.dcs.sherlock.api.util.SherlockHelper;
 import uk.ac.warwick.dcs.sherlock.api.annotation.AdjustableParameter;
-import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
 import uk.ac.warwick.dcs.sherlock.api.executor.IExecutor;
+import uk.ac.warwick.dcs.sherlock.api.util.SherlockHelper;
+import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * Various executor utilities
@@ -48,7 +50,7 @@ public class ExecutorUtils {
 					return;
 				}
 
-				if (val > x.getValue()[0].maxumumBound() || val < x.getValue()[0].minimumBound()) {
+				if (val > x.getValue()[0].maximumBound() || val < x.getValue()[0].minimumBound()) {
 					synchronized (logger) {
 						logger.error("Trying to assign an out of bounds value to adjustable parameter {}", ref);
 					}

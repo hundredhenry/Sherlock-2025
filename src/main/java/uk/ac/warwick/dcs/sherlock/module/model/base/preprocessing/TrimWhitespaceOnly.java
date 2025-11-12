@@ -1,10 +1,13 @@
 package uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing;
 
-import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.CommonToken;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.Vocabulary;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.ILexerSpecification;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.IGeneralPreProcessor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TrimWhitespaceOnly implements IGeneralPreProcessor {
 

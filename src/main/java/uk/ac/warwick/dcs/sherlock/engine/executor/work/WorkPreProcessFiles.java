@@ -2,19 +2,19 @@ package uk.ac.warwick.dcs.sherlock.engine.executor.work;
 
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.List;
+import java.util.concurrent.RecursiveAction;
 
 /**
  * recursive task to preprocess a list of tasks for a list of files
  */
 public class WorkPreProcessFiles extends RecursiveAction {
 
-	private List<IWorkTask> tasks;
+	private final List<IWorkTask> tasks;
 
-	private List<ISourceFile> files;
-	private int begin;
-	private int end;
+	private final List<ISourceFile> files;
+	private final int begin;
+	private final int end;
 
 	public WorkPreProcessFiles(List<IWorkTask> tasks, List<ISourceFile> files) {
 		this(tasks, files, 0, files.size());

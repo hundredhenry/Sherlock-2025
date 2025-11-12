@@ -9,7 +9,8 @@ import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.IPostProcessor;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.ModelTaskProcessedResults;
 import uk.ac.warwick.dcs.sherlock.module.model.base.scoring.NGramScorer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 
@@ -23,7 +24,7 @@ public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 	 *     Comparison is less than or equal to, so to deactivate set to 1
 	 * </p>
 	 */
-	@AdjustableParameter (name = "Common Threshold", defaultValue = 0.3f, minimumBound = 0.0f, maxumumBound = 1.0f, step = 0.001f, description = "If a section of code appears in more than this % of the files it will be ignored. Used to remove skeleton and common code.")
+	@AdjustableParameter (name = "Common Threshold", defaultValue = 0.3f, minimumBound = 0.0f, maximumBound = 1.0f, step = 0.001f, description = "If a section of code appears in more than this % of the files it will be ignored. Used to remove skeleton and common code.")
 	public float threshold;
 
 	/**

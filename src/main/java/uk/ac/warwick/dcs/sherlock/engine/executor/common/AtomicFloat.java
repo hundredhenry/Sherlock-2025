@@ -1,6 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.engine.executor.common;
 
-import java.util.concurrent.atomic.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Float.floatToIntBits;
 import static java.lang.Float.intBitsToFloat;
@@ -10,7 +10,7 @@ import static java.lang.Float.intBitsToFloat;
  */
 public class AtomicFloat extends Number {
 
-	private AtomicInteger bits;
+	private final AtomicInteger bits;
 
 	public AtomicFloat() {
 		this(0f);

@@ -9,11 +9,11 @@ import java.lang.reflect.Field;
  */
 public class AdjustableParameterObj {
 
-	private AdjustableParameter param;
-	private String name;
-	private String reference;
-	private boolean isInt;
-	private boolean isFixed;
+	private final AdjustableParameter param;
+	private final String name;
+	private final String reference;
+	private final boolean isInt;
+	private final boolean isFixed;
 
 	public AdjustableParameterObj(AdjustableParameter param, Field field, boolean isFixed) {
 		this.param = param;
@@ -56,7 +56,7 @@ public class AdjustableParameterObj {
 	 * @return the max bound
 	 */
 	public float getMaximumBound() {
-		return this.param.maxumumBound();
+		return this.param.maximumBound();
 	}
 
 	/**

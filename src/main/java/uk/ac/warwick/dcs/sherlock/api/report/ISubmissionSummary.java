@@ -2,7 +2,7 @@ package uk.ac.warwick.dcs.sherlock.api.report;
 
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
-import java.util.*;
+import java.util.List;
 
 public interface ISubmissionSummary {
 

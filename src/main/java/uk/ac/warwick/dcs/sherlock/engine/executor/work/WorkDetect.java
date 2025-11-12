@@ -4,20 +4,22 @@ import uk.ac.warwick.dcs.sherlock.api.model.detection.DetectorWorker;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.AbstractModelTaskRawResult;
 import uk.ac.warwick.dcs.sherlock.engine.executor.JobStatus;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.RecursiveTask;
 
 /**
  * Recursive task to run detectors
  */
 public class WorkDetect extends RecursiveTask<List<AbstractModelTaskRawResult>> {
 
-	private JobStatus status;
+	private final JobStatus status;
 
-	private List<DetectorWorker> workers;
-	private int threshold;
-	private int begin;
-	private int end;
+	private final List<DetectorWorker> workers;
+	private final int threshold;
+	private final int begin;
+	private final int end;
 
 	private List<AbstractModelTaskRawResult> result;
 

@@ -7,10 +7,6 @@
     
     <persistence-unit name="objectdb" transaction-type="RESOURCE_LOCAL">
         <provider>com.objectdb.jpa.Provider</provider>
-        <properties>
-            <property name="jakarta.persistence.jdbc.user" value="admin"/>
-            <property name="jakarta.persistence.jdbc.password" value="admin"/>
-        </properties>
     </persistence-unit>
     
 </persistence>

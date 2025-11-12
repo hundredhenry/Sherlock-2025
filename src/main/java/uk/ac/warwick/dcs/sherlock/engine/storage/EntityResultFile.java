@@ -6,8 +6,12 @@ import uk.ac.warwick.dcs.sherlock.api.component.IResultTask;
 import uk.ac.warwick.dcs.sherlock.api.component.ITask;
 
 import jakarta.persistence.*;
+import java.io.Serial;
 import java.io.Serializable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * IResultFile object for base storage implementation
@@ -15,6 +19,7 @@ import java.util.*;
 @Entity (name = "ResultFile")
 public class EntityResultFile implements IResultFile, Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	@ManyToOne

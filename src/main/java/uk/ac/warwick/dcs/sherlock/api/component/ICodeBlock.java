@@ -2,7 +2,7 @@ package uk.ac.warwick.dcs.sherlock.api.component;
 
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Interface for storing a single block of code flagged by a detector as suspected plagiarism.

@@ -4,8 +4,13 @@ import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy;
 import uk.ac.warwick.dcs.sherlock.engine.executor.common.ExecutorUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.stream.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * An abstract IDetector implementation which constructs an individual, parallel worker for each combination of files in the dataset. This can be used as a base for pairwise matching algorithms.
@@ -17,7 +22,7 @@ public class PairwiseDetector<T extends PairwiseDetectorWorker> extends Detector
 	/**
 	 * Class object for the generic type of this detector's worker
 	 */
-	private Class<T> typeArgumentClass;
+	private final Class<T> typeArgumentClass;
 
 	/**
 	 * {@link IDetector} implementation which automatically builds a worker for each possible combination of the source files passed

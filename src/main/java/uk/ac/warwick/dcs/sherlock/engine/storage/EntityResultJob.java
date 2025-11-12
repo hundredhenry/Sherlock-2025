@@ -5,8 +5,11 @@ import uk.ac.warwick.dcs.sherlock.api.component.IResultFile;
 import uk.ac.warwick.dcs.sherlock.api.component.IResultJob;
 
 import jakarta.persistence.*;
+import java.io.Serial;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * IResultJob object for base storage implementation
@@ -14,6 +17,7 @@ import java.util.*;
 @Entity (name = "ResultJob")
 public class EntityResultJob implements IResultJob, Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	@Id

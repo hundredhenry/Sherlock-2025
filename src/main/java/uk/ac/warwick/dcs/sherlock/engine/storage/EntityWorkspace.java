@@ -6,9 +6,13 @@ import uk.ac.warwick.dcs.sherlock.api.component.ISubmission;
 import uk.ac.warwick.dcs.sherlock.api.component.IWorkspace;
 
 import jakarta.persistence.*;
+import java.io.Serial;
 import java.io.Serializable;
-import java.util.*;
-import java.util.stream.*;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * IWorkspace object for base storage implementation
@@ -16,6 +20,7 @@ import java.util.stream.*;
 @Entity (name = "Workspace")
 public class EntityWorkspace implements IWorkspace, Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	@Id

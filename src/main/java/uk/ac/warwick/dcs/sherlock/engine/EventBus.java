@@ -12,9 +12,11 @@ import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.stream.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Event bus API implementation, publishes events to listeners
@@ -22,7 +24,7 @@ import java.util.stream.*;
 class EventBus implements IEventBus {
 
 	final Logger logger = LoggerFactory.getLogger(EventBus.class);
-	private Map<Class<? extends IEvent>, List<EventInvocation>> eventMap;
+	private final Map<Class<? extends IEvent>, List<EventInvocation>> eventMap;
 
 	EventBus() {
 		this.eventMap = new ConcurrentHashMap<>();
@@ -69,7 +71,7 @@ class EventBus implements IEventBus {
 		try {
 			Object obj = module.getConstructor().newInstance();
 
-			List<Field> field = Arrays.stream(module.getDeclaredFields()).filter(x -> x.isAnnotationPresent(SherlockModule.Instance.class)).collect(Collectors.toList());
+			List<Field> field = Arrays.stream(module.getDeclaredFields()).filter(x -> x.isAnnotationPresent(SherlockModule.Instance.class)).toList();
 			if (field.size() == 1) {
 				field.get(0).setAccessible(true);
 				field.get(0).set(obj, obj);

@@ -5,7 +5,7 @@ import uk.ac.warwick.dcs.sherlock.api.model.detection.ModelDataItem;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy;
 import uk.ac.warwick.dcs.sherlock.engine.executor.JobStatus;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Access interface for work tasks

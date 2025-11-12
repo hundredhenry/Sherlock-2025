@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class TDetector {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "detector_seq")
     @Column(name="id")
     private long id;
 

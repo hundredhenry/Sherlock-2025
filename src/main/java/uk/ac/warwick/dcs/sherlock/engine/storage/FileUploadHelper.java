@@ -22,7 +22,7 @@ import java.util.*;
  */
 class FileUploadHelper {
 
-	private static String[] archiveExs = { "zip", "tar", "tgz" };
+	private static final String[] archiveExs = { "zip", "tar", "tgz" };
 
 	private static EntityArchive createSubmission(EntityWorkspace workspace, String filename, List<ITuple<ISubmission, ISubmission>> ret) {
 		try {

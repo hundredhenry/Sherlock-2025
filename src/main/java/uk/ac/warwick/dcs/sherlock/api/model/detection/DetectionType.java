@@ -7,7 +7,9 @@ import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
  */
 public class DetectionType {
 
-	private String identifier, displayName, reason;
+	private String identifier;
+	private String displayName;
+	private String reason;
 	private double weighting;
 
 	public DetectionType(String identifier, String displayName, String reason, double weighting) {

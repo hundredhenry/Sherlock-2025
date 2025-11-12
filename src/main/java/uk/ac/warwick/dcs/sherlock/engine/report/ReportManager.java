@@ -29,27 +29,27 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 	/**
 	 * Contains all the information needed to generate reports from.
 	 */
-	private IResultJob results;
+	private final IResultJob results;
 
 	/**
 	 * A map of all the individual files according to their persitent ids.
 	 */
-	private Map<Long, ISourceFile> fileMap;
+	private final Map<Long, ISourceFile> fileMap;
 
 	/**
 	 * Maps submission ids to a list of file ids contained by that submission.
 	 */
-	private Map<Long, List<Long>> submissionFileMap;
+	private final Map<Long, List<Long>> submissionFileMap;
 
 	/**
 	 * Maps submission ids to their overall scores
 	 */
-	private Map<Long, Float> submissionScores;
+	private final Map<Long, Float> submissionScores;
 
 	/**
 	 * Maps pairs of file ids to the relative scores between them
 	 */
-	private Map<List<Long>, Float> relativeFileScores;
+	private final Map<List<Long>, Float> relativeFileScores;
 
 	/**
 	 * The object used to generate the report information.

@@ -5,6 +5,7 @@ import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
+import org.reflections.util.FilterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.warwick.dcs.sherlock.api.annotation.SherlockModule;
@@ -12,8 +13,10 @@ import uk.ac.warwick.dcs.sherlock.api.annotation.SherlockModule;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
-import java.util.stream.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Responsible for all classloading and reflection
@@ -21,7 +24,7 @@ import java.util.stream.*;
 public class AnnotationLoader {
 
 	static final Logger logger = LoggerFactory.getLogger(AnnotationLoader.class);
-	private Reflections ref;
+	private final Reflections ref;
 
 	/**
 	 * Load modules from directory, and initialise the reflection
@@ -62,7 +65,7 @@ public class AnnotationLoader {
 					e.printStackTrace();
 				}
 				return null;
-			}).collect(Collectors.toList()));
+			}).toList());
 
 			//Load libs to
 			File libs = new File(FilenameUtils.separatorsToSystem(modulesPath + "libs/"));
@@ -91,7 +94,7 @@ public class AnnotationLoader {
 		config.addClassLoaders(SherlockEngine.classloader);
 		config.setUrls(moduleURLS);
 		config.setScanners(Scanners.SubTypes, Scanners.TypesAnnotated, Scanners.MethodsAnnotated);
-		config.filterInputsBy(input -> input != null && input.endsWith(".class"));
+		config.filterInputsBy(new FilterBuilder().includePattern(".*class"));
 		this.ref = new Reflections(config);
 	}
 

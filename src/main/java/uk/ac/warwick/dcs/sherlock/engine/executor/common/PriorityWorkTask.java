@@ -1,6 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.engine.executor.common;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ForkJoinTask;
 
 /**
  * Work task wrapper object

@@ -6,7 +6,8 @@ import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.util.PairedTuple;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Stores the set of match objects for a pair of inputted files.

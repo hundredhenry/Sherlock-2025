@@ -4,7 +4,8 @@ import uk.ac.warwick.dcs.sherlock.api.annotation.AdjustableParameterObj;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.IDetector;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.AbstractModelTaskRawResult;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Interface for object which stores an individual detector used in a detection job, including the parameter mapping for the specific task.

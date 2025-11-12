@@ -1,7 +1,10 @@
 package uk.ac.warwick.dcs.sherlock.engine.executor.common;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Comparator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  * Scheduler which does work in priority order
@@ -9,8 +12,8 @@ import java.util.concurrent.*;
 public class PriorityWorkScheduler {
 
 	private final PriorityBlockingQueue<PriorityWorkTask> priorityQueue;
-	private ForkJoinPool priorityWorkForkPool;
-	private ExecutorService priorityWorkScheduler;
+	private final ForkJoinPool priorityWorkForkPool;
+	private final ExecutorService priorityWorkScheduler;
 
 	public PriorityWorkScheduler() {
 		this(10);

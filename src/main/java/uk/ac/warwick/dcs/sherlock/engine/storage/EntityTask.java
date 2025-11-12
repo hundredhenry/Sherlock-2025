@@ -13,18 +13,22 @@ import uk.ac.warwick.dcs.sherlock.api.component.WorkStatus;
 import uk.ac.warwick.dcs.sherlock.engine.storage.BaseStorageFilesystem.IStorable;
 
 import jakarta.persistence.*;
+import java.io.Serial;
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * ITask object for base storage implementation
  */
 @Entity (name = "Task")
 public class EntityTask implements ITask, IStorable, Serializable {
-
+	
+	@Serial
 	private static final long serialVersionUID = 1L;
-	private static Logger logger = LoggerFactory.getLogger(EntityTask.class);
+	private static final Logger logger = LoggerFactory.getLogger(EntityTask.class);
 
 	@Id
 	@GeneratedValue (strategy = GenerationType.IDENTITY)

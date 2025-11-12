@@ -22,15 +22,16 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 import java.sql.Timestamp;
-import java.util.*;
-import java.util.stream.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Handles file system access stuff, encryption etc
  */
 public class BaseStorageFilesystem {
 
-	private static Logger logger = LoggerFactory.getLogger(BaseStorageFilesystem.class);
+	private static final Logger logger = LoggerFactory.getLogger(BaseStorageFilesystem.class);
 
 	/**
 	 * Loads a file from the filesystem

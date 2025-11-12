@@ -1,6 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.engine;
 
-import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.Lexer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.DumperOptions;
@@ -24,8 +24,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.stream.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Registry implementation, verifies and registers external and internal model components, languages, detection types.
@@ -36,15 +36,15 @@ public class Registry implements IRegistry {
 
 	private final Logger logger = LoggerFactory.getLogger(Registry.class);
 
-	private Map<String, LanguageData> languageRegistry;
-	private Map<String, DetectionType> detectionTypeRegistry;
+	private final Map<String, LanguageData> languageRegistry;
+	private final Map<String, DetectionType> detectionTypeRegistry;
 
-	private Map<Class<? extends IGeneralPreProcessor>, PreProcessorData> preProcessorRegistry;
-	private Map<String, AdvPreProcessorGroupData> advPreProcessorRegistry;
-	private Map<Class<? extends IDetector>, DetectorData> detectorRegistry;
-	private Map<Class<? extends AbstractModelTaskRawResult>, PostProcessorData> postProcRegistry;
+	private final Map<Class<? extends IGeneralPreProcessor>, PreProcessorData> preProcessorRegistry;
+	private final Map<String, AdvPreProcessorGroupData> advPreProcessorRegistry;
+	private final Map<Class<? extends IDetector>, DetectorData> detectorRegistry;
+	private final Map<Class<? extends AbstractModelTaskRawResult>, PostProcessorData> postProcRegistry;
 
-	private Map<PreProcessingStrategy, Map<String, Class<? extends Lexer>>> strategyLexerCache;
+	private final Map<PreProcessingStrategy, Map<String, Class<? extends Lexer>>> strategyLexerCache;
 
 	Registry() {
 		this.languageRegistry = new ConcurrentHashMap<>();
@@ -453,7 +453,7 @@ public class Registry implements IRegistry {
 					}
 
 					if (x.getKey().getType().equals(int.class)) {
-						float[] vals = { x.getValue()[0].defaultValue(), x.getValue()[0].maxumumBound(), x.getValue()[0].minimumBound(), x.getValue()[0].step() };
+						float[] vals = { x.getValue()[0].defaultValue(), x.getValue()[0].maximumBound(), x.getValue()[0].minimumBound(), x.getValue()[0].step() };
 						for (float f : vals) {
 							if (f % 1 != 0) {
 								logger.warn("Detector '{}' not registered, contains @DetectorParameter {} of type int, with a float parameter", tester.getDisplayName(), x.getKey().getName());
@@ -611,7 +611,7 @@ public class Registry implements IRegistry {
 					}
 
 					if (x.getKey().getType().equals(int.class)) {
-						float[] vals = { x.getValue()[0].defaultValue(), x.getValue()[0].maxumumBound(), x.getValue()[0].minimumBound(), x.getValue()[0].step() };
+						float[] vals = { x.getValue()[0].defaultValue(), x.getValue()[0].maximumBound(), x.getValue()[0].minimumBound(), x.getValue()[0].step() };
 						for (float f : vals) {
 							if (f % 1 != 0) {
 								logger.warn("PostProcessor '{}' not registered, contains @DetectorParameter {} of type int, with a float parameter", postProcessor.getName(), x.getKey().getName());

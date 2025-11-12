@@ -7,8 +7,11 @@ import uk.ac.warwick.dcs.sherlock.api.component.WorkStatus;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import java.io.Serial;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * ISubmission object for base storage implementation
@@ -16,29 +19,31 @@ import java.util.*;
 @Entity (name = "Archive")
 public class EntityArchive implements ISubmission, Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue (strategy = GenerationType.IDENTITY)
-	private long id;
+	@OneToMany (mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private final List<EntityArchive> children = new ArrayList<>();
 
-	private String name;
+	@OneToMany (mappedBy = "archive", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private final List<EntityFile> files = new ArrayList<>();
+
 	boolean pending;
-
-	@ManyToOne (fetch = FetchType.LAZY)
-	private EntityWorkspace workspace;
 
 	@Transient
 	EntityWorkspace pendingWorkspace;
 
+	@Id
+	@GeneratedValue (strategy = GenerationType.IDENTITY)
+	private long id;
+	
+	private String name;
+
+	@ManyToOne (fetch = FetchType.LAZY)
+	private EntityWorkspace workspace;
+
 	@ManyToOne (fetch = FetchType.LAZY)
 	private EntityArchive parent;
-
-	@OneToMany (mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private List<EntityArchive> children = new ArrayList<>();
-
-	@OneToMany (mappedBy = "archive", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private List<EntityFile> files = new ArrayList<>();
 
 	public EntityArchive() {
 		super();

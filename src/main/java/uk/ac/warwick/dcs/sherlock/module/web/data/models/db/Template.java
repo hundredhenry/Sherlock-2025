@@ -12,7 +12,7 @@ import java.util.Set;
 public class Template {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "template_seq")
     @Column(name="id")
     private long id;
 

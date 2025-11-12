@@ -1,7 +1,9 @@
 package uk.ac.warwick.dcs.sherlock.api.model.preprocessing;
 
-import java.util.*;
-import java.util.stream.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A construct to specify a named set of preprocessing steps.

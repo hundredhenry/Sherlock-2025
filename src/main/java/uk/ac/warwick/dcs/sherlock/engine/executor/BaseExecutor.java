@@ -10,8 +10,8 @@ import uk.ac.warwick.dcs.sherlock.engine.executor.pool.PoolExecutorJob;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
-import java.util.stream.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * Basic executor implementation
@@ -21,9 +21,9 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 	final Map<IJob, JobStatus> jobMap;
 
 	private final PriorityBlockingQueue<PoolExecutorJob> queue;
-	private PriorityWorkScheduler scheduler;
-	private ExecutorService exec;
-	private ExecutorService execScheduler;
+	private final PriorityWorkScheduler scheduler;
+	private final ExecutorService exec;
+	private final ExecutorService execScheduler;
 
 	private int curID;
 
@@ -218,9 +218,9 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 
 	private class JobDismisser implements Runnable {
 
-		private BaseExecutor executor;
-		private PoolExecutorJob job;
-		private long time;
+		private final BaseExecutor executor;
+		private final PoolExecutorJob job;
+		private final long time;
 
 		JobDismisser(BaseExecutor executor, PoolExecutorJob job) {
 			this.executor = executor;

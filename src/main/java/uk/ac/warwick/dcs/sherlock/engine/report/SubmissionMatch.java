@@ -2,7 +2,7 @@ package uk.ac.warwick.dcs.sherlock.engine.report;
 
 import uk.ac.warwick.dcs.sherlock.api.report.ISubmissionMatch;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Object to be sent to web report pages, detailing a particular match between files in different submissions.

@@ -1,7 +1,7 @@
 package uk.ac.warwick.dcs.sherlock.api.component;
 
 import java.io.InputStream;
-import java.util.*;
+import java.util.List;
 
 /**
  * Interface for accessing the data from an individual source file from a submission
