@@ -156,8 +156,10 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 					return;
 				}
 			}
-
+			
+			System.out.println("Raw results before filtering: " + rawResults.size());
 			rawResults = rawResults.stream().filter(Objects::nonNull).filter(x -> !x.isEmpty()).collect(Collectors.toList());
+			System.out.println("Raw results after filtering: " + rawResults.size());
 			if (rawResults.size() > 0) {
 
 				// validate the raw result types, are they all the same?
@@ -171,6 +173,7 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 
 				//Save the raw results
 				this.task.setRawResults(rawResults);
+				System.out.println("Saved raw results: " + rawResults.size());
 			}
 
 			this.task.setComplete();
@@ -186,6 +189,8 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 	private ModelTaskProcessedResults runPostProcessing() {
 		if (this.task.getStatus() == WorkStatus.COMPLETE) {
 			List<AbstractModelTaskRawResult> rawResults = task.getRawResults();
+			System.out.println("Post processing raw results: " + (rawResults != null ? rawResults.size() : 0));
+			System.out.println("post processing items: " + rawResults.toString());
 			if (rawResults != null && rawResults.size() > 0) {
 				try {
 					IPostProcessor postProcessor = SherlockRegistry.getPostProcessorInstance(rawResults.get(0).getClass());
@@ -198,6 +203,7 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 
 					ExecutorUtils.processAdjustableParameters(postProcessor, this.task.getParameterMapping());
 					ModelTaskProcessedResults processedResults = postProcessor.processResults(this.task.getJob().getWorkspace().getFiles(), rawResults);
+					System.out.println("Processed results: " + processedResults.getGroups().toString());
 					try {
 						if (processedResults.cleanGroups()) {
 							synchronized (ExecutorUtils.logger) {
