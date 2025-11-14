@@ -26,8 +26,6 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-import org.eclipse.angus.mail.imap.protocol.ID;
-
 /**
  * executor which handles task wide stuff
  */
