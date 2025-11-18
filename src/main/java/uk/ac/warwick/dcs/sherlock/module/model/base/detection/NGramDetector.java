@@ -32,7 +32,8 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 	 * Before this size is reached if the match ends then nothing is flagged.
 	 * </p>
 	 */
-	@AdjustableParameter (name = "Minimum Window", defaultValue = 5, minimumBound = 0, maximumBound = 20, step = 1, description = "The minimum number of N-grams that can be detected as a matched block. Character width of minimum block is N-gram size + minimum window - 1.")
+	// Original defaultValue = 5
+	@AdjustableParameter (name = "Minimum Window", defaultValue = 2, minimumBound = 0, maximumBound = 20, step = 1, description = "The minimum number of N-grams that can be detected as a matched block. Character width of minimum block is N-gram size + minimum window - 1.")
 	public int minimum_window;
 	/**
 	 * The threshold on the similarity value over which something is considered suspicious.
@@ -112,7 +113,6 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 			check.remove(check.size() - 1);
 		}
 		// if the last peak is before the minimum window size skip the match construction (ignore case)
-		System.out.println("minimum_window 2: " + minimum_window);
 		if (reference.size() >= minimum_window) {
 			// build an N-Gram match object to send to the post processor
 			NgramMatch temp =
@@ -265,7 +265,6 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 		 */
 		@Override
 		public void execute() {
-			minimum_window = 2;
 			// Gets each line as a string in the list, as returned by the specified preprocessor
 			ArrayList<IndexedString> linesF1 = new ArrayList<IndexedString>(this.file1.getPreProcessedLines("no_whitespace"));
 			ArrayList<IndexedString> linesF2 = new ArrayList<IndexedString>(this.file2.getPreProcessedLines("no_whitespace"));
@@ -279,9 +278,6 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 			// generate the N-grams for file 2 and load them into a list
 			ArrayList<Ngram> storage_list = new ArrayList<Ngram>();
 			loadNgramList(storage_list, linesF2);
-			// System.out.println("Storage Map: " + storage_map.toString());
-			// System.out.println("SPACE\nSPACE\nSPACE");
-			// System.out.println("Storage List: " + storage_list.toString());
 			// start of file check
 			Ngram substrObj;
 			ArrayList<Ngram> reference = new ArrayList<Ngram>();
@@ -384,22 +380,12 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 				}
 			}
 			// performs comparison if EOF for reference is reached
-			System.out.println("Ngrams in F1: " + storage_map.size());
-			System.out.println("Ngrams in F2: " + storage_list.size());
-			System.out.println("Comparison Value: " + compare(reference, check));
-			System.out.println("Threshold: " + threshold);
-			System.out.println("Reference Size: " + reference.size());
-			System.out.println("Reference List: " + reference.toString());
-			System.out.println("Minimum Window: " + minimum_window);
-			// REFERENCE SIZE IS LOWERRRR
 			if (compare(reference, check) > threshold && reference.size() >= minimum_window) {
 				// if at EOF there is a match then output it
 				matchFound(reference, check, head, last_peak, since_last_peak, this.file1.getFile(), this.file2.getFile());
 			}
 
 			// data of type Serializable, essentially raw data stored as a variable.
-			System.out.println("Final Matches: " + res.getSize());
-			System.out.println("Final Match Data: " + res.toString());
 			this.result = res;
 		}
 	}

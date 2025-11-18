@@ -9,6 +9,7 @@ import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.IPostProcessor;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.ModelTaskProcessedResults;
 import uk.ac.warwick.dcs.sherlock.module.model.base.scoring.NGramScorer;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -147,8 +148,15 @@ public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 	@Override
 	public ModelTaskProcessedResults processResults(List<ISourceFile> files, List<NGramRawResult> rawResults) {
 
+		float adjustedThreshold = threshold;
+
+		// If there are 2 or less files being compared, set threshold to at least 1 to avoid all matches being marked common
+		if (files.size() <= 2) {
+			adjustedThreshold = Math.max(1f, threshold);
+		}
+		
 		ModelTaskProcessedResults results = new ModelTaskProcessedResults();
-		NGramScorer scorer = new NGramScorer(threshold);
+		NGramScorer scorer = new NGramScorer(adjustedThreshold);
 
 		// A list of all match block groups
 		// Each group is stored as a sub list and has the same common code block
@@ -163,7 +171,6 @@ public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 
 		// make new group in results
 		ICodeBlockGroup out_group = results.addGroup();
-
 		// once all processing is done make and score each results object
 		makeScoreGroups(files, results, matches, out_group, scorer);
 
@@ -172,7 +179,6 @@ public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 			results.removeGroup(out_group);
 		}
 
-//		System.out.println("processResults");
 		return results;
 	}
 }
