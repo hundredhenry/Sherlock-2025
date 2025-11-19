@@ -1,6 +1,7 @@
 package uk.ac.warwick.dcs.sherlock.engine.executor;
 
 import uk.ac.warwick.dcs.sherlock.api.component.IJob;
+import java.util.concurrent.TimeUnit;
 import uk.ac.warwick.dcs.sherlock.api.component.WorkStatus;
 import uk.ac.warwick.dcs.sherlock.api.executor.IExecutor;
 import uk.ac.warwick.dcs.sherlock.api.executor.IJobStatus;
@@ -48,6 +49,10 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 					}
 
 					job.getStatus().startJob();
+
+					//TODO -- OLIVER: Fix race conditions within job run
+
+					//TimeUnit.SECONDS.sleep(5);
 
 					Future f = this.exec.submit(job);
 					f.get();
