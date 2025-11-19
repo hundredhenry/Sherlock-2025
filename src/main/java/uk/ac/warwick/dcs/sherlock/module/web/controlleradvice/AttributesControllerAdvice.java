@@ -122,14 +122,14 @@ public class AttributesControllerAdvice {
     }
 
     /**
-     * Sets the javascript url to the standard version when running the
-     * webdev profile and the minified in all other cases
+     * Sets the javascript url to the standard version when running the dev profile and 
+     * the minified in all other cases
      *
      * @param model holder for model attributes
      */
     @ModelAttribute
     public void addJsUrl(Model model) {
-        if (Arrays.asList(environment.getActiveProfiles()).contains("webdev")) {
+        if (Arrays.asList(environment.getActiveProfiles()).contains("dev")) {
             model.addAttribute("javascript", "default.js");
         } else {
             model.addAttribute("javascript", "default.min.js");

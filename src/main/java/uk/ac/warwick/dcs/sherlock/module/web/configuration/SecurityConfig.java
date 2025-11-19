@@ -135,7 +135,7 @@ public class SecurityConfig {
 							//Development mode - fixes access to h2 database console
 							auth.requestMatchers("/h2-console/**").permitAll();
 						}
-						auth.requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
+						auth.requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
 							.requestMatchers("/", "/terms", "/privacy", "/help/**").hasAuthority("USER")
 							.requestMatchers("/dashboard/**").hasAuthority("USER")
 							.requestMatchers("/account/**").hasAuthority(requiredRole)
@@ -151,7 +151,7 @@ public class SecurityConfig {
 						if (isDevMode) {
 							auth.requestMatchers("/h2-console/**").permitAll();
 						}
-						auth.requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
+						auth.requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
 							.requestMatchers("/", "/terms", "/privacy", "/help/**").permitAll()
 							.requestMatchers("/dashboard/**").hasAuthority("USER")
 							.requestMatchers("/account/**").hasAuthority(requiredRole)

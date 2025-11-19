@@ -5,7 +5,6 @@ plugins {
     id "java"
     id "antlr"
     id "war"
-    id "idea"
     id "org.springframework.boot" version "3.5.6"
     id "io.spring.dependency-management" version "1.1.7"
     id "org.ajoberstar.grgit" version "5.3.3"
@@ -88,26 +87,6 @@ dependencies {
 
 configurations.configureEach {
     exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-}
-
-idea {
-    module {
-        contentRoot = file("$projectDir")
-
-        sourceDirs += file("src/main/java")
-        sourceDirs += file("src/main/antlr")
-
-        testSources.from(file("src/test/java"))
-        testSources.from(file("src/webTest/java"))
-
-        resourceDirs += file("src/main/resources")
-
-        //generatedSourceDirs
-        generatedSourceDirs += layout.buildDirectory.dir("tmp/src/main/antlr").get().asFile
-
-        excludeDirs += layout.buildDirectory.dir("tmp/src/main/java").get().asFile
-        excludeDirs += layout.buildDirectory.dir("tmp/src/test/java").get().asFile
-    }
 }
 
 group = 'uk.ac.warwick.dcs.sherlock'
@@ -319,6 +298,7 @@ tasks.named('assemble') {
 
 tasks.named('bootRun') {
     mainClass = 'uk.ac.warwick.dcs.sherlock.launch.SherlockClient'
+    // Add -Doverride=True to jvmArgs to run as server
     jvmArgs = ["-Dspring.profiles.active=dev", "-Dspring.output.ansi.enabled=ALWAYS"]
 }
 
