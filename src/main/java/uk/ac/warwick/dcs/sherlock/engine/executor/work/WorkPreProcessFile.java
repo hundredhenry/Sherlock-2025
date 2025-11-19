@@ -63,9 +63,7 @@ public class WorkPreProcessFile extends RecursiveAction {
 					this.process(tasks.get(this.begin));
 				}
 				else {
-					synchronized (ExecutorUtils.logger) {
-						ExecutorUtils.logger.error("Strategy could not be preprocessed, no work tasks exist");
-					}
+					ExecutorUtils.logger.error("Strategy could not be preprocessed, no work tasks exist");
 				}
 			}
 		}
@@ -124,9 +122,7 @@ public class WorkPreProcessFile extends RecursiveAction {
 						map.put(strategy.getName(), stringifier.processTokens(tokens, lexer.getVocabulary()));
 					}
 					else {
-						synchronized (ExecutorUtils.logger) {
-							ExecutorUtils.logger.error("Strategy is not valid for the passed language, this should have been caught at startup!");
-						}
+						ExecutorUtils.logger.error("Strategy is not valid for the passed language, this should have been caught at startup!");
 					}
 				}
 				catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
