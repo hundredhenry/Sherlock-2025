@@ -84,7 +84,7 @@ public class EmbeddedDatabase {
 			try {
 				em.getTransaction().begin();
 				
-				// If the object is an EntityArchive, merge its workspace first
+				// If the object is an EntityArchive, merge its workkspace first
 				// to avoid foreign key constraint issues
 				if (obj instanceof EntityArchive) {
 					EntityArchive a = (EntityArchive) obj;
