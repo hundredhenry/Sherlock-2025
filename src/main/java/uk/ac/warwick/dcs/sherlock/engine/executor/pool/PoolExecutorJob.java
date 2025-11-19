@@ -64,9 +64,7 @@ public class PoolExecutorJob implements Runnable {
 			List<PoolExecutorTask> detTasks = tasks.stream().filter(x -> x.getStatus() != WorkStatus.COMPLETE).collect(Collectors.toList());
 
 			if (detTasks.isEmpty()) {
-				synchronized (ExecutorUtils.logger) {
-					ExecutorUtils.logger.error("Could not generate tasks for job {}, exiting", this.job.getPersistentId());
-				}
+				ExecutorUtils.logger.error("Could not generate tasks for job {}, exiting", this.job.getPersistentId());
 				job.setStatus(WorkStatus.INTERRUPTED);
 				return;
 			}
@@ -76,15 +74,11 @@ public class PoolExecutorJob implements Runnable {
 
 			// Check that preprocessing went okay
 			detTasks.stream().filter(x -> x.dataItems.size() == 0).peek(x -> {
-				synchronized (ExecutorUtils.logger) {
-					ExecutorUtils.logger.error("PreProcessing output for detector {} is empty, this detector will be ignored.", x.getDetector().getName());
-				}
+				ExecutorUtils.logger.error("PreProcessing output for detector {} is empty, this detector will be ignored.", x.getDetector().getName());
 			}).forEach(detTasks::remove);
 
 			if (detTasks.isEmpty()) {
-				synchronized (ExecutorUtils.logger) {
-					ExecutorUtils.logger.error("No detectors with valid preprocessing outputs for job {}, exiting", this.job.getPersistentId());
-				}
+				ExecutorUtils.logger.error("No detectors with valid preprocessing outputs for job {}, exiting", this.job.getPersistentId());
 				job.setStatus(WorkStatus.INTERRUPTED);
 				return;
 			}
@@ -199,9 +193,7 @@ public class PoolExecutorJob implements Runnable {
 			}
 		}
 		else {
-			synchronized (ExecutorUtils.logger) {
-				ExecutorUtils.logger.info("Job {} produced no results", job.getPersistentId());
-			}
+			ExecutorUtils.logger.info("Job {} produced no results", job.getPersistentId());
 		}
 
 		job.setStatus(WorkStatus.COMPLETE);

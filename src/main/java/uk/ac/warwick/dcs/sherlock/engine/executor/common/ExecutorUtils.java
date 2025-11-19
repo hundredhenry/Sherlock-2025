@@ -44,16 +44,12 @@ public class ExecutorUtils {
 				val = params.get(ref);
 
 				if (isInt && val % 1 != 0) {
-					synchronized (logger) {
-						logger.error("Trying to assign a float value to integer adjustable parameter {}", ref);
-					}
+					logger.error("Trying to assign a float value to integer adjustable parameter {}", ref);
 					return;
 				}
 
 				if (val > x.getValue()[0].maximumBound() || val < x.getValue()[0].minimumBound()) {
-					synchronized (logger) {
-						logger.error("Trying to assign an out of bounds value to adjustable parameter {}", ref);
-					}
+					logger.error("Trying to assign an out of bounds value to adjustable parameter {}", ref);
 					return;
 				}
 			}
@@ -73,9 +69,7 @@ public class ExecutorUtils {
 				}
 			}
 			catch (IllegalAccessException | IllegalArgumentException | NullPointerException e) {
-				synchronized (logger) {
-					logger.error("Could not set adjustable parameter", e);
-				}
+				logger.error("Could not set adjustable parameter", e);
 			}
 		});
 	}
