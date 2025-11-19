@@ -10,6 +10,7 @@ import uk.ac.warwick.dcs.sherlock.engine.executor.pool.PoolExecutorJob;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,7 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 	private final ExecutorService exec;
 	private final ExecutorService execScheduler;
 
-	private int curID;
+	private final AtomicInteger curID;
 
 	public BaseExecutor() {
 		this.scheduler = new PriorityWorkScheduler();
@@ -33,9 +34,9 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 		this.exec = Executors.newSingleThreadExecutor();
 		this.execScheduler = Executors.newSingleThreadExecutor();
 		this.queue = new PriorityBlockingQueue(5, Comparator.comparing(PoolExecutorJob::getPriority));
-		this.jobMap = new HashMap<>();
+		this.jobMap = new ConcurrentHashMap<>();
 
-		this.curID = 0; //counter for jobstatus ids
+		this.curID = new AtomicInteger(0); //counter for jobstatus ids
 
 		this.execScheduler.execute(() -> {
 			while (true) {
@@ -43,9 +44,7 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 					PoolExecutorJob job;
 					job = this.queue.take();
 
-					synchronized (ExecutorUtils.logger) {
-						ExecutorUtils.logger.info("Job {} starting", job.getId());
-					}
+					ExecutorUtils.logger.info("Job {} starting", job.getId());
 
 					job.getStatus().startJob();
 
@@ -60,9 +59,7 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 						thread.start();
 					}
 
-					synchronized (ExecutorUtils.logger) {
-						ExecutorUtils.logger.info("Job {} finished, took: {}", job.getId(), job.getStatus().getFormattedDuration());
-					}
+					ExecutorUtils.logger.info("Job {} finished, took: {}", job.getId(), job.getStatus().getFormattedDuration());
 				}
 				catch (InterruptedException | ExecutionException e) {
 					break;
@@ -73,38 +70,31 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 
 	@Override
 	public List<IJobStatus> getAllJobStatuses() {
-		List<IJobStatus> res;
-		synchronized (this.jobMap) {
-			res = new ArrayList<>(this.jobMap.values());
-		}
+		List<IJobStatus> res = new ArrayList<>(this.jobMap.values());
 		res.sort(IJobStatus::compareTo);
 		return res;
 	}
 
 	@Override
 	public IJob getJob(IJobStatus jobStatus) {
-		synchronized (this.jobMap) {
-			if (this.jobMap.containsValue(jobStatus)) {
-				AtomicReference<IJob> ret = new AtomicReference<>(null);
-				this.jobMap.forEach((job, status) -> {
-					if (jobStatus.equals(status)) {
-						ret.set(job);
-					}
-				});
+		if (this.jobMap.containsValue(jobStatus)) {
+			AtomicReference<IJob> ret = new AtomicReference<>(null);
+			this.jobMap.forEach((job, status) -> {
+				if (jobStatus.equals(status)) {
+					ret.set(job);
+				}
+			});
 
-				return ret.get();
-			}
-			else {
-				return null;
-			}
+			return ret.get();
+		}
+		else {
+			return null;
 		}
 	}
 
 	@Override
 	public IJobStatus getJobStatus(IJob job) {
-		synchronized (this.jobMap) {
-			return this.jobMap.getOrDefault(job, null);
-		}
+		return this.jobMap.getOrDefault(job, null);
 	}
 
 	@Override
@@ -138,44 +128,32 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 	@Override
 	public boolean submitJob(IJob job) {
 		if (job == null) {
-			synchronized (ExecutorUtils.logger) {
-				ExecutorUtils.logger.error("Job is null");
-			}
+			ExecutorUtils.logger.error("Job is null");
 			return false;
 		}
 
 		if (!job.isPrepared() || job.getStatus().equals(WorkStatus.NOT_PREPARED)) {
-			synchronized (ExecutorUtils.logger) {
-				ExecutorUtils.logger.error("Job {} has not been prepared", job.getPersistentId());
-			}
+			ExecutorUtils.logger.error("Job {} has not been prepared", job.getPersistentId());
 			return false;
 		}
 
 		if (job.getTasks().isEmpty()) {
-			synchronized (ExecutorUtils.logger) {
-				ExecutorUtils.logger.error("Job {} does not have any tasks", job.getPersistentId());
-			}
+			ExecutorUtils.logger.error("Job {} does not have any tasks", job.getPersistentId());
 			return false;
 		}
 
 		if (job.getFiles() == null || job.getFiles().length == 0) {
-			synchronized (ExecutorUtils.logger) {
-				ExecutorUtils.logger.error("Job {} workspace has no files", job.getPersistentId());
-			}
+			ExecutorUtils.logger.error("Job {} workspace has no files", job.getPersistentId());
 			return false;
 		}
 
-		JobStatus s = new JobStatus(curID++, Priority.DEFAULT);
-		synchronized (this.jobMap) {
-			this.jobMap.put(job, s);
-		}
+		JobStatus s = new JobStatus(curID.getAndIncrement(), Priority.DEFAULT);
+		this.jobMap.put(job, s);
 
 		PoolExecutorJob j = new PoolExecutorJob(this, job, s);
 		this.queue.add(j);
 
-		synchronized (ExecutorUtils.logger) {
-			ExecutorUtils.logger.info("Job {} added to queue", job.getPersistentId());
-		}
+		ExecutorUtils.logger.info("Job {} added to queue", job.getPersistentId());
 
 		return true;
 	}
@@ -192,10 +170,8 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 
 	private boolean dismissJob(IJob job, IJobStatus jobStatus) {
 		if (this.jobMap.containsKey(job) && jobStatus.isFinished()) {
-			synchronized (this.jobMap) {
-				this.jobMap.remove(job);
-				return true;
-			}
+			this.jobMap.remove(job);
+			return true;
 		}
 
 		return false;
@@ -232,9 +208,7 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 		public void run() {
 			try {
 				Thread.sleep(this.time);
-				synchronized (this.executor.jobMap) {
-					this.executor.jobMap.remove(this.job.getJob());
-				}
+				this.executor.jobMap.remove(this.job.getJob());
 			}
 			catch (InterruptedException e) {
 				e.printStackTrace();
