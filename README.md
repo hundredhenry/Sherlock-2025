@@ -13,13 +13,6 @@ User guide can be found at: https://github.com/DCS-Sherlock/Sherlock/wiki
   - JDK 25
   - Gradle (9.2.1 included in repo)
 
-
-## IDEA support
-The gradle project comes with IntelliJ IDEA support. To use: 
-
-```New project from existing sources -> Import project -> Import project from external model -> gradle -> uncheck "Create seperate module per source set"```
-
-
 ## Building
 To build Sherlock use `gradlew(.bat) build`.
 
