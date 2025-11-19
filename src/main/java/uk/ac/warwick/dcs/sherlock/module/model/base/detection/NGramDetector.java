@@ -45,11 +45,6 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 	public float threshold;
 
 	/**
-	 * The output object, stores all data to be sent to the postprocessing stage.
-	 */
-	NGramRawResult<NgramMatch> res;
-
-	/**
 	 * Sets meta data for the detector, along with providing the API with pointers to the Worker and the Preprocessing Strategy
 	 */
 	public NGramDetector() {
@@ -106,7 +101,7 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 	}
 
 	// add line markers
-	public void matchFound(ArrayList<Ngram> reference, ArrayList<Ngram> check, Ngram head, float last_peak, int since_last_peak, ISourceFile file1, ISourceFile file2) {
+	public void matchFound(NGramRawResult<NgramMatch> res, ArrayList<Ngram> reference, ArrayList<Ngram> check, Ngram head, float last_peak, int since_last_peak, ISourceFile file1, ISourceFile file2) {
 		// take out values back to the last peak
 		for (int i = 0; i < since_last_peak; i++) {
 			reference.remove(reference.size() - 1);
@@ -271,7 +266,7 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 			ArrayList<IndexedString> linesF2 = new ArrayList<IndexedString>(this.file2.getPreProcessedLines("no_whitespace"));
 
 			// make raw result output container
-			res = new NGramRawResult<>(this.file1.getFile(), this.file2.getFile());
+			NGramRawResult<NgramMatch> res = new NGramRawResult<>(this.file1.getFile(), this.file2.getFile());
 
 			// generate the N-grams for file 1 and load them into a hash map
 			HashMap<String, Ngram> storage_map = new HashMap<String, Ngram>();
@@ -370,7 +365,7 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 					// when the window is over the minimum and drops below the threshold
 					else if (reference.size() > minimum_window && sim_val < threshold) {
 						//						// send the data to construct a match object for the found match
-						matchFound(reference, check, head, last_peak, since_last_peak, this.file1.getFile(), this.file2.getFile());
+						matchFound(res, reference, check, head, last_peak, since_last_peak, this.file1.getFile(), this.file2.getFile());
 						// reset duplicate ngram ID
 						ngram_id = 0;
 						// set head to null so a new reference can be made
@@ -384,7 +379,7 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 			// performs comparison if EOF for reference is reached
 			if (compare(reference, check) > threshold && reference.size() >= minimum_window) {
 				// if at EOF there is a match then output it
-				matchFound(reference, check, head, last_peak, since_last_peak, this.file1.getFile(), this.file2.getFile());
+				matchFound(res, reference, check, head, last_peak, since_last_peak, this.file1.getFile(), this.file2.getFile());
 			}
 
 			// data of type Serializable, essentially raw data stored as a variable.
