@@ -83,7 +83,11 @@ public class EmbeddedDatabase {
 		else {
 			try {
 				em.getTransaction().begin();
+<<<<<<< HEAD
 			
+=======
+				
+>>>>>>> aa5029eb (Corrected spelling mistake in comment)
 				// If the object is an EntityArchive, merge its workspace first
 				// to avoid foreign key constraint issues
 				if (obj instanceof EntityArchive) {
