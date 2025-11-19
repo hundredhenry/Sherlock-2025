@@ -113,7 +113,7 @@ public class NGramRawResult<T extends Serializable> extends AbstractModelTaskRaw
 	 * @param file2BlockStart The start line of the block in File2.
 	 * @param file2BlockEnd The end line of the block in File2.
 	 */
-	public void put(T object, int file1BlockStart, int file1BlockEnd, int file2BlockStart, int file2BlockEnd) {
+	public synchronized void put(T object, int file1BlockStart, int file1BlockEnd, int file2BlockStart, int file2BlockEnd) {
 		if (this.objects.size() != this.size || this.locations.size() != this.size) {
 			System.out.println(String.format("Object Size [%d], Location Size [%d], This Size [%d] not sized (NGramRawResult)",this.objects.size(), this.locations.size(), this.size)); // NEW-CHANGE
 			return;
