@@ -81,7 +81,7 @@ class BaseStorageTest {
     }
 
     //currently leaves the dot after the file name
-    @Disabled("loading a file is not working")
+    // @Disabled("loading a file is not working")
     @Test
     void storeFile() {
         MultipartFile file = null;
