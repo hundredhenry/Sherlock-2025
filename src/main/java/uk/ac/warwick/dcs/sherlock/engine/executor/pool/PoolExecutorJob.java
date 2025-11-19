@@ -146,6 +146,7 @@ public class PoolExecutorJob implements Runnable {
 			SherlockEngine.storage.storeCodeBlockGroups(allGroups);
 
 			// TODO: thread scoring loops
+			// TODO -- OLIVER: within this loop there is an infinite loop
 			IResultJob jobRes = this.job.createNewResult();
 			for (ISourceFile file : this.job.getWorkspace().getFiles()) {
 				IResultFile fileRes = jobRes.addFile(file);
