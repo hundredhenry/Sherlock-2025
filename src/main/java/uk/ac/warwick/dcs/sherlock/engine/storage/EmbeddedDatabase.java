@@ -87,8 +87,15 @@ public class EmbeddedDatabase {
 			
 =======
 				
+<<<<<<< HEAD
 >>>>>>> aa5029eb (Corrected spelling mistake in comment)
+=======
+<<<<<<< HEAD
+>>>>>>> 22d3a887 (Fixed BaseStorageTest.storeFile test)
 				// If the object is an EntityArchive, merge its workspace first
+=======
+				// If the object is an EntityArchive, merge its workkspace first
+>>>>>>> 359b5591 (Fixed BaseStorageTest.storeFile test)
 				// to avoid foreign key constraint issues
 				if (obj instanceof EntityArchive) {
 					EntityArchive a = (EntityArchive) obj;
