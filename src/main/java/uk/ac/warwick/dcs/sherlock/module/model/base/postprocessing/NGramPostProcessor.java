@@ -147,16 +147,8 @@ public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 	 */
 	@Override
 	public ModelTaskProcessedResults processResults(List<ISourceFile> files, List<NGramRawResult> rawResults) {
-
-		float adjustedThreshold = threshold;
-
-		// If there are 2 or less files being compared, set threshold to at least 1 to avoid all matches being marked common
-		if (files.size() <= 2) {
-			adjustedThreshold = Math.max(1f, threshold);
-		}
-		
 		ModelTaskProcessedResults results = new ModelTaskProcessedResults();
-		NGramScorer scorer = new NGramScorer(adjustedThreshold);
+		NGramScorer scorer = new NGramScorer(threshold);
 
 		// A list of all match block groups
 		// Each group is stored as a sub list and has the same common code block

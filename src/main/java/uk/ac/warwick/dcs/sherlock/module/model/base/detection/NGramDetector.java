@@ -33,7 +33,7 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 	 * </p>
 	 */
 	// Original defaultValue = 5
-	@AdjustableParameter (name = "Minimum Window", defaultValue = 2, minimumBound = 0, maximumBound = 20, step = 1, description = "The minimum number of N-grams that can be detected as a matched block. Character width of minimum block is N-gram size + minimum window - 1.")
+	@AdjustableParameter (name = "Minimum Window", defaultValue = 5, minimumBound = 0, maximumBound = 20, step = 1, description = "The minimum number of N-grams that can be detected as a matched block. Character width of minimum block is N-gram size + minimum window - 1.")
 	public int minimum_window;
 	/**
 	 * The threshold on the similarity value over which something is considered suspicious.
