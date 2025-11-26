@@ -63,41 +63,36 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 	 * @return The float val for Jaccard Similarity
 	 */
 	public float compare(ArrayList<Ngram> string1, ArrayList<Ngram> string2) {
-		// init the counters
-		int same = 0;
-		int dis1 = 0;
-		int dis2 = 0;
-		// build string lists for easier comparison
-		ArrayList<String> string1List = new ArrayList<String>();
-		ArrayList<String> string2List = new ArrayList<String>();
+		// Use HashMap to count N-gram frequencies
+		// Key: N-gram string, Value: frequency count
+		HashMap<String, Integer> map1 = new HashMap<>();
+		HashMap<String, Integer> map2 = new HashMap<>();
 
-		// convert N-gram lists to String lists
-		// this is done for direct comparisons of interior variables to be easier by using libraries
+		// Count N-gram frequencies in both lists
 		for (Ngram ngram : string1) {
-			string1List.add(ngram.getNgram());
+			String key = ngram.getNgram();
+			map1.put(key, map1.getOrDefault(key, 0) + 1);
 		}
 		for (Ngram ngram : string2) {
-			string2List.add(ngram.getNgram());
+			String key = ngram.getNgram();
+			map2.put(key, map2.getOrDefault(key, 0) + 1);
 		}
 
-		// for each N-gram in the reference list count the number that match and that don't
-		for (String ngram : string1List) {
-			if (string2List.contains(ngram)) {
-				same++;
-			}
-			else {
-				dis1++;
-			}
-		}
-		// for each N-gram in the check list count the number that don't match (matches counted in last loop)
-		for (String ngram : string2List) {
-			if (!string1List.contains(ngram)) {
-				dis2++;
+		// Calculate intersection size (minimum frequency for each common N-gram)
+		int intersection = 0;
+		for (String ngram : map1.keySet()) {
+			if (map2.containsKey(ngram)) {
+				intersection += Math.min(map1.get(ngram), map2.get(ngram));
 			}
 		}
 
-		// calculate and return the Jaccard Similarity
-		return (float) same / ((float) same + (float) dis1 + (float) dis2);
+		// Calculate union size (sum of all frequencies, minus intersection)
+		int total1 = string1.size();
+		int total2 = string2.size();
+		int union = total1 + total2 - intersection;
+
+		// Calculate and return the Jaccard Similarity 
+		return union == 0 ? 0 : (float) intersection / (float) union;
 	}
 
 	// add line markers
@@ -148,7 +143,7 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 			// this should function without issue as an equivalent lines will also be too short and be padded the same
 			if (line.length() < ngram_size) {
 				// pad to the size of an ngram
-				for (int i = ngram_size - line.length(); i >= 0; i--) {
+				for (int i = ngram_size - line.length(); i > 0; i--) {
 					line += " ";
 				}
 			}
@@ -193,7 +188,7 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 			// this should function without issue as an equivalent lines will also be too short and be padded the same
 			if (line.length() < ngram_size) {
 				// pad to the size of an ngram
-				for (int i = ngram_size - line.length(); i >= 0; i--) {
+				for (int i = ngram_size - line.length(); i > 0; i--) {
 					line += " ";
 				}
 			}
@@ -335,23 +330,21 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 					// update peak data
 					// this allows retraction to last peak in the case of the similarity falling below the threshold
 					// this prevents detection bleeding
-					since_last_peak++;
-					// compare the two lists
 					sim_val = compare(reference, check);
-					// if the similarity has risen we have a new peak
 					if (sim_val >= last_val) {
 						since_last_peak = 0;
 						last_peak = sim_val;
+						last_val = sim_val;  // Update here when it's a peak
+					} else {
+						since_last_peak++;  // Only increment when declining
 					}
-					// update last val for use in next iteration
-					last_val = sim_val;
 
 					// nothing substantial has flagged, reset lists
 					if (reference.size() == minimum_window && sim_val < threshold) {
 						// if another case of the starting N-gram exists in the other file move to that and reperform the check
 						if (storage_map.containsKey(reference.get(0).getNgram() + (ngram_id + 1))) {
 							// move file position back to appropriate N-gram
-							i -= minimum_window;
+							i -= reference.size(); // CORRECTED: was i -= minimum_window;
 							ngram_id++;
 						}
 						// empty lists

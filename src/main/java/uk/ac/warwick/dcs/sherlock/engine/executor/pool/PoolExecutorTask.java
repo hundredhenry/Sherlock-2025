@@ -38,8 +38,8 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 	List<ModelDataItem> dataItems;
 	int callType;
 	private List<PreProcessingStrategy> preProcessingStrategies;
-
-	private List<DetectorWorker> workers;
+	// Use volatile as accessed across threads
+	private volatile List<DetectorWorker> workers;
 
 	PoolExecutorTask(JobStatus jobStatus, IPriorityWorkSchedulerWrapper scheduler, ITask task, String language) {
 		this.callType = 1;
