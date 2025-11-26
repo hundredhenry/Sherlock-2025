@@ -129,6 +129,7 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 
 		if (this.workers.size() == 0) {
 			ExecutorUtils.logger.error("Error building detector {}, no workers were built", this.getDetector().getName());
+			return; // Abort early
 		}
 
 		this.status.incrementProgress();
