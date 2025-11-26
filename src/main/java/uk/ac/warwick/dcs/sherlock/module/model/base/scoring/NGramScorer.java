@@ -15,12 +15,6 @@ public class NGramScorer {
 
 	private final float threshold;
 
-	// List to store file pairs by file index
-	// the list of matched pair object groups (depreciated, was used in general score function)
-	private final ArrayList<MatchList> file_matches;
-	// the list of each file the above groups should be attached to (likewise depreciated)
-	private final ArrayList<ISourceFile> match_list;
-
 	// the list of files in the current match group
 	public ArrayList<ISourceFile> file_list;		// public to allow use in external loops
 
@@ -33,63 +27,6 @@ public class NGramScorer {
 	 */
 	public NGramScorer(float threshold) {
 		this.threshold = threshold;
-		file_matches = new ArrayList<>();
-		match_list = new ArrayList<>();
-	}
-
-	/**
-	 * Returns the total similarity score between the 2 passed files
-	 * <p>
-	 *     WARNING: This currently returns a total of ALL matches between the two files, it does not ignore those
-	 *     considered common and removed from final scoring groups. In future this issue will be resolved
-	 * </p>
-	 * @param mainFile      the subject of the scoring function.
-	 * @param referenceFile the reference to score the subject against
-	 * @param mutualGroups  the ICodeBlockGroups where both the main and subject files are present
-	 *
-	 * @return Total similarity score for all relevant file match pairs
-	 */
-	@Deprecated
-	public float score(ISourceFile mainFile, ISourceFile referenceFile, List<ICodeBlockGroup> mutualGroups) {
-		// counter for total score
-		float accumulator = 0.0f;
-		// instance multiplier for each match based on it's line size
-		int line_multiplier = 1;
-		// check if first file is in list
-		int index = match_list.lastIndexOf(mainFile);
-		// if not in list then is paired with something in the list so check second file
-		if (index == -1) {
-			index = match_list.lastIndexOf(referenceFile);
-			// if not in the list print debug message
-			// DEPTODO: this can be exception handling
-			if (index == -1) {
-				System.out.println("File pair: (" + mainFile.getFileDisplayName() + ", " + referenceFile.getFileDisplayName() + ") cannot be found in list of files:");
-				for (ISourceFile file : match_list ) {
-					System.out.println(file.getFileDisplayName());
-				}
-			}
-			// where the match is between the 2 files passed increment the accumulator
-			for (NgramMatch match : file_matches.get(index).matches) {
-				if (match.files[0].equals(mainFile) && !match.common) {
-					line_multiplier = match.lines.get(1).getKey() - match.lines.get(1).getValue();
-					accumulator += match.similarity * line_multiplier;
-				}
-			}
-		} else {
-			// where the match is between the 2 files passed increment the accumulator
-			for (NgramMatch match : file_matches.get(index).matches) {
-				if (match.files[1].equals(referenceFile) && !match.common) {
-					line_multiplier = match.lines.get(1).getKey() - match.lines.get(1).getValue();
-					accumulator += match.similarity * line_multiplier;
-				}
-			}
-		}
-		// DEPTODO: resolve issues with overlapping blocks counting as duplicate lines for the sake of the line count
-		// normalise the score by the size of each file
-		accumulator = (accumulator / mainFile.getTotalLineCount()) + (accumulator / referenceFile.getTotalLineCount());
-		// return cumulative score normalised and averaged over the 2 files
-		System.out.println(accumulator);
-		return accumulator / 2;
 	}
 
 	/**
@@ -130,20 +67,16 @@ public class NGramScorer {
 	/**
 	 * Check if the set of files is enough to be considered "common".
 	 * @param file_count The number of files the system is comparing.
-	 * @return A boolean saying if the file group should be ignored or not.
+	 * @param list The list of matches (unused parameter, kept for API compatibility).
+	 * @return true if the match group is uncommon (should be kept), false if common (should be filtered).
 	 */
 	public boolean checkSize(int file_count, ArrayList<NgramMatch> list) {
-		// if the match is uncommon return true
+		// if the match is uncommon (appears in few files), return true to keep it
 		if ((file_list.size() / file_count) <= threshold) {
 			return true;
 		}
-		// if the match is common set all pairs in the list to be common
-		// this prevents common matches from being added to the overall file score
+		// if the match is common (appears in many files), return false to filter it out
 		else {
-			for (NgramMatch match : list) {
-				match.common = true;
-			}
-			// and then return false
 			return false;
 		}
 	}
@@ -198,27 +131,6 @@ public class NGramScorer {
 		public void addToFileInfo(float similarity) {
 			total_similarity += similarity;
 			similar_files++;
-		}
-	}
-
-	/**
-	 * Used to store the set of matches associated with a file for use in file wide score generation.
-	 */
-	@Deprecated
-	class MatchList {
-
-		/**
-		 * The list of matched pairs. Public to allow external additions.
-		 */
-		public ArrayList<NgramMatch> matches;
-
-		/**
-		 * Constructor, initialises storage and adds first element.
-		 * @param pair
-		 */
-		public MatchList(NgramMatch pair) {
-			matches = new ArrayList<>();
-			matches.add(pair);
 		}
 	}
 }

@@ -25,7 +25,7 @@ public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 	 * </p>
 	 */
 	@AdjustableParameter (name = "Common Threshold", defaultValue = 0.3f, minimumBound = 0.0f, maximumBound = 1.0f, step = 0.001f, description = "If a section of code appears in more than this % of the files it will be ignored. Used to remove skeleton and common code.")
-	public float threshold;
+	public volatile float threshold;
 
 	/**
 	 * A method to check if 2 match objects are for the same code block.
@@ -115,7 +115,7 @@ public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 			if (out_group.getCodeBlocks().size() != 0) {
 				out_group = results.addGroup();
 			}
-			// if group is bellow the threshold add all items to the group along with a score
+			// if group is below the threshold add all items to the group along with a score
 			if (scorer.checkSize(files.size(), list)) {
 				// get the score for each file in the list
 				for (ISourceFile file : scorer.file_list) {

@@ -30,12 +30,6 @@ public class NgramMatch implements Serializable {
      * The two files with matching sections.
      */
     public ISourceFile[] files;
-    /**
-     * Used to allow skipping during score methods if the math is considered common. Is now redundant due to
-     * depreciation, but has been left in if needed in future use cases.
-     */
-    public boolean common;
-
 
     /**
      * Constructor, stores all inputted data in the container object.
@@ -60,8 +54,6 @@ public class NgramMatch implements Serializable {
         // store the file objects (pointers, the same pointers should be used globally)
         files[0] = file1;
         files[1] = file2;
-        // default common as false
-        this.common = false;
     }
 
     /**
