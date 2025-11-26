@@ -156,8 +156,8 @@ public class NGramScorer {
 	public void addScoredBlock(ISourceFile file, ICodeBlockGroup out_group) {
 		// calculate a suitable score for the inputted file based on the available data
 		int index = file_list.indexOf(file);
-		// placeholder score, currently produces an index weighted by rarity and general match strength
-		float score = file_info.get(index).total_similarity / file_list.size();
+		// average similarity across all matches for this file
+		float score = file_info.get(index).total_similarity / file_info.get(index).similar_files;
 
 		out_group.addCodeBlock(file, score, file_info.get(index).lines);
 	}
