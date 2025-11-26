@@ -94,12 +94,6 @@ function submissionResultsPage() {
                         position
                     );
 
-                    //Ensure that the report match box is at the same position as the first line
-                    var offset = line.offset();
-                    if (offset != null) {
-                        $("#report-match-info").css("margin-top", offset.top - $('[data-js="comparison"]').offset().top);
-                    }
-
                     first = false;
                 }
 
