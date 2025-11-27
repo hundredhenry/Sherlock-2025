@@ -1,7 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.engine.executor;
 
 import uk.ac.warwick.dcs.sherlock.api.component.IJob;
-import java.util.concurrent.TimeUnit;
 import uk.ac.warwick.dcs.sherlock.api.component.WorkStatus;
 import uk.ac.warwick.dcs.sherlock.api.executor.IExecutor;
 import uk.ac.warwick.dcs.sherlock.api.executor.IJobStatus;
@@ -41,15 +40,8 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 		this.execScheduler.execute(() -> {
 			while (true) {
 				try {
-					/*
-					 *
-					 * TimeUnit.SECONDS.sleep(5);
-					 * Causes block
-					 * */
 					PoolExecutorJob job;
 					job = this.queue.take();
-
-					TimeUnit.SECONDS.sleep(5);
 
 					synchronized (ExecutorUtils.logger) {
 						ExecutorUtils.logger.info("Job {} starting", job.getId());
@@ -58,11 +50,6 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 					job.getStatus().startJob();
 
 					Future f = this.exec.submit(job);
-					/*
-					 *
-					 * TimeUnit.SECONDS.sleep(5);
-					 * Causes block
-					 * */
 					f.get();
 
 					job.getStatus().finishJob();

@@ -46,7 +46,7 @@ public class EntityJob implements IJob, Serializable {
 	// list of file ids in workspace WHEN creating job, used to warn and prevent report gen if file is removed or updated(remove existing and add updated file as new entity when doing this)
 	private long[] filesPresent;
 
-	@OneToOne (mappedBy = "job", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToOne (mappedBy = "job", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	private EntityResultJob results = null;
 
 	public EntityJob() {
@@ -94,13 +94,14 @@ public class EntityJob implements IJob, Serializable {
 
 	@Override
 	public IResultJob createNewResult() {
-		if (this.results != null) {
-			this.results.remove();
-		}
+		EntityResultJob newResult = new EntityResultJob(this);
 
-		this.results = new EntityResultJob(this);
-		BaseStorage.instance.database.storeObject(this.results);
-		return this.results;
+		this.results = newResult;
+
+		BaseStorage.instance.database.storeObject(newResult);
+		BaseStorage.instance.database.storeObject(this);
+
+		return newResult;
 	}
 
 	@Override
