@@ -101,7 +101,6 @@ public class ResultsController {
             @PathVariable(value="jobid") long jobid,
             @ModelAttribute("results") JobResultsData results
     ) throws InterruptedException {
-        TimeUnit.SECONDS.sleep(5);
         SherlockEngine.executor.submitJob(results.getJob());
         return "redirect:/dashboard/workspaces/manage/" + pathid + "/results/" + jobid;
     }
