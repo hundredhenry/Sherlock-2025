@@ -1,7 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.module.web.controllers.dashboard.workspace;
 
 import org.json.JSONObject;
-import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
