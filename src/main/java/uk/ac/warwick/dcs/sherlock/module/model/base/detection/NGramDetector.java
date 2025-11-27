@@ -14,6 +14,7 @@ import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.TrimWhitespace
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 
@@ -45,11 +46,6 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 	public float threshold;
 
 	/**
-	 * The output object, stores all data to be sent to the postprocessing stage.
-	 */
-	NGramRawResult<NgramMatch> res;
-
-	/**
 	 * Sets meta data for the detector, along with providing the API with pointers to the Worker and the Preprocessing Strategy
 	 */
 	public NGramDetector() {
@@ -68,45 +64,40 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 	 * @return The float val for Jaccard Similarity
 	 */
 	public float compare(ArrayList<Ngram> string1, ArrayList<Ngram> string2) {
-		// init the counters
-		int same = 0;
-		int dis1 = 0;
-		int dis2 = 0;
-		// build string lists for easier comparison
-		ArrayList<String> string1List = new ArrayList<String>();
-		ArrayList<String> string2List = new ArrayList<String>();
+		// build hash sets for O(1) lookup
+		HashSet<String> set1 = new HashSet<>();
+		HashSet<String> set2 = new HashSet<>();
 
-		// convert N-gram lists to String lists
-		// this is done for direct comparisons of interior variables to be easier by using libraries
+		// convert N-gram lists to String sets
 		for (Ngram ngram : string1) {
-			string1List.add(ngram.getNgram());
+			set1.add(ngram.getNgram());
 		}
 		for (Ngram ngram : string2) {
-			string2List.add(ngram.getNgram());
+			set2.add(ngram.getNgram());
 		}
 
-		// for each N-gram in the reference list count the number that match and that don't
-		for (String ngram : string1List) {
-			if (string2List.contains(ngram)) {
-				same++;
-			}
-			else {
-				dis1++;
-			}
-		}
-		// for each N-gram in the check list count the number that don't match (matches counted in last loop)
-		for (String ngram : string2List) {
-			if (!string1List.contains(ngram)) {
-				dis2++;
+		// calculate intersection size
+		int intersection = 0;
+		for (String ngram : set1) {
+			if (set2.contains(ngram)) {
+				intersection++;
 			}
 		}
 
-		// calculate and return the Jaccard Similarity
-		return (float) same / ((float) same + (float) dis1 + (float) dis2);
+		// Jaccard Similarity = |intersection| / |union|
+		// |union| = |set1| + |set2| - |intersection|
+		int union = set1.size() + set2.size() - intersection;
+		
+		// handle edge case of both sets being empty
+		if (union == 0) {
+			return 1.0f;
+		}
+
+		return (float) intersection / (float) union;
 	}
 
 	// add line markers
-	public void matchFound(ArrayList<Ngram> reference, ArrayList<Ngram> check, Ngram head, float last_peak, int since_last_peak, ISourceFile file1, ISourceFile file2) {
+	public void matchFound(NGramRawResult<NgramMatch> res, ArrayList<Ngram> reference, ArrayList<Ngram> check, Ngram head, float last_peak, int since_last_peak, ISourceFile file1, ISourceFile file2) {
 		// take out values back to the last peak
 		for (int i = 0; i < since_last_peak; i++) {
 			reference.remove(reference.size() - 1);
@@ -153,7 +144,7 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 			// this should function without issue as an equivalent lines will also be too short and be padded the same
 			if (line.length() < ngram_size) {
 				// pad to the size of an ngram
-				for (int i = ngram_size - line.length(); i >= 0; i--) {
+				for (int i = ngram_size - line.length(); i > 0; i--) {
 					line += " ";
 				}
 			}
@@ -172,16 +163,16 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 	}
 
 	/**
-	 * Load the contents of a file into an N-gram map for easy retrival
+	 * Load the contents of a file into an N-gram map for easy retrieval
 	 * <p>
-	 * Each line of the file is taken in and converted into N-grams, then stored in a hash map as an object containing the N-gram, its line number, it's ID and the next N-gram in the file (modeled as
-	 * a linked list).
+	 * Each line of the file is taken in and converted into N-grams, then stored in a hash map as an object containing the N-gram, its line number, and the next N-gram in the file (modeled as
+	 * a linked list). Duplicate N-grams are stored in a list under the same key.
 	 * </p>
 	 *
 	 * @param storage_map The hashmap used to store the resulting N-grams
-	 * @param file        The file data to be deconstucted into and stored as ordered N-grams
+	 * @param file        The file data to be deconstructed into and stored as ordered N-grams
 	 */
-	private void loadNgramMap(HashMap<String, Ngram> storage_map, ArrayList<IndexedString> file) {
+	private void loadNgramMap(HashMap<String, ArrayList<Ngram>> storage_map, ArrayList<IndexedString> file) {
 		// the N-gram string
 		String substr;
 		// the new N-gram object
@@ -198,7 +189,7 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 			// this should function without issue as an equivalent lines will also be too short and be padded the same
 			if (line.length() < ngram_size) {
 				// pad to the size of an ngram
-				for (int i = ngram_size - line.length(); i >= 0; i--) {
+				for (int i = ngram_size - line.length(); i > 0; i--) {
 					line += " ";
 				}
 			}
@@ -213,10 +204,10 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 				if (ngram == null) {
 					// build the N-gram as an object with its line number
 					ngram = new Ngram(substr, line_number);
-					// put the ngram into the hash map with the relevent N-gram ID
-					storage_map.put(substr + 0, ngram);
-					// set the N-grams ID
-					ngram.setId(0);
+					// get or create list for this N-gram string
+					ArrayList<Ngram> ngramList = storage_map.computeIfAbsent(substr, k -> new ArrayList<>());
+					// add to the list
+					ngramList.add(ngram);
 				}
 				// if at least 1 N-gram already exists
 				else {
@@ -226,26 +217,10 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 					ngram.setNextNgram(temp);
 					// update the current N-gram position
 					ngram = temp;
-					// if the hashmap does not already contain this N-gram
-					if (!storage_map.containsKey(substr + 0)) {
-						// add N-gram to the hashmap
-						storage_map.put(substr + 0, ngram);
-						// set the N-grams ID
-						ngram.setId(0);
-						// if the N-gram already exists in the hashmap
-					}
-					else {
-						// find an id not used by the N-gram
-						// there must be a better way to do this? (might just require building a custom map where each key holds a list)
-						int j = 1;
-						while (storage_map.containsKey(substr + j)) {
-							j++;
-						}
-						// add N-gram to the hashmap
-						storage_map.put(substr + j, ngram);
-						// set N-grams ID
-						ngram.setId(j);
-					}
+					// get or create list for this N-gram string
+					ArrayList<Ngram> ngramList = storage_map.computeIfAbsent(substr, k -> new ArrayList<>());
+					// add to the list
+					ngramList.add(ngram);
 				}
 			}
 		}
@@ -271,10 +246,10 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 			ArrayList<IndexedString> linesF2 = new ArrayList<IndexedString>(this.file2.getPreProcessedLines("no_whitespace"));
 
 			// make raw result output container
-			res = new NGramRawResult<>(this.file1.getFile(), this.file2.getFile());
+			NGramRawResult<NgramMatch> res = new NGramRawResult<>(this.file1.getFile(), this.file2.getFile());
 
 			// generate the N-grams for file 1 and load them into a hash map
-			HashMap<String, Ngram> storage_map = new HashMap<String, Ngram>();
+			HashMap<String, ArrayList<Ngram>> storage_map = new HashMap<>();
 			loadNgramMap(storage_map, linesF1);
 			// generate the N-grams for file 2 and load them into a list
 			ArrayList<Ngram> storage_list = new ArrayList<Ngram>();
@@ -287,7 +262,7 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 			Ngram head = null;
 
 			// the value of similarity the last peak held
-			float last_peak = 1.0f;
+			float last_peak = 0.0f;
 			// the last val for similarity held
 			float last_val = 0.0f;
 			// the val for similarity held
@@ -308,14 +283,16 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 				ngram_string = substrObj.getNgram();
 
 				// if the previous file has a matching ngram (id references the occurrence of said ngram if there are duplicates)
-				if (storage_map.containsKey(ngram_string + ngram_id) || reference.size() > 0) {
+				ArrayList<Ngram> ngramList = storage_map.get(ngram_string);
+				boolean hasMatch = (ngramList != null && ngram_id < ngramList.size());
+				if (hasMatch || reference.size() > 0) {
 					// build up a window and threshold similarity
 					// if over threshold keep increasing window by 1 until similarity drops bellow threshold
 
 					// if head is null we are starting a new comparison check
 					if (head == null) {
 						// set head to the start of the sequence in the reference file
-						head = storage_map.get(ngram_string + ngram_id);
+						head = ngramList.get(ngram_id);
 						// add the reference start to the reference list
 						reference.add(head);
 					}
@@ -340,13 +317,14 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 					// update peak data
 					// this allows retraction to last peak in the case of the similarity falling below the threshold
 					// this prevents detection bleeding
-					since_last_peak++;
 					// compare the two lists
 					sim_val = compare(reference, check);
 					// if the similarity has risen we have a new peak
 					if (sim_val >= last_val) {
 						since_last_peak = 0;
 						last_peak = sim_val;
+					} else {
+						since_last_peak++;
 					}
 					// update last val for use in next iteration
 					last_val = sim_val;
@@ -354,10 +332,15 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 					// nothing substantial has flagged, reset lists
 					if (reference.size() == minimum_window && sim_val < threshold) {
 						// if another case of the starting N-gram exists in the other file move to that and reperform the check
-						if (storage_map.containsKey(reference.get(0).getNgram() + (ngram_id + 1))) {
+						ArrayList<Ngram> startNgramList = storage_map.get(reference.get(0).getNgram());
+						if (startNgramList != null && (ngram_id + 1) < startNgramList.size()) {
 							// move file position back to appropriate N-gram
 							i -= minimum_window;
 							ngram_id++;
+						}
+						else {
+							// no more duplicates to check, reset ngram_id
+							ngram_id = 0;
 						}
 						// empty lists
 						reference.clear();
@@ -366,11 +349,12 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 						// reset peak value trackers
 						since_last_peak = 0;
 						last_val = 0.0f;
+						last_peak = 0.0f;
 					}
-					// when the window is over the minimum and drops below the threshold
+					// when the window is over the minimum and drops below the threshold, save the match
 					else if (reference.size() > minimum_window && sim_val < threshold) {
-						//						// send the data to construct a match object for the found match
-						matchFound(reference, check, head, last_peak, since_last_peak, this.file1.getFile(), this.file2.getFile());
+						// send the data to construct a match object for the found match
+						matchFound(res, reference, check, head, last_peak, since_last_peak, this.file1.getFile(), this.file2.getFile());
 						// reset duplicate ngram ID
 						ngram_id = 0;
 						// set head to null so a new reference can be made
@@ -378,13 +362,14 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 						// reset peak value trackers
 						since_last_peak = 0;
 						last_val = 0.0f;
+						last_peak = 0.0f;
 					}
 				}
 			}
 			// performs comparison if EOF for reference is reached
 			if (compare(reference, check) > threshold && reference.size() >= minimum_window) {
 				// if at EOF there is a match then output it
-				matchFound(reference, check, head, last_peak, since_last_peak, this.file1.getFile(), this.file2.getFile());
+				matchFound(res, reference, check, head, last_peak, since_last_peak, this.file1.getFile(), this.file2.getFile());
 			}
 
 			// data of type Serializable, essentially raw data stored as a variable.
@@ -405,10 +390,6 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 		 * The line the N-Gram starts on.
 		 */
 		private int line_number;
-		/**
-		 * The id of the N-Gram to allow differentiation of duplicates.
-		 */
-		private int id;
 
 		/**
 		 * Linked List pointer to allow the next N-Gram in a reference file to be found when the start is acquired from a hashmap.
@@ -435,20 +416,6 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 		 */
 		public boolean equals(Ngram ngram) {
 			return this.segment.equals(ngram.getNgram());
-		}
-
-		/**
-		 * @return The version ID of this N-Gram.
-		 */
-		public int getId() {
-			return id;
-		}
-
-		/**
-		 * @param id The ID to allow duplicates to exist.
-		 */
-		public void setId(int id) {
-			this.id = id;
 		}
 
 		/**

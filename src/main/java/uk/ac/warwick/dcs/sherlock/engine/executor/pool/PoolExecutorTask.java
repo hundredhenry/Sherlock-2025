@@ -38,8 +38,8 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 	List<ModelDataItem> dataItems;
 	int callType;
 	private List<PreProcessingStrategy> preProcessingStrategies;
-
-	private List<DetectorWorker> workers;
+	// Use volatile as accessed across threads
+	private volatile List<DetectorWorker> workers;
 
 	PoolExecutorTask(JobStatus jobStatus, IPriorityWorkSchedulerWrapper scheduler, ITask task, String language) {
 		this.callType = 1;
@@ -128,9 +128,8 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 		}
 
 		if (this.workers.size() == 0) {
-			synchronized (ExecutorUtils.logger) {
-				ExecutorUtils.logger.error("Error building detector {}, no workers were built", this.getDetector().getName());
-			}
+			ExecutorUtils.logger.error("Error building detector {}, no workers were built", this.getDetector().getName());
+			return; // Abort early
 		}
 
 		this.status.incrementProgress();
@@ -151,10 +150,8 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 			List<AbstractModelTaskRawResult> rawResults = detect.getResults();
 
 			if (this.workers.size() != rawResults.size()) {
-				synchronized (ExecutorUtils.logger) {
-					ExecutorUtils.logger.error("Error running workers, got {} results from {} workers", rawResults.size(), this.workers.size());
-					return;
-				}
+				ExecutorUtils.logger.error("Error running workers, got {} results from {} workers", rawResults.size(), this.workers.size());
+				return;
 			}
 
 			rawResults = rawResults.stream().filter(Objects::nonNull).filter(x -> !x.isEmpty()).collect(Collectors.toList());
@@ -163,10 +160,8 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 				// validate the raw result types, are they all the same?
 				AbstractModelTaskRawResult base = rawResults.get(0);
 				if (!rawResults.stream().allMatch(x -> x.testType(base))) {
-					synchronized (ExecutorUtils.logger) {
-						ExecutorUtils.logger.error("Work result types are not consistent, this is not allowed. A detector must return a single result type");
-						return;
-					}
+					ExecutorUtils.logger.error("Work result types are not consistent, this is not allowed. A detector must return a single result type");
+					return;
 				}
 
 				//Save the raw results
@@ -177,9 +172,7 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 			this.callType = 3;
 		}
 		catch (Exception e) {
-			synchronized (ExecutorUtils.logger) {
-				ExecutorUtils.logger.error("Error running task", e);
-			}
+			ExecutorUtils.logger.error("Error running task", e);
 		}
 	}
 
@@ -190,28 +183,21 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 				try {
 					IPostProcessor postProcessor = SherlockRegistry.getPostProcessorInstance(rawResults.get(0).getClass());
 					if (postProcessor == null) {
-						synchronized (ExecutorUtils.logger) {
-							ExecutorUtils.logger.error("Could not find a postprocessor for '{}', check that it is being correctly registered", rawResults.get(0).getClass().getName());
-							return null;
-						}
+						ExecutorUtils.logger.error("Could not find a postprocessor for '{}', check that it is being correctly registered", rawResults.get(0).getClass().getName());
+						return null;
 					}
-
 					ExecutorUtils.processAdjustableParameters(postProcessor, this.task.getParameterMapping());
 					ModelTaskProcessedResults processedResults = postProcessor.processResults(this.task.getJob().getWorkspace().getFiles(), rawResults);
 					try {
 						if (processedResults.cleanGroups()) {
-							synchronized (ExecutorUtils.logger) {
-								ExecutorUtils.logger.warn("At least one result group for job {} [task {}] does not have it's detection type set, results will be ignored", this.getTask().getJob().getPersistentId(),
-										this.getTask().getPersistentId());
-							}
+							ExecutorUtils.logger.warn("At least one result group for job {} [task {}] does not have it's detection type set, results will be ignored", this.getTask().getJob().getPersistentId(),
+									this.getTask().getPersistentId());
 							return null;
 						}
 					}
 					catch (UnknownDetectionTypeException e) {
-						synchronized (ExecutorUtils.logger) {
-							ExecutorUtils.logger.warn("At least one result group for job {} [task {}] has an unknown detection type set", this.getTask().getJob().getPersistentId(),
-									this.getTask().getPersistentId());
-						}
+						ExecutorUtils.logger.warn("At least one result group for job {} [task {}] has an unknown detection type set", this.getTask().getJob().getPersistentId(),
+								this.getTask().getPersistentId());
 						e.printStackTrace();
 						return null;
 					}
@@ -225,9 +211,7 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 			}
 		}
 		else {
-			synchronized (ExecutorUtils.logger) {
-				ExecutorUtils.logger.error("Trying to post process incomplete task");
-			}
+			ExecutorUtils.logger.error("Trying to post process incomplete task");
 		}
 
 		return null;

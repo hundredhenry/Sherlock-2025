@@ -106,7 +106,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 	private List<ICodeBlockGroup> GetCodeBlockGroups(List<ISubmission> submissions) {
 		List<ICodeBlockGroup> codeBlockGroups = new ArrayList<>();
 		this.results.getFileResults().stream().flatMap(file -> file.getTaskResults().stream()).filter(task -> task.getContainingBlocks() != null)
-				.flatMap(task -> task.getContainingBlocks().stream().filter(group -> group.submissionIdPresent(submissions.get(0).getId()) && group.submissionIdPresent(submissions.get(0).getId()))).forEach(group -> codeBlockGroups.add(group));
+				.flatMap(task -> task.getContainingBlocks().stream().filter(group -> group.submissionIdPresent(submissions.get(0).getId()) && group.submissionIdPresent(submissions.get(1).getId()))).forEach(group -> codeBlockGroups.add(group));
 		return codeBlockGroups;
 	}
 

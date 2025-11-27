@@ -72,6 +72,16 @@ h2 .btn {
     height:10px;
 }
 
+#report-match-info {
+    z-index: 1019 !important;
+}
+
+/* Ensure accordion cards in results have bottom borders */
+#left .accordion .card,
+#right .accordion .card {
+    border-bottom: $card-border-width solid $card-border-color !important;
+}
+
 .bg-orange {
     background-color: #9f4508 !important;
 }

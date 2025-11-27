@@ -115,7 +115,7 @@ public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 			if (out_group.getCodeBlocks().size() != 0) {
 				out_group = results.addGroup();
 			}
-			// if group is bellow the threshold add all items to the group along with a score
+			// if group is below the threshold add all items to the group along with a score
 			if (scorer.checkSize(files.size(), list)) {
 				// get the score for each file in the list
 				for (ISourceFile file : scorer.file_list) {
