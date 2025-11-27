@@ -28,7 +28,7 @@ public class EntityResultJob implements IResultJob, Serializable {
 	private EntityJob job;
 
 	@OneToMany (mappedBy = "jobRes", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private List<EntityResultFile> fileResults =Collections.synchronizedList(new LinkedList<>());
+	private List<EntityResultFile> fileResults = Collections.synchronizedList(new LinkedList<>());
 
 	EntityResultJob(EntityJob job) {
 		super();

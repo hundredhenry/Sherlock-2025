@@ -122,8 +122,6 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 		float total_max_score_tally = 0f;
 		int file_count = 0;
 
-		System.out.println(submissionFileMap);
-
 		//Go through all the files in the first submission
 		for(Long id1 : submissionFileMap.get(sub_id1)) {
 			//For each file, look at its relative score with each file in the other submission and get the largest
