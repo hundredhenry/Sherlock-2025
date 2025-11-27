@@ -41,8 +41,15 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 		this.execScheduler.execute(() -> {
 			while (true) {
 				try {
+					/*
+					 *
+					 * TimeUnit.SECONDS.sleep(5);
+					 * Causes block
+					 * */
 					PoolExecutorJob job;
 					job = this.queue.take();
+
+					TimeUnit.SECONDS.sleep(5);
 
 					synchronized (ExecutorUtils.logger) {
 						ExecutorUtils.logger.info("Job {} starting", job.getId());
@@ -50,11 +57,12 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 
 					job.getStatus().startJob();
 
-					//TODO -- OLIVER: Fix race conditions within job run
-
-					//TimeUnit.SECONDS.sleep(5);
-
 					Future f = this.exec.submit(job);
+					/*
+					 *
+					 * TimeUnit.SECONDS.sleep(5);
+					 * Causes block
+					 * */
 					f.get();
 
 					job.getStatus().finishJob();
