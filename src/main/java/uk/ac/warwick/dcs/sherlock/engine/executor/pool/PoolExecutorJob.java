@@ -141,6 +141,14 @@ public class PoolExecutorJob implements Runnable {
 
 			// TODO: thread scoring loops
 			IResultJob jobRes = this.job.createNewResult();
+			
+			// Track which groups have been added to each task to prevent duplicates
+			// Map: Task -> Set of group identity hash codes already added
+			Map<ITask, Set<Integer>> taskGroupsAdded = new HashMap<>();
+			for (ITuple<ITask, ModelTaskProcessedResults> t : results) {
+				taskGroupsAdded.put(t.getKey(), new HashSet<>());
+			}
+			
 			for (ISourceFile file : this.job.getWorkspace().getFiles()) {
 				IResultFile fileRes = jobRes.addFile(file);
 				List<ITuple<ICodeBlockGroup, Float>> overallGroupScores = new LinkedList<>();
@@ -167,7 +175,15 @@ public class PoolExecutorJob implements Runnable {
 						this.status.incrementProgress();
 
 						IResultTask taskRes = fileRes.addTaskResult(t.getKey());
-						taskRes.addContainingBlock(groupsContainingFile);
+						
+						// Only add groups that haven't been added to this task yet (prevents duplicates across files)
+						Set<Integer> addedGroups = taskGroupsAdded.get(t.getKey());
+						List<ICodeBlockGroup> newGroups = groupsContainingFile.stream()
+							.filter(g -> addedGroups.add(System.identityHashCode(g)))
+							.collect(Collectors.toList());
+						if (!newGroups.isEmpty()) {
+							taskRes.addContainingBlock(newGroups);
+						}
 
 						// calculate and store the scores from the group scores, uses weightings
 						calculateScoreForBlockList(file, groupScores, taskRes, taskRes.getClass().getDeclaredMethod("setTaskScore", float.class), taskRes.getClass().getDeclaredMethod("addFileScore", ISourceFile.class, float.class));
