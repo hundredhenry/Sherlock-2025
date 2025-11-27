@@ -317,13 +317,14 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 					// update peak data
 					// this allows retraction to last peak in the case of the similarity falling below the threshold
 					// this prevents detection bleeding
-					since_last_peak++;
 					// compare the two lists
 					sim_val = compare(reference, check);
 					// if the similarity has risen we have a new peak
 					if (sim_val >= last_val) {
 						since_last_peak = 0;
 						last_peak = sim_val;
+					} else {
+						since_last_peak++;
 					}
 					// update last val for use in next iteration
 					last_val = sim_val;
