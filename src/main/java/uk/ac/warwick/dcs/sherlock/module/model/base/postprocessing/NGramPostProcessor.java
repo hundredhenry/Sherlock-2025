@@ -25,7 +25,7 @@ public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 	 * </p>
 	 */
 	@AdjustableParameter (name = "Common Threshold", defaultValue = 0.3f, minimumBound = 0.0f, maximumBound = 1.0f, step = 0.001f, description = "If a section of code appears in more than this % of the files it will be ignored. Used to remove skeleton and common code.")
-	public volatile float threshold;
+	public float threshold;
 
 	/**
 	 * A method to check if 2 match objects are for the same code block.
