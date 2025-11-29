@@ -90,6 +90,8 @@ class RegistryTest {
         r.registerLanguage("Java", JavaLexer.class);
         r.registerDetector(VariableNameDetector.class);
         r.registerDetector(NGramDetector.class);
+        System.out.println("Registered languages: " + r.getLanguages());
+        System.out.println("Registered detectors: " + r.getDetectors());
         Set<Class<? extends IDetector>> set = r.getDetectors("Java");
         assertTrue(set.contains(VariableNameDetector.class));
         assertTrue(set.contains(NGramDetector.class));
