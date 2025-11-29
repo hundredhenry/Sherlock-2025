@@ -184,7 +184,9 @@ public class Registry implements IRegistry {
 	 */
 	@Override
 	public Set<Class<? extends IDetector>> getDetectors(String language) {
+		// System.out.println("Languages: " + this.languageRegistry.values());
 		if (this.languageRegistry.containsKey(language.toLowerCase())) {
+			// System.out.println("Detectors for language " + language + ": " + this.languageRegistry.get(language.toLowerCase()).detectors);
 			return this.languageRegistry.get(language.toLowerCase()).detectors;
 		}
 
@@ -443,6 +445,8 @@ public class Registry implements IRegistry {
 		data.desc = tester.getDescription();
 		data.strategies = tester.getPreProcessors();
 		data.resultClass = resultsClass;
+		data.languages = new HashSet<>();
+		data.languages.addAll(this.languageRegistry.keySet());
 
 		//Do @DetectorParameter stuff - find the annotations for the params in the detector, check them and add to the map
 		List<AdjustableParameterObj> tuneables =
