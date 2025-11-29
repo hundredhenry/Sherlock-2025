@@ -65,14 +65,13 @@ class RegistryTest {
         assertEquals(detectorName, displayName);
     }
 
-    @Disabled("TestDetector Not linked to language")
     @Test
     void getDetectorLanguages() {
         r.registerLanguage("Java", JavaLexer.class);
         r.registerDetector(VariableNameDetector.class);
         Set<String> languages = r.getDetectorLanguages(VariableNameDetector.class);
         assertNotNull(languages);
-        assertTrue(languages.contains("Java"));
+        assertTrue(languages.contains("java"));
     }
 
     @Test
@@ -90,9 +89,12 @@ class RegistryTest {
         r.registerLanguage("Java", JavaLexer.class);
         r.registerDetector(VariableNameDetector.class);
         r.registerDetector(NGramDetector.class);
+        System.out.println("Registered languages: " + r.getLanguages());
+        System.out.println("Registered detectors: " + r.getDetectors());
         Set<Class<? extends IDetector>> set = r.getDetectors("Java");
-        //assertTrue(set.contains(VariableNameDetector.class));
-        //assertTrue(set.contains(NGramDetector.class));
+        System.out.println(set);
+        assertTrue(set.contains(VariableNameDetector.class));
+        assertTrue(set.contains(NGramDetector.class));
     }
 
     @Test
