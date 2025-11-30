@@ -473,6 +473,10 @@ public class Registry implements IRegistry {
 			data.adjustables = tuneables;
 		}
 
+		for (String lang : this.languageRegistry.keySet()) {
+			this.languageRegistry.get(lang.toLowerCase()).detectors.add(detector);
+		}
+
 		this.detectorRegistry.put(detector, data);
 		return true;
 	}
