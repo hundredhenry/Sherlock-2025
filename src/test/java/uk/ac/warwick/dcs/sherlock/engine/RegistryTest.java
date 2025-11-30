@@ -83,16 +83,13 @@ class RegistryTest {
         assertTrue(set.contains(NGramDetector.class));
     }
 
-    @Disabled("Neither detectors use JavaLexer")
+    // @Disabled("Neither detectors use JavaLexer")
     @Test
     void getDetectorsUsingLanguage() {
         r.registerLanguage("Java", JavaLexer.class);
         r.registerDetector(VariableNameDetector.class);
         r.registerDetector(NGramDetector.class);
-        System.out.println("Registered languages: " + r.getLanguages());
-        System.out.println("Registered detectors: " + r.getDetectors());
         Set<Class<? extends IDetector>> set = r.getDetectors("Java");
-        System.out.println(set);
         assertTrue(set.contains(VariableNameDetector.class));
         assertTrue(set.contains(NGramDetector.class));
     }
