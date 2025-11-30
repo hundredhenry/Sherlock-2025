@@ -4,8 +4,10 @@ import org.antlr.v4.runtime.Lexer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
 import uk.ac.warwick.dcs.sherlock.api.annotation.AdjustableParameterObj;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.IDetector;
+import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.IPostProcessor;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.IAdvancedPreProcessor;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 import uk.ac.warwick.dcs.sherlock.api.util.Side;
@@ -83,7 +85,6 @@ class RegistryTest {
         assertTrue(set.contains(NGramDetector.class));
     }
 
-    // @Disabled("Neither detectors use JavaLexer")
     @Test
     void getDetectorsUsingLanguage() {
         r.registerLanguage("Java", JavaLexer.class);
@@ -111,9 +112,11 @@ class RegistryTest {
         assertNotNull(list.get(0).getName());
     }
 
-    @Disabled("Not implemented yet")
     @Test
     void getPostProcessorInstance() {
+        r.registerPostProcessor(NGramPostProcessor.class, NGramRawResult.class);
+        IPostProcessor postproc = r.getPostProcessorInstance(NGramRawResult.class);
+        assertNotNull(postproc);
 
     }
 
