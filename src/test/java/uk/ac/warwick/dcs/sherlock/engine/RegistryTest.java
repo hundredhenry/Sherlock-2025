@@ -137,7 +137,6 @@ class RegistryTest {
         assertTrue(r.registerDetector(NGramDetector.class));
     }
 
-    @Disabled("Should the register method return false if we try to double register")
     @Test
     void failRegisterDetector() {
         assertTrue(r.registerDetector(NGramDetector.class));

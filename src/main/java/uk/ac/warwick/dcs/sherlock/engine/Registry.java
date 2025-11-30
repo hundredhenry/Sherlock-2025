@@ -434,8 +434,8 @@ public class Registry implements IRegistry {
 			return false;
 		}
 
-		//Do checks on actuall detector, ensure is valid
-		if (this.detectorRegistry.containsKey(tester)) {
+		//Do checks on actual detector, ensure is valid
+		if (this.detectorRegistry.containsKey(detector)) {
 			logger.warn("Detector '{}' not registered, registry already contains detector with same name", tester.getDisplayName());
 			return false;
 		}
