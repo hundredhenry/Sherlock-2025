@@ -70,6 +70,8 @@ public class PoolExecutorJob implements Runnable {
 			}
 
 			RecursiveAction preProcess = new WorkPreProcessFiles(new ArrayList<>(detTasks), this.job.getWorkspace().getFiles());
+			System.out.println("Number of files processing in this workspace (PoolExecutorJob.java): " + this.job.getWorkspace().getFiles().size()); //CHANGED
+			
 			this.scheduler.invokeWork(preProcess, Priority.DEFAULT);
 
 			// Check that preprocessing went okay
