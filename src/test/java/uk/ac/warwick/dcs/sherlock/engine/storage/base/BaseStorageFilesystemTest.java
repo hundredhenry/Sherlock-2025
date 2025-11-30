@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.mysql.cj.protocol.a.MultiPacketReader;
+
 import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
 import uk.ac.warwick.dcs.sherlock.api.util.Side;
 import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
@@ -36,71 +39,59 @@ class BaseStorageFilesystemTest {
     void tearDown() {
     }
 
-    @Disabled("loading a file is not working")
     @Test
     void storeAndLoadFile() {
-        MultipartFile inputFile = null;
-        byte[] inputFileBytes = null;
-        MultipartFile returnedFile = null;
+
+        byte[] inputFileBytes = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, \nsed do eiusmod tempor incididunt ut labore et dolore magna aliqua.".getBytes();
         byte[] returnedFileBytes = null;
-        try {
-            String filePath = System.getProperty("user.dir") + "\\src\\main\\java\\uk\\ac\\warwick\\dcs\\sherlock\\engine\\EventBus.java";
-            InputStream i = new FileInputStream(filePath);
-            inputFile = new MockMultipartFile("SherlockHelper.java", i);
-            inputFileBytes = inputFile.getBytes();
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
+        MultipartFile returnedFile = null;
+
+        MultipartFile inputFile = new MockMultipartFile("testfile.txt", inputFileBytes);
 
         int line = 0;
         int contentLine = 0;
         BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(inputFileBytes)));
 
         try {
-            while (reader.ready()) {
+            String lineTxt;
+            while ((lineTxt = reader.readLine()) != null) {
                 line++;
-                if (!reader.readLine().equals("")) {
+                if (!lineTxt.isEmpty()) {
                     contentLine++;
                 }
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
+
         EntityFile testEntityFile = new EntityFile(new EntityArchive(), FilenameUtils.getBaseName(inputFile.getName()), FilenameUtils.getExtension(inputFile.getName()), new Timestamp(System.currentTimeMillis()), inputFileBytes.length, line, contentLine);
         baseStorageFilesystem.storeFile(testEntityFile, inputFileBytes);
         InputStream returnedFileStream = baseStorageFilesystem.loadFile(testEntityFile);
         assertNotNull(returnedFileStream);
         try {
-            returnedFile = new MockMultipartFile("SherlockHelper.java", returnedFileStream);
+            returnedFile = new MockMultipartFile("testfile.txt", returnedFileStream);
             returnedFileBytes = returnedFile.getBytes();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         assertEquals(Arrays.toString(inputFileBytes), Arrays.toString(returnedFileBytes));
     }
 
-    @Disabled("loading a file is not working")
     @Test
-    void storeAndLoadFileAsString() {
-        MultipartFile inputFile = null;
-        byte[] inputFileBytes = null;
-        try {
-            String filePath = System.getProperty("user.dir") + "\\src\\main\\java\\uk\\ac\\warwick\\dcs\\sherlock\\engine\\EventBus.java";
-            InputStream i = new FileInputStream(filePath);
-            inputFile = new MockMultipartFile("SherlockTestFile.java", i);
-            inputFileBytes = inputFile.getBytes();
-        } catch (IOException e) {
-            throw new AssertionError(e);
-        }
+    void storeAndLoadFileAsString() {         
+        byte[] inputFileBytes = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, \nsed do eiusmod tempor incididunt ut labore et dolore magna aliqua.".getBytes();
+        MultipartFile inputFile = new MockMultipartFile("testfile.txt", inputFileBytes);
+
         int line = 0;
         int contentLine = 0;
         BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(inputFileBytes)));
 
         try {
-            while (reader.ready()) {
+            String lineTxt;
+            while ((lineTxt = reader.readLine()) != null) {
                 line++;
-                if (!reader.readLine().equals("")) {
+                if (!lineTxt.isEmpty()) {
                     contentLine++;
                 }
             }
