@@ -79,7 +79,7 @@ public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 		// I'd like to apologise for this abomination of code
 		// checks for any link between already seen matches and new ones, then adds them to the structure accordingly
 		for (NGramRawResult result : rawResults ) {			// for each file
-			for (NgramMatch match : (List<NgramMatch>) result.objects) {  //for each match in said file
+			for (NgramMatch match : (List<NgramMatch>) result.getObjects()) {  //for each match in said file
 				// if first match being checked add to new sublist
 				if (matches.size() == 0) {
 					matches.add(new ArrayList<>());
