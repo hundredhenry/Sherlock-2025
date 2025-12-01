@@ -163,6 +163,31 @@ public class WorkspaceController {
     }
 
     /**
+     * Handles GET requests to the delete all submissions page
+     *
+     * @return the path to the delete all template
+     */
+    @GetMapping("/dashboard/workspaces/manage/{pathid}/submissions/deleteall")
+    public String deleteAllGet() {
+        return "dashboard/workspaces/submissions/deleteAll";
+    }
+
+    /**
+     * Handles POST requests to the delete all submissions page
+     *
+     * @param workspaceWrapper the workspace being managed
+     *
+     * @return a direct to the workspace page
+     */
+    @PostMapping("/dashboard/workspaces/manage/{pathid}/submissions/deleteall")
+    public String deleteAllPost(
+            @ModelAttribute("workspace") WorkspaceWrapper workspaceWrapper
+    ) {
+        workspaceWrapper.deleteAll();
+        return "redirect:/dashboard/workspaces/manage/"+workspaceWrapper.getId()+"?msg=deleted_all_submissions";
+    }
+
+    /**
      * Handles the GET requests for the submissions list fragment
      *
      * @param pathid the id of the workspace

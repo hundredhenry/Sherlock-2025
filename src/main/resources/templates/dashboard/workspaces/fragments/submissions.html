@@ -49,8 +49,14 @@
     </tbody>
 </table>
 
-<div class="text-right mt-2">
-    <a class="btn btn-primary upload-new-submission" data-js='modal' th:href="@{/dashboard/workspaces/manage/{id}/submissions/upload(id=${workspace.getId()})}" th:text="#{workspaces.submissions.upload}"></a>
+<div class="btn-group text-right mt-2">
+    <div class="mr-4">
+        <a class="btn btn-primary delete-all-submission" data-js='modal' th:href="@{/dashboard/workspaces/manage/{id}/submissions/upload(id=${workspace.getId()})}" th:text="#{workspaces.submissions.upload}"></a>
+    </div>
+
+    <div>
+        <a class="btn btn-primary upload-new-submission" data-js='modal' th:href="@{/dashboard/workspaces/manage/{id}/submissions/deleteall(id=${workspace.getId()})}" th:text="#{workspaces.submissions.delete.all}"></a>
+    </div>
 </div>
 
 </body>
