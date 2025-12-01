@@ -283,6 +283,15 @@ public class WorkspaceWrapper {
     }
 
     /**
+     * Delete all submissions from this workspace
+     */
+    public void deleteAll(){
+        for (ISubmission submission : this.getSubmissions()) {
+            submission.remove();
+        }
+    }
+
+    /**
      * Runs a template on a workspace
      *
      * @param templateWrapper the template to run
