@@ -4,7 +4,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 
-//DEDICATED CLASS emulating MockMultipartFile for zip file uploading --> refer to WorkspaceController.java for implementation
+//DEDICATED MINIMAL CLASS for implementing MultipartFile for zip file uploading --> refer to WorkspaceController.java for implementation
 public class ZipMultipartFile implements MultipartFile {
 
     private final String name;
