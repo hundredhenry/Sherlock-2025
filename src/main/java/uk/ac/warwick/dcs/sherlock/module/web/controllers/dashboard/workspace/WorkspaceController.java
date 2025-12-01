@@ -292,7 +292,7 @@ public class WorkspaceController {
         if (!isAjax) throw new NotAjaxRequest("/dashboard/workspaces/manage/" + pathid);
 
         //Check the no. uploaded submissions (if less than 2 rerun) //CHANGED
-        if (workspaceWrapper.getFiles().size() < 2){
+        if (workspaceWrapper.getSubmissions().size() < 2){
             model.addAttribute("warning_msg", "workspaces.analysis.need_at_least_two_submissions");
             model.addAttribute("templates", TemplateWrapper.findByAccountAndPublic(account.getAccount(), templateRepository));
             return "dashboard/workspaces/fragments/run";
