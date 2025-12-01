@@ -117,16 +117,22 @@ class BaseStorageFilesystemTest {
         assertTrue(baseStorageFilesystem.storeTaskRawResults(entityTask));
     }
 
-    @Disabled("Need to mess around with DB and filestorage a bit more to understand this method")
     @Test
     void validateFileStore() {
         EmbeddedDatabase database = new EmbeddedDatabase();
-        //Do a scan of all files in database in background, check they exist and there are no extra files
-        List orphans = baseStorageFilesystem.validateFileStore(database.runQuery("SELECT f from File f", EntityFile.class), database.runQuery("SELECT t from Task t", EntityTask.class));
-        System.out.println(orphans.size());
-        if (orphans != null && orphans.size() > 0) {
-            database.removeObject(orphans);
-        }
 
+        byte[] inputFileBytes = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.".getBytes();
+        EntityFile testEntityFile = new EntityFile(new EntityArchive(), "testfile", "txt", new Timestamp(System.currentTimeMillis()), inputFileBytes.length, 1,1);
+
+        database.storeObject(testEntityFile);
+        baseStorageFilesystem.storeFile(testEntityFile, inputFileBytes);
+
+        //Do a scan of all files in database in background, check they exist and there are no extra files
+        List orphans = baseStorageFilesystem.validateFileStore(
+            database.runQuery("SELECT f from File f", EntityFile.class), 
+            database.runQuery("SELECT t from Task t", EntityTask.class)
+        );
+        assertNotNull(orphans);
+        assertEquals(0, orphans.size());
     }
 }
