@@ -63,7 +63,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 	public ReportManager(IResultJob results) {
 		this.reportGenerator = new ReportGenerator();
 
-		this.submissionFileMap = new HashMap<>();
+		this.submissionFileMap = new HashMap<>(); 
 		this.fileMap = new HashMap<>();
 		this.results = results;
 		this.submissionScores = new HashMap<>();
