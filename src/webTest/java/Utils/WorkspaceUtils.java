@@ -64,7 +64,7 @@ public class WorkspaceUtils {
         WebElement modal = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
         settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#num_sub_one"))).click();
         settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#num_file_one"))).click();
-        settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#num_file_one_div .form-row input"))).sendKeys(absoluteFilePath);//CHANGED --> UPDATED UI elements
+        settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#num_file_one_div .form-row input"))).sendKeys(absoluteFilePath);
         settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#num_file_one_div .form-group .btn-primary"))).click();
     }
 

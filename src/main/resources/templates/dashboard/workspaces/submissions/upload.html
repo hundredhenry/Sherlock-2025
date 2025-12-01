@@ -18,7 +18,7 @@
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="num_sub" id="num_sub_one" value="num_sub_one_div" data-js="radio-div" checked>
                     <label class="form-check-label" for="num_sub_one">
-                        <span th:text="#{workspaces.submissions.upload.individual}"></span>  <!-- //CHANGES -->
+                        <span th:text="#{workspaces.submissions.upload.individual}"></span>
                     </label>
                 </div>
                 <div id="num_sub_one_div" class="card bg-primary num_sub ml-4 d-none">
@@ -29,7 +29,7 @@
                         <form th:action="@{/dashboard/workspaces/manage/{id}/submissions/upload(id=${workspace.getId()})}" enctype="multipart/form-data" data-js='form' data-js-target="#upload-parent" method="post">
                             <div class="form-row">
                                 <div class="form-group col-md-12">
-                                    <input type="file" name="files" multiple accept=".java"> <!-- //CHANGE //accept java files only for now-->
+                                    <input type="file" name="files" multiple accept=".java"> <!-- currently restricted to .java files only -->
                                     <input type="hidden" name="single" value="false">
                                 </div>
                                 <div class="form-group col-md-12">

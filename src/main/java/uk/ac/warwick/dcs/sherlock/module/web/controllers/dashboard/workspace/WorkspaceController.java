@@ -5,31 +5,28 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
 import uk.ac.warwick.dcs.sherlock.api.component.ISubmission;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 import uk.ac.warwick.dcs.sherlock.api.component.IJob;
 import uk.ac.warwick.dcs.sherlock.module.web.data.models.forms.SubmissionsForm;
-import uk.ac.warwick.dcs.sherlock.module.web.exceptions.*;
 import uk.ac.warwick.dcs.sherlock.module.web.data.models.forms.WorkspaceForm;
 import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.AccountWrapper;
 import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.TemplateWrapper;
 import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.WorkspaceWrapper;
 import uk.ac.warwick.dcs.sherlock.module.web.data.repositories.TemplateRepository;
 import uk.ac.warwick.dcs.sherlock.module.web.data.repositories.WorkspaceRepository;
+import uk.ac.warwick.dcs.sherlock.module.web.exceptions.*;
+import uk.ac.warwick.dcs.sherlock.module.web.util.ZipMultipartFile;
 
 import jakarta.validation.Valid;
-import java.util.List;
-
-//PARSING ZIP FILES import requirements
-import java.util.ArrayList;
-import java.util.List;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.zip.ZipInputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.ZipEntry;
-import org.springframework.web.multipart.MultipartFile;
-import uk.ac.warwick.dcs.sherlock.module.web.util.ZipMultipartFile; //new manual class addition
+import java.util.zip.ZipInputStream;
 
 
 /**
@@ -152,10 +149,6 @@ public class WorkspaceController {
                 List<ITuple<ISubmission, ISubmission>> collisions; //handles any submissions that CONFLICT (i.e. the duplicate submissions)
                 boolean isSingleFileUpload = submissionsForm.getSingle(); //look at upload.html <hidden single=true/false> field
 
-
-
-
-
                 //CHANGED NEW CODE TO HANDLE ZIPS 
                 if (isSingleFileUpload){
                     List<MultipartFile> processedFiles = new ArrayList<>();
@@ -186,14 +179,8 @@ public class WorkspaceController {
                         }
                     }
                     submissionsForm.setFiles(processedFiles.toArray(new MultipartFile[0]));
-                }//CHANGED END
+                }
                 
-
-
-
-
-
-
                 collisions = workspaceWrapper.addSubmissions(submissionsForm);
                 model.addAttribute("collisions", collisions);
 
@@ -291,7 +278,7 @@ public class WorkspaceController {
     ) throws NotAjaxRequest, TemplateNotFound {
         if (!isAjax) throw new NotAjaxRequest("/dashboard/workspaces/manage/" + pathid);
 
-        //Check the no. uploaded submissions (if less than 2 rerun) //CHANGED
+        //Check the no. uploaded submissions (if less than 2 rerun)
         if (workspaceWrapper.getSubmissions().size() < 2){
             model.addAttribute("warning_msg", "workspaces.analysis.need_at_least_two_submissions");
             model.addAttribute("templates", TemplateWrapper.findByAccountAndPublic(account.getAccount(), templateRepository));
