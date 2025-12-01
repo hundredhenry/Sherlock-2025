@@ -71,7 +71,7 @@ public class EntityTask implements ITask, IStorable, Serializable {
 	@Override
 	public Class<? extends IDetector> getDetector() {
 		try {
-			return (Class<? extends IDetector>) Class.forName(this.detector, true, SherlockEngine.classloader);
+			return (Class<? extends IDetector>) Class.forName(this.detector, true, SherlockEngine.classloader).asSubclass(IDetector.class);
 		}
 		catch (Exception e) {
 			logger.error("Issue getting detector for task {}", this.id);

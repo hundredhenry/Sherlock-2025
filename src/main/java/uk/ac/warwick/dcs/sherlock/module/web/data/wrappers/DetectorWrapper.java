@@ -181,7 +181,7 @@ public class DetectorWrapper {
     public Class<? extends IDetector> getEngineDetector() throws DetectorNotFound {
         Class<? extends IDetector> detector = null;
         try {
-            detector = (Class<? extends IDetector>) Class.forName(this.tDetector.getName(), true, SherlockEngine.classloader);
+            detector = (Class<? extends IDetector>) Class.forName(this.tDetector.getName(), true, SherlockEngine.classloader).asSubclass(IDetector.class);
         } catch (ClassNotFoundException e) {
             throw new DetectorNotFound("Detector no longer exists");
         }

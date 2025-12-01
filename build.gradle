@@ -146,6 +146,7 @@ sourceSets {
 
 tasks.named('compileJava') {
     dependsOn(tasks.named('generateSources'))
+    options.compilerArgs += ['-Xlint:unchecked']
 }
 
 tasks.register('generateTestSources', Copy) {

@@ -6,6 +6,8 @@ import uk.ac.warwick.dcs.sherlock.api.exception.SubmissionUnsupportedException;
 import uk.ac.warwick.dcs.sherlock.api.exception.WorkspaceUnsupportedException;
 import uk.ac.warwick.dcs.sherlock.api.report.IReportManager;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
+import uk.ac.warwick.dcs.sherlock.engine.report.SubmissionMatchGroup;
+import uk.ac.warwick.dcs.sherlock.engine.report.SubmissionSummary;
 
 import java.util.List;
 
@@ -55,7 +57,7 @@ public interface IStorageWrapper extends ISourceFileHelper {
 	 *
 	 * @throws ResultJobUnsupportedException Thrown if IResultJob instance was not created by this IStorageWrapper implementation
 	 */
-	IReportManager getReportGenerator(IResultJob resultJob) throws ResultJobUnsupportedException;
+	IReportManager<SubmissionMatchGroup, SubmissionSummary> getReportGenerator(IResultJob resultJob) throws ResultJobUnsupportedException;
 
 	/**
 	 * Fetches a submission for the passed name if one exists, else returns null
