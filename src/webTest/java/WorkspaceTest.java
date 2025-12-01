@@ -90,7 +90,7 @@ public class WorkspaceTest extends AbstractWebTest {
         uploadButton.click();
         WebElement modal = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#num_sub_one"))).click();
-        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#num_file_one"))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#num_file_one"))).click(); //NO LONGER WORKS //CHANGE --> UPDATE THIS TEST
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#num_file_one_div .form-row input"))).sendKeys(filePath);
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#num_file_one_div .form-group .btn"))).click();
         alertElement = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#upload-parent .modal-body div.alert")));
