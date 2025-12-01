@@ -21,6 +21,17 @@ import uk.ac.warwick.dcs.sherlock.module.web.data.repositories.WorkspaceReposito
 import jakarta.validation.Valid;
 import java.util.List;
 
+//PARSING ZIP FILES import requirements
+import java.util.ArrayList;
+import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipEntry;
+import org.springframework.web.multipart.MultipartFile;
+import uk.ac.warwick.dcs.sherlock.module.web.util.ZipMultipartFile; //new manual class addition
+
+
 /**
  * The controller that deals with the manage workspace pages
  */
@@ -138,7 +149,51 @@ public class WorkspaceController {
 
         if (!result.hasErrors()) {
             try {
-                List<ITuple<ISubmission, ISubmission>> collisions = workspaceWrapper.addSubmissions(submissionsForm);
+                List<ITuple<ISubmission, ISubmission>> collisions; //handles any submissions that CONFLICT (i.e. the duplicate submissions)
+                boolean isSingleFileUpload = submissionsForm.getSingle(); //look at upload.html <hidden single=true/false> field
+
+
+
+
+
+                //CHANGED NEW CODE TO HANDLE ZIPS 
+                if (isSingleFileUpload){
+                    List<MultipartFile> processedFiles = new ArrayList<>();
+                    for (MultipartFile file : submissionsForm.getFiles()){
+                        String filename = file.getOriginalFilename();
+
+                        //handle .zip files using ZipMultipartFile
+                        if (filename != null && (filename.endsWith(".zip"))){
+                            try (ZipInputStream zip = new ZipInputStream(file.getInputStream())){
+                                ZipEntry entry;
+                                while ((entry = zip.getNextEntry()) != null){
+                                    if (!entry.isDirectory()){
+                                        //create a MultipartFile from the zip entry
+                                        byte[] fileBytes = zip.readAllBytes();
+                                        //theoretially could use MockMultipartFile, however that is reserved for testing and not production (bad practice)-> instead a mini-implementation of was made in ZipMultipartFile.java
+                                        MultipartFile zipFile = new ZipMultipartFile(entry.getName(), entry.getName(), "application/octet-stream", fileBytes);
+                                        processedFiles.add(zipFile);
+                                    }
+                                    zip.closeEntry();
+                                }
+                            }catch (IOException e){
+                                e.printStackTrace();
+                                result.reject("error.file.failed");
+                            }
+                        }else{
+                            processedFiles.add(file);
+                        }
+                    }
+                    submissionsForm.setFiles(processedFiles.toArray(new MultipartFile[0]));
+                }//CHANGED END
+                
+
+
+
+
+
+
+                collisions = workspaceWrapper.addSubmissions(submissionsForm);
                 model.addAttribute("collisions", collisions);
 
                 if (collisions.size() == 0) {
