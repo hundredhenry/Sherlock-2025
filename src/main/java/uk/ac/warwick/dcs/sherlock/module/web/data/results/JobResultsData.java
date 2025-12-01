@@ -10,6 +10,8 @@ import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
 import uk.ac.warwick.dcs.sherlock.module.web.data.models.internal.SubmissionScore;
 import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.TaskWrapper;
+import uk.ac.warwick.dcs.sherlock.engine.report.SubmissionMatchGroup;
+import uk.ac.warwick.dcs.sherlock.engine.report.SubmissionSummary;
 
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -183,7 +185,7 @@ public class JobResultsData {
 	private void fillResultsMap() {
 		resultsMap = new HashMap<>();
 
-		IReportManager report = null;
+		IReportManager<SubmissionMatchGroup,SubmissionSummary> report = null;
 		try {
 			report = SherlockEngine.storage.getReportGenerator(job.getLatestResult());
 		}
@@ -197,8 +199,8 @@ public class JobResultsData {
 		job.getWorkspace().getSubmissions().forEach(s -> idToName.put(s.getId(), s.getName()));
 
 		Comparator<SubmissionScore> compare = (SubmissionScore s1, SubmissionScore s2) -> ((Float) s1.getScore()).compareTo(s2.getScore() );
-		List<ISubmissionSummary> summaries = report.GetMatchingSubmissions();
-		for (ISubmissionSummary summary : summaries) {
+		List<SubmissionSummary> summaries = report.GetMatchingSubmissions();
+		for (SubmissionSummary summary : summaries) {
 			String name = idToName.getOrDefault(summary.getPersistentId(), "Deleted");
 			SubmissionScore score = new SubmissionScore(summary.getPersistentId(), name, summary.getScore() * 100);
 

@@ -33,7 +33,7 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 
 		this.exec = Executors.newSingleThreadExecutor();
 		this.execScheduler = Executors.newSingleThreadExecutor();
-		this.queue = new PriorityBlockingQueue(5, Comparator.comparing(PoolExecutorJob::getPriority));
+		this.queue = new PriorityBlockingQueue<PoolExecutorJob>(5, Comparator.comparing(PoolExecutorJob::getPriority));
 		this.jobMap = new ConcurrentHashMap<>();
 
 		this.curID = new AtomicInteger(0); //counter for jobstatus ids

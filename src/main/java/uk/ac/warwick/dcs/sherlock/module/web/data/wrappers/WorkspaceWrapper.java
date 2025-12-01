@@ -235,7 +235,7 @@ public class WorkspaceWrapper {
      */
     public List<ITuple<ISubmission, ISubmission>> addSubmissions(SubmissionsForm submissionsForm) throws NoFilesUploaded, FileUploadFailed {
         int count = 0; //the number of submissions uploaded
-        List<ITuple<ISubmission, ISubmission>> collisions = new ArrayList();
+        List<ITuple<ISubmission, ISubmission>> collisions = new ArrayList<ITuple<ISubmission, ISubmission>>();
         boolean multiple = false;
 
         if(submissionsForm.getFiles().length == 1 && !submissionsForm.getSingle()) {

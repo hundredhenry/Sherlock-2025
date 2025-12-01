@@ -2,6 +2,7 @@ package uk.ac.warwick.dcs.sherlock.module.web.controllers.settings.account;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -164,8 +165,16 @@ public class AccountController {
 			accountRepository.save(account.getAccount());
 
 			//Update the email in the security session information to prevent the user being logged out.
-			Collection<SimpleGrantedAuthority> authorities =
-					(Collection<SimpleGrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+			Collection<? extends GrantedAuthority> authorities =
+					 SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+			//previously used an unchecked cast into SimpleGrantedAuthority, but I dont think thats required
+			//if it is, then can use (with correct imports):
+			/*
+			List<SimpleGrantedAuthority> authorities = originalAuthorities.stream()
+        		.filter(a -> a instanceof SimpleGrantedAuthority)
+        		.map(a -> (SimpleGrantedAuthority) a)
+        		.collect(Collectors.toList()); 
+			*/
 			UsernamePasswordAuthenticationToken authentication =
 					new UsernamePasswordAuthenticationToken(account.getEmail(), account.getPassword(), authorities);
 			SecurityContextHolder.getContext().setAuthentication(authentication);
