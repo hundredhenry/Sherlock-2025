@@ -159,7 +159,8 @@ public class WorkspaceController {
                 //CHANGED NEW CODE TO HANDLE ZIPS 
                 if (isSingleFileUpload){
                     List<MultipartFile> processedFiles = new ArrayList<>();
-                    for (MultipartFile file : submissionsForm.getFiles()){
+                    System.out.println("Num files: " + submissionsForm.getFiles().length);
+                    for (MultipartFile file : submissionsForm.getFiles()){ //technically unneeded since upload only permits ONE zip file but keeping for robustness
                         String filename = file.getOriginalFilename();
 
                         //handle .zip files using ZipMultipartFile
@@ -167,12 +168,12 @@ public class WorkspaceController {
                             try (ZipInputStream zip = new ZipInputStream(file.getInputStream())){
                                 ZipEntry entry;
                                 while ((entry = zip.getNextEntry()) != null){
-                                    if (!entry.isDirectory()){
+                                    if (!entry.isDirectory()){ //IGNORE any subdirectories in the zip file
                                         //create a MultipartFile from the zip entry
                                         byte[] fileBytes = zip.readAllBytes();
-                                        //theoretially could use MockMultipartFile, however that is reserved for testing and not production (bad practice)-> instead a mini-implementation of was made in ZipMultipartFile.java
+                                        //theoretically could use MockMultipartFile, however that is reserved for testing and not production (bad practice)-> instead a mini-implementation of was made in ZipMultipartFile.java
                                         MultipartFile zipFile = new ZipMultipartFile(entry.getName(), entry.getName(), "application/octet-stream", fileBytes);
-                                        processedFiles.add(zipFile);
+                                        processedFiles.add(zipFile); //UNPACKING the entry so that Sherlock treats it as a separate uploaded file
                                     }
                                     zip.closeEntry();
                                 }
