@@ -84,14 +84,7 @@ class RegistryTest {
         assertTrue(set.contains(VariableNameDetector.class));
         assertTrue(set.contains(NGramDetector.class));
     }
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-    // @Disabled("Neither detectors use JavaLexer")
->>>>>>> 4bcb63e4 (Fixed getDetectorsUsingLanguage test)
-=======
->>>>>>> 5ddf7413 (Fixed getPostProcessorInstance test)
+    
     @Test
     void getDetectorsUsingLanguage() {
         r.registerLanguage("Java", JavaLexer.class);

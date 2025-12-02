@@ -299,7 +299,7 @@ tasks.named('assemble') {
 tasks.named('bootRun') {
     mainClass = 'uk.ac.warwick.dcs.sherlock.launch.SherlockClient'
     // Add -Doverride=True to jvmArgs to run as server
-    jvmArgs = ["-Dspring.profiles.active=dev", "-Dspring.output.ansi.enabled=ALWAYS"]
+    jvmArgs = ["-Dspring.profiles.active=dev", "-Dspring.output.ansi.enabled=ALWAYS", "-Doverride=True"]
 }
 
 tasks.named('test') {
