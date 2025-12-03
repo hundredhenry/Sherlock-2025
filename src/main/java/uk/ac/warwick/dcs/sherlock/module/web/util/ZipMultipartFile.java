@@ -4,7 +4,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 
-//DEDICATED MINIMAL CLASS for implementing MultipartFile for zip file uploading --> refer to WorkspaceController.java for implementation
+// A simple implementation of MultipartFile for handling ZIP files in memory.
 public class ZipMultipartFile implements MultipartFile {
 
     private final String name;
