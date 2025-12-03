@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-
 /**
  * The controller that deals with the manage workspace pages
  */
@@ -146,35 +145,36 @@ public class WorkspaceController {
 
         if (!result.hasErrors()) {
             try {
-                List<ITuple<ISubmission, ISubmission>> collisions; //handles any submissions that CONFLICT (i.e. the duplicate submissions)
-                boolean isSingleFileUpload = submissionsForm.getSingle(); //look at upload.html <hidden single=true/false> field
+                // For conflicting (duplicate) submissions
+                List<ITuple<ISubmission, ISubmission>> collisions;
+                // True or false depending on whether single file upload or zip upload
+                boolean isSingleFileUpload = submissionsForm.getSingle();
 
-                //CHANGED NEW CODE TO HANDLE ZIPS 
                 if (isSingleFileUpload){
                     List<MultipartFile> processedFiles = new ArrayList<>();
                     System.out.println("Num files: " + submissionsForm.getFiles().length);
-                    for (MultipartFile file : submissionsForm.getFiles()){ //technically unneeded since upload only permits ONE zip file but keeping for robustness
+                    // For loop technically unneeded since upload only permits ONE zip file but keeping for robustness
+                    for (MultipartFile file : submissionsForm.getFiles()){
                         String filename = file.getOriginalFilename();
 
-                        //handle .zip files using ZipMultipartFile
+                        // Handle .zip files using ZipMultipartFile
                         if (filename != null && (filename.endsWith(".zip"))){
                             try (ZipInputStream zip = new ZipInputStream(file.getInputStream())){
                                 ZipEntry entry;
                                 while ((entry = zip.getNextEntry()) != null){
-                                    if (!entry.isDirectory()){ //IGNORE any subdirectories in the zip file
-                                        //create a MultipartFile from the zip entry
+                                    // Ignore any subdirectories in the zip file
+                                    if (!entry.isDirectory()){
                                         byte[] fileBytes = zip.readAllBytes();
-                                        //theoretically could use MockMultipartFile, however that is reserved for testing and not production (bad practice)-> instead a mini-implementation of was made in ZipMultipartFile.java
                                         MultipartFile zipFile = new ZipMultipartFile(entry.getName(), entry.getName(), "application/octet-stream", fileBytes);
-                                        processedFiles.add(zipFile); //UNPACKING the entry so that Sherlock treats it as a separate uploaded file
+                                        processedFiles.add(zipFile);
                                     }
                                     zip.closeEntry();
                                 }
-                            }catch (IOException e){
+                            } catch (IOException e){
                                 e.printStackTrace();
                                 result.reject("error.file.failed");
                             }
-                        }else{
+                        } else {
                             processedFiles.add(file);
                         }
                     }
@@ -303,13 +303,13 @@ public class WorkspaceController {
     ) throws NotAjaxRequest, TemplateNotFound {
         if (!isAjax) throw new NotAjaxRequest("/dashboard/workspaces/manage/" + pathid);
 
-        //Check the no. uploaded submissions (if less than 2 rerun)
+        // Check the number of uploaded submissions (if less than 2 rerun)
         if (workspaceWrapper.getSubmissions().size() < 2){
             model.addAttribute("warning_msg", "workspaces.analysis.need_at_least_two_submissions");
             model.addAttribute("templates", TemplateWrapper.findByAccountAndPublic(account.getAccount(), templateRepository));
+            
             return "dashboard/workspaces/fragments/run";
         }
-
 
         TemplateWrapper templateWrapper = new TemplateWrapper(template_id, account.getAccount(), templateRepository);
 
