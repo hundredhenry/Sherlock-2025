@@ -184,9 +184,7 @@ public class Registry implements IRegistry {
 	 */
 	@Override
 	public Set<Class<? extends IDetector>> getDetectors(String language) {
-		// System.out.println("Languages: " + this.languageRegistry.values());
 		if (this.languageRegistry.containsKey(language.toLowerCase())) {
-			// System.out.println("Detectors for language " + language + ": " + this.languageRegistry.get(language.toLowerCase()).detectors);
 			return this.languageRegistry.get(language.toLowerCase()).detectors;
 		}
 
@@ -434,7 +432,7 @@ public class Registry implements IRegistry {
 			return false;
 		}
 
-		//Do checks on actual detector, ensure is valid
+		// Do checks on actual detector, ensure is valid
 		if (this.detectorRegistry.containsKey(detector)) {
 			logger.warn("Detector '{}' not registered, registry already contains detector with same name", tester.getDisplayName());
 			return false;

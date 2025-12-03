@@ -80,8 +80,7 @@ class BaseStorageTest {
         );
     }
 
-    //currently leaves the dot after the file name
-    // @Disabled("loading a file is not working")
+    // currently leaves the dot after the file name
     @Test
     void storeFile() {
         MultipartFile file = null;
@@ -110,7 +109,6 @@ class BaseStorageTest {
         bs.getDatabase().removeObject(submission);
     }
 
-    // @Disabled("loading a file is not working")
     @Test
     void storeFileThrowsWorkerException() {
         MultipartFile file = null;

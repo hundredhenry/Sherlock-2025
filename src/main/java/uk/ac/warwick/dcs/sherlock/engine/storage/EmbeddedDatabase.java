@@ -107,7 +107,6 @@ public class EmbeddedDatabase {
 				}
 			}
 		}
-		
 	}
 
 	public void removeObject(Object... objects) {

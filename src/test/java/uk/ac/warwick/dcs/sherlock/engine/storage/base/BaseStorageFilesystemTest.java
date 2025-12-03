@@ -41,7 +41,6 @@ class BaseStorageFilesystemTest {
 
     @Test
     void storeAndLoadFile() {
-
         byte[] inputFileBytes = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, \nsed do eiusmod tempor incididunt ut labore et dolore magna aliqua.".getBytes();
         byte[] returnedFileBytes = null;
         MultipartFile returnedFile = null;
@@ -127,7 +126,7 @@ class BaseStorageFilesystemTest {
         database.storeObject(testEntityFile);
         baseStorageFilesystem.storeFile(testEntityFile, inputFileBytes);
 
-        //Do a scan of all files in database in background, check they exist and there are no extra files
+        // Do a scan of all files in database in background, check they exist and there are no extra files
         List orphans = baseStorageFilesystem.validateFileStore(
             database.runQuery("SELECT f from File f", EntityFile.class), 
             database.runQuery("SELECT t from Task t", EntityTask.class)

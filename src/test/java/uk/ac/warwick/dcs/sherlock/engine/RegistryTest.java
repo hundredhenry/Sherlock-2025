@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RegistryTest {
     SherlockEngine se;
-
     Registry r;
 
     @BeforeEach
@@ -117,7 +116,6 @@ class RegistryTest {
         r.registerPostProcessor(NGramPostProcessor.class, NGramRawResult.class);
         IPostProcessor postproc = r.getPostProcessorInstance(NGramRawResult.class);
         assertNotNull(postproc);
-
     }
 
     @Test
