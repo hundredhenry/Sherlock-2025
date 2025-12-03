@@ -5,21 +5,28 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
 import uk.ac.warwick.dcs.sherlock.api.component.ISubmission;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 import uk.ac.warwick.dcs.sherlock.api.component.IJob;
 import uk.ac.warwick.dcs.sherlock.module.web.data.models.forms.SubmissionsForm;
-import uk.ac.warwick.dcs.sherlock.module.web.exceptions.*;
 import uk.ac.warwick.dcs.sherlock.module.web.data.models.forms.WorkspaceForm;
 import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.AccountWrapper;
 import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.TemplateWrapper;
 import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.WorkspaceWrapper;
 import uk.ac.warwick.dcs.sherlock.module.web.data.repositories.TemplateRepository;
 import uk.ac.warwick.dcs.sherlock.module.web.data.repositories.WorkspaceRepository;
+import uk.ac.warwick.dcs.sherlock.module.web.exceptions.*;
+import uk.ac.warwick.dcs.sherlock.module.web.util.ZipMultipartFile;
 
 import jakarta.validation.Valid;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * The controller that deals with the manage workspace pages
@@ -138,7 +145,43 @@ public class WorkspaceController {
 
         if (!result.hasErrors()) {
             try {
-                List<ITuple<ISubmission, ISubmission>> collisions = workspaceWrapper.addSubmissions(submissionsForm);
+                // For conflicting (duplicate) submissions
+                List<ITuple<ISubmission, ISubmission>> collisions;
+                // True or false depending on whether single file upload or zip upload
+                boolean isSingleFileUpload = submissionsForm.getSingle();
+
+                if (isSingleFileUpload){
+                    List<MultipartFile> processedFiles = new ArrayList<>();
+                    System.out.println("Num files: " + submissionsForm.getFiles().length);
+                    // For loop technically unneeded since upload only permits ONE zip file but keeping for robustness
+                    for (MultipartFile file : submissionsForm.getFiles()){
+                        String filename = file.getOriginalFilename();
+
+                        // Handle .zip files using ZipMultipartFile
+                        if (filename != null && (filename.endsWith(".zip"))){
+                            try (ZipInputStream zip = new ZipInputStream(file.getInputStream())){
+                                ZipEntry entry;
+                                while ((entry = zip.getNextEntry()) != null){
+                                    // Ignore any subdirectories in the zip file
+                                    if (!entry.isDirectory()){
+                                        byte[] fileBytes = zip.readAllBytes();
+                                        MultipartFile zipFile = new ZipMultipartFile(entry.getName(), entry.getName(), "application/octet-stream", fileBytes);
+                                        processedFiles.add(zipFile);
+                                    }
+                                    zip.closeEntry();
+                                }
+                            } catch (IOException e){
+                                e.printStackTrace();
+                                result.reject("error.file.failed");
+                            }
+                        } else {
+                            processedFiles.add(file);
+                        }
+                    }
+                    submissionsForm.setFiles(processedFiles.toArray(new MultipartFile[0]));
+                }
+                
+                collisions = workspaceWrapper.addSubmissions(submissionsForm);
                 model.addAttribute("collisions", collisions);
 
                 if (collisions.size() == 0) {
@@ -260,6 +303,14 @@ public class WorkspaceController {
     ) throws NotAjaxRequest, TemplateNotFound {
         if (!isAjax) throw new NotAjaxRequest("/dashboard/workspaces/manage/" + pathid);
 
+        // Check the number of uploaded submissions (if less than 2 rerun)
+        if (workspaceWrapper.getSubmissions().size() < 2){
+            model.addAttribute("warning_msg", "workspaces.analysis.need_at_least_two_submissions");
+            model.addAttribute("templates", TemplateWrapper.findByAccountAndPublic(account.getAccount(), templateRepository));
+            
+            return "dashboard/workspaces/fragments/run";
+        }
+
         TemplateWrapper templateWrapper = new TemplateWrapper(template_id, account.getAccount(), templateRepository);
 
         long jobId = 0;
@@ -309,7 +360,6 @@ public class WorkspaceController {
 
 		List<IJob> jobs = workspaceWrapper.getiWorkspace().getJobs();
 		model.addAttribute("jobs", jobs);
-
         return "dashboard/workspaces/fragments/results";
     }
 
