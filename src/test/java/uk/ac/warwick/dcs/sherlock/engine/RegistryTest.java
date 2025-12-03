@@ -4,8 +4,10 @@ import org.antlr.v4.runtime.Lexer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
 import uk.ac.warwick.dcs.sherlock.api.annotation.AdjustableParameterObj;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.IDetector;
+import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.IPostProcessor;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.IAdvancedPreProcessor;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 import uk.ac.warwick.dcs.sherlock.api.util.Side;
@@ -27,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RegistryTest {
     SherlockEngine se;
-
     Registry r;
 
     @BeforeEach
@@ -65,14 +66,13 @@ class RegistryTest {
         assertEquals(detectorName, displayName);
     }
 
-    @Disabled("TestDetector Not linked to language")
     @Test
     void getDetectorLanguages() {
         r.registerLanguage("Java", JavaLexer.class);
         r.registerDetector(VariableNameDetector.class);
         Set<String> languages = r.getDetectorLanguages(VariableNameDetector.class);
         assertNotNull(languages);
-        assertTrue(languages.contains("Java"));
+        assertTrue(languages.contains("java"));
     }
 
     @Test
@@ -83,16 +83,15 @@ class RegistryTest {
         assertTrue(set.contains(VariableNameDetector.class));
         assertTrue(set.contains(NGramDetector.class));
     }
-
-    @Disabled("Neither detectors use JavaLexer")
+    
     @Test
     void getDetectorsUsingLanguage() {
         r.registerLanguage("Java", JavaLexer.class);
         r.registerDetector(VariableNameDetector.class);
         r.registerDetector(NGramDetector.class);
         Set<Class<? extends IDetector>> set = r.getDetectors("Java");
-        //assertTrue(set.contains(VariableNameDetector.class));
-        //assertTrue(set.contains(NGramDetector.class));
+        assertTrue(set.contains(VariableNameDetector.class));
+        assertTrue(set.contains(NGramDetector.class));
     }
 
     @Test
@@ -112,10 +111,11 @@ class RegistryTest {
         assertNotNull(list.get(0).getName());
     }
 
-    @Disabled("Not implemented yet")
     @Test
     void getPostProcessorInstance() {
-
+        r.registerPostProcessor(NGramPostProcessor.class, NGramRawResult.class);
+        IPostProcessor postproc = r.getPostProcessorInstance(NGramRawResult.class);
+        assertNotNull(postproc);
     }
 
     @Test
@@ -135,7 +135,6 @@ class RegistryTest {
         assertTrue(r.registerDetector(NGramDetector.class));
     }
 
-    @Disabled("Should the register method return false if we try to double register")
     @Test
     void failRegisterDetector() {
         assertTrue(r.registerDetector(NGramDetector.class));

@@ -83,7 +83,22 @@ public class EmbeddedDatabase {
 		else {
 			try {
 				em.getTransaction().begin();
-				em.remove(obj);
+			
+				// If the object is an EntityArchive, merge its workspace first
+				// to avoid foreign key constraint issues
+				if (obj instanceof EntityArchive) {
+					EntityArchive a = (EntityArchive) obj;
+
+					if (a.getWorkspace() != null) {
+						// This takes a detached entity and brings it to the current context
+						// so it can be managed by ObjectDB and be safely removed later
+						em.merge(a.getWorkspace());
+					}
+				}
+
+				Object managed = em.merge(obj);
+				em.remove(managed);
+
 				em.getTransaction().commit();
 			}
 			finally {

@@ -432,8 +432,8 @@ public class Registry implements IRegistry {
 			return false;
 		}
 
-		//Do checks on actuall detector, ensure is valid
-		if (this.detectorRegistry.containsKey(tester)) {
+		// Do checks on actual detector, ensure is valid
+		if (this.detectorRegistry.containsKey(detector)) {
 			logger.warn("Detector '{}' not registered, registry already contains detector with same name", tester.getDisplayName());
 			return false;
 		}
@@ -443,6 +443,8 @@ public class Registry implements IRegistry {
 		data.desc = tester.getDescription();
 		data.strategies = tester.getPreProcessors();
 		data.resultClass = resultsClass;
+		data.languages = new HashSet<>();
+		data.languages.addAll(this.languageRegistry.keySet());
 
 		//Do @DetectorParameter stuff - find the annotations for the params in the detector, check them and add to the map
 		List<AdjustableParameterObj> tuneables =
@@ -467,6 +469,10 @@ public class Registry implements IRegistry {
 
 		if (tuneables.size() > 0) {
 			data.adjustables = tuneables;
+		}
+
+		for (String lang : this.languageRegistry.keySet()) {
+			this.languageRegistry.get(lang.toLowerCase()).detectors.add(detector);
 		}
 
 		this.detectorRegistry.put(detector, data);
