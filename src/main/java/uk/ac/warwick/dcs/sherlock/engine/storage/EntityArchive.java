@@ -39,7 +39,7 @@ public class EntityArchive implements ISubmission, Serializable {
 	
 	private String name;
 
-	@ManyToOne (fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.REMOVE})
+	@ManyToOne (fetch = FetchType.LAZY)
 	private EntityWorkspace workspace;
 
 	@ManyToOne (fetch = FetchType.LAZY)
