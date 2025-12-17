@@ -149,6 +149,7 @@ public class EntityArchive implements ISubmission, Serializable {
 		if (this.getWorkspace() != null) {
 			for (IJob job : this.getWorkspace().getJobs()) {
 				job.setStatus(WorkStatus.MISSING_FILES);
+				job.remove();
 			}
 		}
 
