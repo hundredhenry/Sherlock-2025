@@ -111,4 +111,12 @@ public interface IJob {
 	 * Delete the job, all tasks and results. Cannot be undone
 	 */
 	void remove();
+
+	/**
+	 * Clears all results and raw results from this job and its tasks,
+	 * allowing for a complete re-run of preprocessing, matching, and postprocessing.
+	 * This will remove the job results (postprocessed results) and clear raw results
+	 * from all tasks, then reset the job status to PREPARED so it runs through all stages again.
+	 */
+	void clearResults();
 }
