@@ -191,6 +191,26 @@ public class EntityJob implements IJob, Serializable {
 	}
 
 	@Override
+	public void clearResults() {
+		// Remove the job results (postprocessed results)
+		if (this.results != null) {
+			this.results.remove();
+			this.results = null;
+		}
+
+		// Clear raw results from all tasks
+		if (this.tasks != null) {
+			for (EntityTask t : this.tasks) {
+				t.clearResults();
+			}
+		}
+
+		// Reset job status to PREPARED so it runs through all stages
+		this.status = WorkStatus.PREPARED;
+		BaseStorage.instance.database.storeObject(this);
+	}
+
+	@Override
 	public void remove() {
 
 		if (this.tasks != null) {

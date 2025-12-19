@@ -55,64 +55,64 @@ public class PoolExecutorJob implements Runnable {
 		List<PoolExecutorTask> tasks = job.getTasks().stream().map(x -> new PoolExecutorTask(this.status, scheduler, x, job.getWorkspace().getLanguage())).collect(Collectors.toList());
 		ExecutorService exServ = Executors.newFixedThreadPool(tasks.size());
 
-		// is job not already run, if so skip and only postprocess
-		if (!(job.getStatus() == WorkStatus.COMPLETE || job.getStatus() == WorkStatus.REGEN_RESULTS) && tasks.size() > 0) {
-			job.setStatus(WorkStatus.ACTIVE);
-			this.status.nextStep();
-			this.status.calculateProgressIncrement(tasks.stream().mapToInt(t -> t.getPreProcessingStrategies().size()).sum() * this.job.getWorkspace().getFiles().size());
-
-			List<PoolExecutorTask> detTasks = tasks.stream().filter(x -> x.getStatus() != WorkStatus.COMPLETE).collect(Collectors.toList());
-
-			if (detTasks.isEmpty()) {
-				ExecutorUtils.logger.error("Could not generate tasks for job {}, exiting", this.job.getPersistentId());
-				job.setStatus(WorkStatus.INTERRUPTED);
-				return;
-			}
-
-			RecursiveAction preProcess = new WorkPreProcessFiles(new ArrayList<>(detTasks), this.job.getWorkspace().getFiles());
-			this.scheduler.invokeWork(preProcess, Priority.DEFAULT);
-
-			// Check that preprocessing went okay
-			detTasks.stream().filter(x -> x.dataItems.size() == 0).peek(x -> {
-				ExecutorUtils.logger.error("PreProcessing output for detector {} is empty, this detector will be ignored.", x.getDetector().getName());
-			}).forEach(detTasks::remove);
-
-			if (detTasks.isEmpty()) {
-				ExecutorUtils.logger.error("No detectors with valid preprocessing outputs for job {}, exiting", this.job.getPersistentId());
-				job.setStatus(WorkStatus.INTERRUPTED);
-				return;
-			}
-
-			this.status.nextStep();
-			this.status.calculateProgressIncrement(detTasks.size());
-
-			try {
-				exServ.invokeAll(detTasks); // build tasks
-			}
-			catch (InterruptedException e) {
-				job.setStatus(WorkStatus.INTERRUPTED);
-				return;
-			}
-
-			this.status.nextStep();
-			this.status.calculateProgressIncrement(detTasks.stream().mapToInt(PoolExecutorTask::getWorkerSize).sum());
-
-			try {
-				exServ.invokeAll(detTasks); // run tasks
-			}
-			catch (InterruptedException e) {
-				job.setStatus(WorkStatus.INTERRUPTED);
-				return;
-			}
-
-			job.setStatus(WorkStatus.REGEN_RESULTS);
-		}
-		else {
-			job.setStatus(WorkStatus.ACTIVE);
-			tasks.forEach(x -> x.callType = 3);
+		if (tasks.isEmpty()) {
+			ExecutorUtils.logger.error("Could not generate tasks for job {}, exiting", this.job.getPersistentId());
+			job.setStatus(WorkStatus.INTERRUPTED);
+			return;
 		}
 
-		// do the post stuff
+		// Run preprocessing, detection, and postprocessing
+		job.setStatus(WorkStatus.ACTIVE);
+		this.status.nextStep();
+		this.status.calculateProgressIncrement(tasks.stream().mapToInt(t -> t.getPreProcessingStrategies().size()).sum() * this.job.getWorkspace().getFiles().size());
+
+		List<PoolExecutorTask> detTasks = tasks.stream().filter(x -> x.getStatus() != WorkStatus.COMPLETE).collect(Collectors.toList());
+
+		if (detTasks.isEmpty()) {
+			ExecutorUtils.logger.error("Could not generate tasks for job {}, exiting", this.job.getPersistentId());
+			job.setStatus(WorkStatus.INTERRUPTED);
+			return;
+		}
+
+		RecursiveAction preProcess = new WorkPreProcessFiles(new ArrayList<>(detTasks), this.job.getWorkspace().getFiles());
+		this.scheduler.invokeWork(preProcess, Priority.DEFAULT);
+
+		// Check that preprocessing went okay
+		detTasks.stream().filter(x -> x.dataItems.size() == 0).peek(x -> {
+			ExecutorUtils.logger.error("PreProcessing output for detector {} is empty, this detector will be ignored.", x.getDetector().getName());
+		}).forEach(detTasks::remove);
+
+		if (detTasks.isEmpty()) {
+			ExecutorUtils.logger.error("No detectors with valid preprocessing outputs for job {}, exiting", this.job.getPersistentId());
+			job.setStatus(WorkStatus.INTERRUPTED);
+			return;
+		}
+
+		this.status.nextStep();
+		this.status.calculateProgressIncrement(detTasks.size());
+
+		try {
+			exServ.invokeAll(detTasks); // build tasks
+		}
+		catch (InterruptedException e) {
+			job.setStatus(WorkStatus.INTERRUPTED);
+			return;
+		}
+
+		this.status.nextStep();
+		this.status.calculateProgressIncrement(detTasks.stream().mapToInt(PoolExecutorTask::getWorkerSize).sum());
+
+		try {
+			exServ.invokeAll(detTasks); // run tasks
+		}
+		catch (InterruptedException e) {
+			job.setStatus(WorkStatus.INTERRUPTED);
+			return;
+		}
+
+		job.setStatus(WorkStatus.REGEN_RESULTS);
+
+		// Run postprocessing
 		this.status.setStep(5);
 		List<PoolExecutorTask> postTasks = tasks.stream().filter(x -> x.getStatus() == WorkStatus.COMPLETE).collect(Collectors.toList());
 		List<ITuple<ITask, ModelTaskProcessedResults>> results = new LinkedList<>();

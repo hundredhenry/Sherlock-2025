@@ -100,6 +100,10 @@ public class ResultsController {
             @PathVariable(value="jobid") long jobid,
             @ModelAttribute("results") JobResultsData results
     ) throws InterruptedException {
+        // Clear all old results before re-running
+        // This ensures the job runs through preprocessing, matching, and postprocessing again
+        results.getJob().clearResults();
+        
         SherlockEngine.executor.submitJob(results.getJob());
         return "redirect:/dashboard/workspaces/manage/" + pathid + "/results/" + jobid;
     }
