@@ -45,27 +45,30 @@ public class AdminTest extends AbstractWebTest {
         takeScreenshot("01_userAccountDetails.jpg");
         modal.findElement(By.cssSelector(".btn.btn-primary")).click();
 
-
         modal = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
-        takeScreenshot("02_AccountPassword.jpg");
         String alertSuccess = messageProperties.getProperty("admin.accounts.password.start");
         Sleeper.sleep();
         String alertText = wait.until(ExpectedConditions.visibilityOf(modal.findElement(By.cssSelector("div.alert")))).getText();
         assertEquals(alertSuccess, alertText);
-        String newAccountPassword = modal.findElement(By.cssSelector("input#newPassword")).getAttribute("value");
+        String newAccountPassword = modal.findElement(By.cssSelector("input#newPassword")).getDomAttribute("value");
+        takeScreenshot("02_AccountPassword.jpg");
         modal.findElement(By.cssSelector(".btn.btn-secondary")).click();
 
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input.form-control"))).sendKeys(newAccountEmail);
         takeScreenshot("03_accountInList.jpg");
 
         AccountUtils.logOut(getSettings());
+        AccountUtils.clearLoginCookies(getSettings());
         AccountUtils.loginWithDetails(getSettings(), newAccountEmail, newAccountPassword);
         takeScreenshot("04_loggedInToAccount.jpg");
         //assert that url = dashboard
+
         String expected = baseURL + "dashboard/index";
         assertEquals(expected, browser.getCurrentUrl());
 
         AccountUtils.logOut(getSettings());
+        AccountUtils.clearLoginCookies(getSettings());
+        AccountUtils.navigateToLogin(getSettings());
         AccountUtils.loginWithAdmin(getSettings());
         AccountUtils.deleteAccount(getSettings(), newAccountEmail);
     }
@@ -86,6 +89,7 @@ public class AdminTest extends AbstractWebTest {
         browser.findElement(By.cssSelector(".btn.btn-primary")).click();
 
         WebElement modal = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
+        
         modal.findElement(By.cssSelector("#name")).sendKeys(copyAccountName);
         modal.findElement(By.cssSelector("#email")).sendKeys(sharedAccountEmail);
         modal.findElement(By.cssSelector("#oldPassword")).sendKeys(AccountUtils.getAdminPassword(getSettings()));

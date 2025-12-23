@@ -132,6 +132,12 @@ public class AccountUtils {
     public static void navigateToAdminSettings(TestSettings settings) {
         NavigateUtils.get(settings, NavEnum.ADMIN);
     }
+
+    public static void clearLoginCookies(TestSettings settings) {
+        if (settings.browser.getCurrentUrl().contains("/login")) {
+            settings.browser.manage().deleteAllCookies();
+        }
+    }
 }
 
 
