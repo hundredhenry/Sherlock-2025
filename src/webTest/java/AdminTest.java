@@ -49,6 +49,7 @@ public class AdminTest extends AbstractWebTest {
         String alertSuccess = messageProperties.getProperty("admin.accounts.password.start");
         Sleeper.sleep();
         String alertText = wait.until(ExpectedConditions.visibilityOf(modal.findElement(By.cssSelector("div.alert")))).getText();
+        takeScreenshot("05_Alert.jpg");
         assertEquals(alertSuccess, alertText);
         String newAccountPassword = modal.findElement(By.cssSelector("input#newPassword")).getDomAttribute("value");
         takeScreenshot("02_AccountPassword.jpg");
@@ -59,10 +60,17 @@ public class AdminTest extends AbstractWebTest {
 
         AccountUtils.logOut(getSettings());
         AccountUtils.clearLoginCookies(getSettings());
+        AccountUtils.navigateToLogin(getSettings());
         AccountUtils.loginWithDetails(getSettings(), newAccountEmail, newAccountPassword);
         takeScreenshot("04_loggedInToAccount.jpg");
+        if (browser.getCurrentUrl().contains("login")) {
+            AccountUtils.clearLoginCookies(getSettings());
+            AccountUtils.navigateToLogin(getSettings());
+            AccountUtils.loginWithAdmin(getSettings());
+            takeScreenshot("06_secondLogInAttempt.jpg");
+        }
+            
         //assert that url = dashboard
-
         String expected = baseURL + "dashboard/index";
         assertEquals(expected, browser.getCurrentUrl());
 
