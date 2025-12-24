@@ -54,14 +54,15 @@ public class AnalysisTest extends AbstractWebTest {
         takeScreenshot("01_Workspace.jpg");
         WebElement uploadButton = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("div#submissions-parent .upload-new-submission")));
         uploadButton.click();
+        // Upload first zip of files
         WebElement modal = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
-        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#num_sub_one"))).click();
-        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#num_file_multi"))).click();
-        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#archive_yes"))).click();
-        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#archive_yes_div .form-row input"))).sendKeys(resource1);
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#num_sub_multi"))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#sub_org_folder"))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#sub_org_folder_div .form-row input"))).sendKeys(resource1);
         takeScreenshot("02_CompleteUploadForm.jpg");
-        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#archive_yes_div .form-group .btn-primary"))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#sub_org_folder_div .form-group .btn-primary"))).click();
 
+        // Confirm successful upload of first zip of files
         Sleeper.sleep();
         takeScreenshot("03_UploadSuccessful.jpg");
         String alertMessage = modal.findElement(By.cssSelector("div.alert")).getText();
@@ -69,8 +70,19 @@ public class AnalysisTest extends AbstractWebTest {
         assertEquals(expectedMessage, alertMessage);
         modal.findElement(By.cssSelector(".btn-secondary")).click();
         Sleeper.sleep();
+
+        // Upload second zip of files
         WorkspaceUtils.uploadZipToWorkspace(getSettings(), resource2);
         takeScreenshot("04_FilesUploaded.jpg");
+        Sleeper.sleep();
+
+        // Confirm successful upload of second zip of files
+        alertMessage = modal.findElement(By.cssSelector("div.alert")).getText();
+        expectedMessage = messageProperties.getProperty("workspaces.submissions.uploaded.no_dups");
+        assertEquals(expectedMessage, alertMessage);
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal .btn-secondary"))).click();
+        
+        // Run analysis on uploaded files
         browser.findElement(By.cssSelector("div#run-parent .btn-primary")).click();
         takeScreenshot("05_Run.jpg");
         String completeStatus = messageProperties.getProperty("COMPLETE");

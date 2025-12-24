@@ -12,7 +12,7 @@ public class TemplateUtils {
     public static void addTemplate(TestSettings settings, String templateName) {
         navigateToTemplates(settings);
 
-        settings.browser.findElement(By.linkText("Add New")).click();
+        settings.wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Add New"))).click();
 
         // first form page
         WebElement modal = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
