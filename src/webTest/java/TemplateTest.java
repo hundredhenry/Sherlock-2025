@@ -42,7 +42,7 @@ public class TemplateTest extends AbstractWebTest {
         TemplateUtils.navigateToTemplates(getSettings());
 
         String templateName = "templateToAdd";
-        browser.findElement(By.linkText("Add New")).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Add New"))).click();
 
         // first form page
         WebElement modal = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
@@ -152,19 +152,9 @@ public class TemplateTest extends AbstractWebTest {
         TemplateUtils.addTemplate(getSettings(), templateName);
         TemplateUtils.navigateToTemplates(getSettings());
         takeScreenshot("01_workspaces.jpg");
-        if (!TemplateUtils.selectTemplate(getSettings(), templateName)) {
-            throw new Error("failed to select template");
-        }
-        takeScreenshot("02_manage.jpg");
-
-        String deleteLinkText = messageProperties.getProperty("link.delete");
-        browser.findElement(By.linkText(deleteLinkText)).click();
-        WebElement modal = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
-        String alertText = messageProperties.getProperty("templates.delete.warning");
-        assertEquals(alertText, modal.findElement(By.cssSelector("div.alert")).getText());
-        modal.findElement(By.cssSelector(".btn.btn-primary")).click();
-        takeScreenshot("03_removed.jpg");
-        assertFalse(TemplateUtils.selectTemplate(getSettings(), templateName));
+        TemplateUtils.deleteTemplate(getSettings(), templateName);
+        takeScreenshot("02_removed.jpg");
+        assertFalse(TemplateUtils.searchForTemplate(getSettings(), templateName));
     }
 
 
