@@ -90,6 +90,23 @@ public class BaseStorageFilesystem {
 	}
 
 	/**
+	 * Removes a test file from the filesystem
+	 *
+	 * @param file file to remove
+	 */
+	public void clearTestFile(EntityFile file) {
+		List<String> filesInStore = this.getAllFiles();
+		if (filesInStore == null) {
+			return;
+		}
+
+		String tmp = this.computeLocator(this.computeFileIdentifier(file));
+		if (filesInStore.contains(tmp)) {
+			new File(SherlockEngine.configuration.getDataPath() + File.separator + "Store" + File.separator + tmp).delete();
+		}
+	}
+
+	/**
 	 * Removes a tasks raw results object from the filesystem
 	 *
 	 * @param task task to remove

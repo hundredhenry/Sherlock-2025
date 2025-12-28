@@ -23,8 +23,7 @@ public class TemplateUtils {
         select.selectByVisibleText("Java");
 
         List<WebElement> checkboxes = modal.findElements(By.cssSelector("label.checkbox-inline"));
-        checkboxes.get(0).findElement(By.cssSelector("input")).click();
-
+        checkboxes.get(1).findElement(By.cssSelector("input")).click();
 
         modal.findElement(By.cssSelector(".btn.btn-primary")).click();
     }
@@ -42,6 +41,25 @@ public class TemplateUtils {
             }
         }
         return found;
+    }
+
+    public static boolean searchForTemplate(TestSettings settings, String templateName) {
+        navigateToTemplates(settings);
+        WebElement searchbox = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input.form-control")));
+        searchbox.sendKeys(templateName);
+        searchbox.sendKeys(Keys.ENTER);
+        WebElement table = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".table.table-hover.table-borderless")));
+        try {
+            for (WebElement row : table.findElements(By.cssSelector("tbody tr"))) {
+                String selectedWorkspaceName = row.findElement(By.cssSelector("h5 span")).getText();
+                if (selectedWorkspaceName.equals(templateName)) {
+                    return true;
+                }
+            }
+        } catch (org.openqa.selenium.NoSuchElementException e) {
+            return false;
+        }
+        return false;
     }
 
     public static void deleteTemplate(TestSettings settings, String templateToDelete) {
