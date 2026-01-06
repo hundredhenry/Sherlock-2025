@@ -22,9 +22,7 @@ public class TemplateUtils {
         Select select = new Select(dropdown);
         select.selectByVisibleText("Java");
 
-        List<WebElement> checkboxes = modal.findElements(By.cssSelector("label.checkbox-inline"));
-        checkboxes.get(1).findElement(By.cssSelector("input")).click();
-
+        modal.findElement(By.id("uk.ac.warwick.dcs.sherlock.module.model.base.detection.NGramDetector")).click();
         modal.findElement(By.cssSelector(".btn.btn-primary")).click();
     }
 

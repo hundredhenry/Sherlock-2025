@@ -12,7 +12,6 @@ public class WorkspaceUtils {
     public static void addWorkspace(TestSettings settings, String workspaceName) {
         navigateToWorkspaces(settings);
 
-        //settings.browser.findElement(By.linkText("Add New")).click();
         settings.wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Add New"))).click();
         // first form page
         WebElement modal = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
@@ -62,9 +61,9 @@ public class WorkspaceUtils {
         WebElement uploadButton = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("div#submissions-parent .btn.btn-primary")));
         uploadButton.click();
         WebElement modal = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
+        settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#num_sub_multi"))).click();
         settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#num_sub_one"))).click();
-        settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#num_file_one"))).click();
-        settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#num_sub_one_div .form-row input"))).sendKeys(absoluteFilePath);
+        settings.wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#num_sub_one_div .form-row input[type='file']"))).sendKeys(absoluteFilePath);
         settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#num_sub_one_div .form-group .btn-primary"))).click();
     }
 
@@ -74,7 +73,7 @@ public class WorkspaceUtils {
         WebElement modal = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
         settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#num_sub_multi"))).click();
         settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#sub_org_folder"))).click();
-        settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#sub_org_folder_div .form-row input"))).sendKeys(absoluteFilePath);
+        settings.wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#sub_org_folder_div .form-row input[type='file']"))).sendKeys(absoluteFilePath);
         settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#sub_org_folder_div .form-group .btn-primary"))).click();
     }
 
