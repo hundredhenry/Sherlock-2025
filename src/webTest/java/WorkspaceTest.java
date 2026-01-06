@@ -80,7 +80,7 @@ public class WorkspaceTest extends AbstractWebTest {
         WebElement alertElement = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#name")));
 
         takeScreenshot("03_newName.jpg");
-        assertEquals(newWorkspaceName, alertElement.getAttribute("value"));
+        assertEquals(newWorkspaceName, alertElement.getDomAttribute("value"));
         String updateAlert = messageProperties.getProperty("workspaces.details.updated");
         assertEquals(updateAlert, browser.findElement(By.cssSelector("#details-parent div.alert")).getText());
 
@@ -89,9 +89,10 @@ public class WorkspaceTest extends AbstractWebTest {
         WebElement uploadButton = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("div#submissions-parent .text-right .btn.btn-primary")));
         uploadButton.click();
         WebElement modal = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#num_sub_multi"))).click();
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#num_sub_one"))).click();
-        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#num_sub_one_div .form-row input[type='file']"))).sendKeys(filePath);
-        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#num_sub_one_div .form-group .btn"))).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#num_sub_one_div .form-row input[type='file']"))).sendKeys(filePath);
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#num_sub_one_div .form-group .btn-primary"))).click();
         alertElement = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#upload-parent .modal-body div.alert")));
         takeScreenshot("04_uploadFile.jpg");
         String submissionAlert = messageProperties.getProperty("workspaces.submissions.uploaded.no_dups");
@@ -108,7 +109,7 @@ public class WorkspaceTest extends AbstractWebTest {
         takeScreenshot("05_viewSubmission.jpg");
         assertEquals(expectedHeaderText, actualHeaderText);
 
-        WorkspaceUtils.deleteWorkspace(getSettings(), workspaceName);
+        WorkspaceUtils.deleteWorkspace(getSettings(), newWorkspaceName);
     }
 
     //Test to show that it is possible to delete a workspace from the Sherlock system.

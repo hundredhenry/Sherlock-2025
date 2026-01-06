@@ -48,7 +48,7 @@ public class AdminTest extends AbstractWebTest {
         modal = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
         String alertSuccess = messageProperties.getProperty("admin.accounts.password.start");
         Sleeper.sleep();
-        String alertText = wait.until(ExpectedConditions.visibilityOf(modal.findElement(By.cssSelector("div.alert")))).getText();
+        String alertText = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#modal div.alert"))).getText();
         takeScreenshot("05_Alert.jpg");
         assertEquals(alertSuccess, alertText);
         String newAccountPassword = modal.findElement(By.cssSelector("input#newPassword")).getDomAttribute("value");

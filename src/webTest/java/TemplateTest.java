@@ -42,7 +42,7 @@ public class TemplateTest extends AbstractWebTest {
         TemplateUtils.navigateToTemplates(getSettings());
 
         String templateName = "templateToAdd";
-        wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Add New"))).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText("Add New"))).click();
 
         // first form page
         WebElement modal = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
@@ -127,7 +127,7 @@ public class TemplateTest extends AbstractWebTest {
 
         //Manage active detectors
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#detectors-parent .btn-primary"))).click();
-        WebElement inputForm = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".modal-body input.form-control")));
+        WebElement inputForm = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".modal-body input.form-control")));
         takeScreenshot("04_manageParameters.jpg");
         inputForm.clear();
         inputForm.sendKeys("1.0");
