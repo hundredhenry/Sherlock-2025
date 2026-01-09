@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AnalysisTest extends AbstractWebTest {
@@ -63,9 +63,11 @@ public class AnalysisTest extends AbstractWebTest {
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#sub_org_folder_div .form-group .btn-primary"))).click();
 
         // Confirm successful upload of first zip of files
+        // String alertMessage = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("div.alert"))).getText();
         Sleeper.sleep();
+        
+        String alertMessage = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("div.alert.alert-info"))).getText();
         takeScreenshot("03_UploadSuccessful.jpg");
-        String alertMessage = modal.findElement(By.cssSelector("div.alert")).getText();
         String expectedMessage = messageProperties.getProperty("workspaces.submissions.uploaded.no_dups");
         assertEquals(expectedMessage, alertMessage);
         modal.findElement(By.cssSelector(".btn-secondary")).click();
@@ -77,7 +79,7 @@ public class AnalysisTest extends AbstractWebTest {
         Sleeper.sleep();
 
         // Confirm successful upload of second zip of files
-        alertMessage = modal.findElement(By.cssSelector("div.alert")).getText();
+        alertMessage = modal.findElement(By.cssSelector("div.alert.alert-info")).getText();
         expectedMessage = messageProperties.getProperty("workspaces.submissions.uploaded.no_dups");
         assertEquals(expectedMessage, alertMessage);
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal .btn-secondary"))).click();
