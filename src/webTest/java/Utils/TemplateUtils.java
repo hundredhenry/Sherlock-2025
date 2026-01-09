@@ -11,7 +11,7 @@ import java.util.List;
 public class TemplateUtils {
     public static void addTemplate(TestSettings settings, String templateName) {
         navigateToTemplates(settings);
-
+        
         settings.wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Add New"))).click();
 
         // first form page
