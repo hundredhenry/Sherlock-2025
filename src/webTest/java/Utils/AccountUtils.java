@@ -81,7 +81,7 @@ public class AccountUtils {
         modal = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
         Sleeper.sleep();
         WebElement passwordText = settings.wait.until(ExpectedConditions.elementToBeClickable((By.cssSelector(".modal-body"))));
-        String newAccountPassword =  passwordText.findElement(By.cssSelector("#newPassword")).getAttribute("value");
+        String newAccountPassword =  passwordText.findElement(By.cssSelector("#newPassword")).getDomAttribute("value");
         modal.findElement(By.cssSelector(".btn.btn-secondary")).click();
 
         return newAccountPassword;
@@ -131,6 +131,12 @@ public class AccountUtils {
 
     public static void navigateToAdminSettings(TestSettings settings) {
         NavigateUtils.get(settings, NavEnum.ADMIN);
+    }
+
+    public static void clearLoginCookies(TestSettings settings) {
+        if (settings.browser.getCurrentUrl().contains("/login")) {
+            settings.browser.manage().deleteAllCookies();
+        }
     }
 }
 
