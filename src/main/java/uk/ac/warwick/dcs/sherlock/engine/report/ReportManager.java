@@ -70,7 +70,12 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 		this.relativeFileScores = new HashMap<>();
 		this.results.getFileResults().forEach(resultFile -> this.fileMap.put(resultFile.getFile().getPersistentId(), resultFile.getFile()));
 		this.results.getFileResults().forEach(resultFile -> resultFile.getFileScores().keySet().forEach(file2 -> this.relativeFileScores.put(new ArrayList<Long>(Arrays.asList(resultFile.getFile().getPersistentId(), file2.getPersistentId())), resultFile.getFileScore(file2))));
-		this.results.getFileResults().forEach(resultFile -> this.submissionScores.put(resultFile.getFile().getSubmission().getId(), resultFile.getOverallScore()));
+		this.results.getFileResults().forEach(resultFile -> {
+			if (resultFile.getFile() == null) return;
+			ISubmission submission = resultFile.getFile().getSubmission();
+			if (submission == null) return;
+			this.submissionScores.put(submission.getId(), resultFile.getOverallScore());
+		});
 
 		FillSubmissionFileMap();
 	}

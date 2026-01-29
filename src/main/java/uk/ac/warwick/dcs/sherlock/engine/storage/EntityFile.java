@@ -164,8 +164,16 @@ public class EntityFile implements ISourceFile, IStorable, Serializable {
 	@Override
 	public ISubmission getSubmission() {
 		EntityArchive sub = this.archive;
+
+		if (sub == null){
+			return null;
+		}
+
 		while (sub.hasParent()) {
 			sub = sub.getParent_();
+			if (sub == null) {
+				return null;
+			}
 		}
 
 		return sub;
@@ -186,6 +194,7 @@ public class EntityFile implements ISourceFile, IStorable, Serializable {
 		//Set all the jobs as having missing files
 		for (IJob job : this.getArchive().getWorkspace().getJobs()) {
 			job.setStatus(WorkStatus.MISSING_FILES);
+			job.remove();
 		}
 
 		this.remove_();
