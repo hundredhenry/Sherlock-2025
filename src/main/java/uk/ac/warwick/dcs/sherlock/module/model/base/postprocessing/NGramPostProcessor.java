@@ -4,7 +4,7 @@ import uk.ac.warwick.dcs.sherlock.api.annotation.AdjustableParameter;
 import uk.ac.warwick.dcs.sherlock.api.component.ICodeBlockGroup;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.exception.UnknownDetectionTypeException;
-import uk.ac.warwick.dcs.sherlock.module.model.base.detection.NgramMatch;
+import uk.ac.warwick.dcs.sherlock.module.model.base.detection.NGramMatch;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.IPostProcessor;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.ModelTaskProcessedResults;
 import uk.ac.warwick.dcs.sherlock.module.model.base.scoring.NGramScorer;
@@ -34,7 +34,7 @@ public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 	 * @return A boolean showing if the 2 matches are on the same code block or not.
 	 */
 	// TODO possible add extension for fuzzy matches, e.g. subsets and overlaps
-	private boolean isLinked(NgramMatch first, NgramMatch second) {
+	private boolean isLinked(NGramMatch first, NGramMatch second) {
 		// for each file combination
 		for (int i = 0; i < 2; i++) {
 			for (int j = 0; j < 2; j++) {
@@ -54,10 +54,10 @@ public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 	 * @param match The match to be added to the structure.
 	 * @param matches The structure to add the match to.
 	 */
-	private void addToMatches(NgramMatch match, ArrayList<ArrayList<NgramMatch>> matches) {
+	private void addToMatches(NGramMatch match, ArrayList<ArrayList<NGramMatch>> matches) {
 		// for each list check for a link in the list by checking all contained objects. Add to any list wish a link or make a new list
-		for (ArrayList<NgramMatch> check_list : matches) {
-			for (NgramMatch check : check_list) {
+		for (ArrayList<NGramMatch> check_list : matches) {
+			for (NGramMatch check : check_list) {
 				// if link found add to list
 				if (isLinked(match, check)) {
 					check_list.add(match);
@@ -75,11 +75,11 @@ public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 	 * @param rawResults	The set of rawResults produced by the IDetector.
 	 * @param matches		The container for group data
 	 */
-	private void processMatches(List<NGramRawResult> rawResults, ArrayList<ArrayList<NgramMatch>> matches) {
+	private void processMatches(List<NGramRawResult> rawResults, ArrayList<ArrayList<NGramMatch>> matches) {
 		// I'd like to apologise for this abomination of code
 		// checks for any link between already seen matches and new ones, then adds them to the structure accordingly
 		for (NGramRawResult result : rawResults ) {			// for each file
-			for (NgramMatch match : (List<NgramMatch>) result.getObjects()) {  //for each match in said file
+			for (NGramMatch match : (List<NGramMatch>) result.getObjects()) {  //for each match in said file
 				// if first match being checked add to new sublist
 				if (matches.size() == 0) {
 					matches.add(new ArrayList<>());
@@ -101,13 +101,13 @@ public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 	 * @param out_group	The current group being added to by the function
 	 * @param scorer	The scoring object used to assist in score generation and common checks
 	 */
-	private void makeScoreGroups(List<ISourceFile> files, ModelTaskProcessedResults results, ArrayList<ArrayList<NgramMatch>> matches, ICodeBlockGroup out_group, NGramScorer scorer) {
+	private void makeScoreGroups(List<ISourceFile> files, ModelTaskProcessedResults results, ArrayList<ArrayList<NGramMatch>> matches, ICodeBlockGroup out_group, NGramScorer scorer) {
 		// for each matching group of code blocks
-		for (ArrayList<NgramMatch> list : matches) {
+		for (ArrayList<NGramMatch> list : matches) {
 			// make new scorer group
 			scorer.newGroup();
 			// fill the scorer group
-			for (NgramMatch item : list) {
+			for (NGramMatch item : list) {
 				// add all matches in a group to the scoring data structure
 				scorer.add(item);
 			}
@@ -152,7 +152,7 @@ public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 
 		// A list of all match block groups
 		// Each group is stored as a sub list and has the same common code block
-		ArrayList<ArrayList<NgramMatch>> matches = new ArrayList<>();
+		ArrayList<ArrayList<NGramMatch>> matches = new ArrayList<>();
 
 		// checks for any link between already seen matches and new ones, then adds them to the structure accordingly
 		processMatches(rawResults, matches);

@@ -18,7 +18,7 @@ import java.util.Objects;
  *     A pointer to the checked file (File2).
  * </p>
  */
-public class NgramMatch implements Serializable {
+public class NGramMatch implements Serializable {
     /**
      * The line positions of both blocks.
      */
@@ -42,7 +42,7 @@ public class NgramMatch implements Serializable {
      * @param file1 The first file.
      * @param file2 The second file.
      */
-    NgramMatch(int refStart, int refEnd, int checkStart, int checkEnd, float similarity, ISourceFile file1, ISourceFile file2) {
+    NGramMatch(int refStart, int refEnd, int checkStart, int checkEnd, float similarity, ISourceFile file1, ISourceFile file2) {
         // init the array list
         lines = new ArrayList<>();
         // fill with line positions
@@ -68,8 +68,8 @@ public class NgramMatch implements Serializable {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof NgramMatch)) return false;
-        NgramMatch other = (NgramMatch) obj;
+        if (!(obj instanceof NGramMatch)) return false;
+        NGramMatch other = (NGramMatch) obj;
         
         return this.lines.get(0).equals(other.lines.get(0))
             && this.lines.get(1).equals(other.lines.get(1));
