@@ -15,9 +15,6 @@ import java.util.Objects;
  * </p>
  */
 public class ASTMatch implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
     /**
      * Line ranges for the matched blocks.
      * Index 0 = file 1 (start, end), Index 1 = file 2 (start, end).
