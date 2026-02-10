@@ -15,16 +15,45 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import java.awt.Desktop;
 import java.net.URI;
+import picocli.CommandLine;
 
+@CommandLine.Command(name = "SherlockClient", description = "Launch the Sherlock client application", mixinStandardHelpOptions = true)
 @SherlockModule(side = Side.CLIENT)
-public class SherlockClient {
+public class SherlockClient implements Runnable {
 
 	@Instance
 	public static SherlockClient instance;
 
 	private static Splash splash;
 
+	@CommandLine.Option(names = {"-c", "--cli"}, description = "Launch as command-line interface", defaultValue = "false")
+	boolean cli_state;
+
+	@CommandLine.Spec
+	private CommandLine.Model.CommandSpec spec;
+
+	@Override
+	public void run() {
+		String[] java_args = spec.commandLine().getParseResult().originalArgs().toArray(new String[0]);
+		if (cli_state) {
+			System.out.println("Starting Sherlock client in CLI mode...");
+			cli_launcher(java_args);
+		} else {
+			System.out.println("Starting Sherlock client in WEB mode...");
+			web_launcher(java_args);
+		}
+	}
+
 	public static void main(String[] args) {
+		new CommandLine(new SherlockClient()).execute(args);
+	}
+
+	public void cli_launcher(String[] args) {
+		SherlockCli cli = new SherlockCli();
+		cli.launch_cli();
+	}
+
+	public void web_launcher(String[] args) {
 		System.setProperty("spring.devtools.restart.enabled", "false"); // fix stupid double instance bug
 
 		SherlockClient.splash = new Splash();
