@@ -72,7 +72,7 @@ public class NGramScorer {
 	 */
 	public boolean checkSize(int file_count, ArrayList<NgramMatch> list) {
 		// if the match is uncommon (appears in few files), return true to keep it
-		if ((file_list.size() / file_count) <= threshold) {
+		if (((float) file_list.size() / file_count) <= threshold) {
 			return true;
 		}
 		// if the match is common (appears in many files), return false to filter it out
