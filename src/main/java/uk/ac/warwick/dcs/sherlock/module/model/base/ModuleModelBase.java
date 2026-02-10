@@ -5,9 +5,12 @@ import uk.ac.warwick.dcs.sherlock.api.annotation.EventHandler;
 import uk.ac.warwick.dcs.sherlock.api.annotation.SherlockModule;
 import uk.ac.warwick.dcs.sherlock.api.event.EventInitialisation;
 import uk.ac.warwick.dcs.sherlock.api.event.EventPreInitialisation;
+import uk.ac.warwick.dcs.sherlock.module.model.base.detection.ASTDetector;
 import uk.ac.warwick.dcs.sherlock.module.model.base.detection.NGramDetector;
 import uk.ac.warwick.dcs.sherlock.module.model.base.detection.VariableNameDetector;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.JavaLexer;
+import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.ASTPostProcessor;
+import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.ASTRawResult;
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.NGramPostProcessor;
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.NGramRawResult;
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.SimpleObjectEqualityPostProcessor;
@@ -33,6 +36,9 @@ public class ModuleModelBase {
 
 		SherlockRegistry.registerDetector(NGramDetector.class);
 		SherlockRegistry.registerPostProcessor(NGramPostProcessor.class, NGramRawResult.class);
+
+		SherlockRegistry.registerDetector(ASTDetector.class);
+		SherlockRegistry.registerPostProcessor(ASTPostProcessor.class, ASTRawResult.class);
 
 	}
 
