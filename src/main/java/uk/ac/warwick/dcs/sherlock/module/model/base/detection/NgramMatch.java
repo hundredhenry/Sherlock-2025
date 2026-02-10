@@ -5,6 +5,7 @@ import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * Contains all data for a single matched pair.
@@ -57,11 +58,31 @@ public class NgramMatch implements Serializable {
     }
 
     /**
-     * Checks if the two stored blocks are the same.
-     * @param pair The match to check for equality.
-     * @return True if the blocks are the same.
+     * Checks if two matches reference the same line ranges.
+     * Two matches are equal if they span the same lines in both files,
+     * regardless of similarity score or file references.
+     *
+     * @param obj the object to compare with
+     * @return true if both matches have identical line ranges, false otherwise
      */
-    public boolean equals(NgramMatch pair) {
-        return this.lines.get(0).equals(pair.lines.get(0)) && this.lines.get(1).equals(pair.lines.get(1));
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof NgramMatch)) return false;
+        NgramMatch other = (NgramMatch) obj;
+        
+        return this.lines.get(0).equals(other.lines.get(0))
+            && this.lines.get(1).equals(other.lines.get(1));
+    }
+
+    /**
+     * Returns hash code based on line ranges.
+     * Consistent with equals() — only considers line positions, not similarity or files.
+     *
+     * @return hash code value for this match
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(lines.get(0), lines.get(1));
     }
 }
