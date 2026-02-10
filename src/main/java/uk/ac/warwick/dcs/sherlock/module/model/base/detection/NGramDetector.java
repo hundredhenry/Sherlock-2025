@@ -64,36 +64,37 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 	 * @return The float val for Jaccard Similarity
 	 */
 	public float compare(ArrayList<Ngram> string1, ArrayList<Ngram> string2) {
-		// build hash sets for O(1) lookup
-		HashSet<String> set1 = new HashSet<>();
-		HashSet<String> set2 = new HashSet<>();
-
-		// convert N-gram lists to String sets
+		// Build frequency maps (multisets) for both n-gram lists
+		HashMap<String, Integer> bag1 = new HashMap<>();
+		HashMap<String, Integer> bag2 = new HashMap<>();
+		
 		for (Ngram ngram : string1) {
-			set1.add(ngram.getNgram());
+			bag1.merge(ngram.getNgram(), 1, (a, b) -> a + b);
 		}
 		for (Ngram ngram : string2) {
-			set2.add(ngram.getNgram());
+			bag2.merge(ngram.getNgram(), 1, (a, b) -> a + b);
 		}
 
-		// calculate intersection size
+		// Calculate multiset Jaccard similarity: |intersection| / |union|
 		int intersection = 0;
-		for (String ngram : set1) {
-			if (set2.contains(ngram)) {
-				intersection++;
-			}
+		int union = 0;
+
+		// Get all unique n-gram strings from both bags
+		HashSet<String> allKeys = new HashSet<>(bag1.keySet());
+		allKeys.addAll(bag2.keySet());
+
+		// For each n-gram string, count how many times it appears in intersection and union
+		for (String key : allKeys) {
+			int count1 = bag1.getOrDefault(key, 0);
+			int count2 = bag2.getOrDefault(key, 0);
+			intersection += Math.min(count1, count2);  // intersection uses minimum count
+			union += Math.max(count1, count2);         // union uses maximum count
 		}
 
-		// Jaccard Similarity = |intersection| / |union|
-		// |union| = |set1| + |set2| - |intersection|
-		int union = set1.size() + set2.size() - intersection;
-		
-		// handle edge case of both sets being empty
-		if (union == 0) {
-			return 1.0f;
-		}
+		// Handle empty input case
+		if (union == 0) return 0.0f;
 
-		return (float) intersection / (float) union;
+		return (float) intersection / union;
 	}
 
 	// add line markers
@@ -140,6 +141,8 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 		for (IndexedString lineC : file) {
 			// acquire line
 			line = lineC.getValue();
+			// to prevent ngram matches across lines
+			ngram = null;
 			// if line is shorter than the ngram_size pad it with whitespace
 			// this should function without issue as an equivalent lines will also be too short and be padded the same
 			if (line.length() < ngram_size) {
