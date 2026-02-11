@@ -5,6 +5,7 @@ import uk.ac.warwick.dcs.sherlock.api.model.detection.IDetector;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.ModelDataItem;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.PairwiseDetectorWorker;
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.SimpleObjectEqualityRawResult;
+import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.LineListArtifact;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -19,8 +20,11 @@ public class VariableNameDetectorWorker extends PairwiseDetectorWorker<SimpleObj
 	public void execute() {
 		// This detector finds and matches up variables - it only works on declarations of the variable, not every time the variable is called.
 
-		List<IndexedString> linesF1 = this.file1.getPreProcessedLines("variables");
-		List<IndexedString> linesF2 = this.file2.getPreProcessedLines("variables");
+		LineListArtifact artiF1 = (LineListArtifact) this.file1.getPreProcessedArtifact("variables");
+		LineListArtifact artiF2 = (LineListArtifact) this.file2.getPreProcessedArtifact("variables");
+
+		List<IndexedString> linesF1 = artiF1.lines();
+		List<IndexedString> linesF2 = artiF2.lines();
 
 		List<Integer> usedIndexesF2 = new LinkedList<>();
 
