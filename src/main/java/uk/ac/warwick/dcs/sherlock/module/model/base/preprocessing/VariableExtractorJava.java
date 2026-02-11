@@ -3,6 +3,7 @@ package uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import uk.ac.warwick.dcs.sherlock.api.util.IndexedString;
+import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.LineListArtifact;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.IAdvancedPreProcessor;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.JavaLexer;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.JavaParser;
@@ -14,7 +15,7 @@ import java.util.List;
 public class VariableExtractorJava implements IAdvancedPreProcessor<JavaLexer> {
 
 	@Override
-	public List<IndexedString> process(JavaLexer lexer) {
+	public LineListArtifact process(JavaLexer lexer) {
 		List<IndexedString> fields = new LinkedList<>();
 
 		lexer.reset();
@@ -35,6 +36,6 @@ public class VariableExtractorJava implements IAdvancedPreProcessor<JavaLexer> {
 		}, parser.compilationUnit());
 
 		//System.out.println("field -> " + fields.toString());
-		return fields;
+		return new LineListArtifact(fields);
 	}
 }
