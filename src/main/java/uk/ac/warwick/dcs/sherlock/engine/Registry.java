@@ -322,9 +322,7 @@ public class Registry implements IRegistry {
 			}
 
 			AdvPreProcessorData data = new AdvPreProcessorData();
-			@SuppressWarnings("unchecked")
-			Class<? extends Lexer> lexerClass = (Class<? extends Lexer>) type;
-			data.lexer = lexerClass;
+			data.lexer = (Class<? extends Lexer>) type;
 			data.clazz = preProcessor;
 
 			this.languageRegistry.forEach((k, v) -> {
@@ -373,14 +371,10 @@ public class Registry implements IRegistry {
 		// Check generics for detector
 		Class<? extends DetectorWorker> workerClass;
 		try {
-			@SuppressWarnings("unchecked")
-			Class<? extends DetectorWorker> tmp = (Class<? extends DetectorWorker>) getGenericClass(detector.getGenericSuperclass());
-			workerClass = tmp;
-		} catch (ClassCastException | ClassNotFoundException | NullPointerException e) {
-			logger.error(
-					"IDetector '{}' not registered. It has no DetectorWorker type (its generic parameter), this is not allowed. A generic type MUST be given",
-					detector.getName()
-			);
+			workerClass = (Class<? extends DetectorWorker>) getGenericClass(detector.getGenericSuperclass());
+		}
+		catch (ClassCastException | ClassNotFoundException | NullPointerException e) {
+			logger.error("IDetector '{}' not registered. It has no DetectorWorker type (its generic parameter), this is not allowed. A generic type MUST be given", detector.getName());
 			e.printStackTrace();
 			return false;
 		}
