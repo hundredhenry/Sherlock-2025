@@ -16,17 +16,25 @@ import javax.swing.JOptionPane;
 import java.awt.Desktop;
 import java.net.URI;
 import picocli.CommandLine;
+import java.util.Arrays;
 
 @CommandLine.Command(name = "SherlockClient", description = "Launch the Sherlock client application", mixinStandardHelpOptions = true)
 @SherlockModule(side = Side.CLIENT)
 public class SherlockClient implements Runnable {
+
+	public enum LaunchMode {
+		CLI,
+		WEB
+	}
 
 	@Instance
 	public static SherlockClient instance;
 
 	private static Splash splash;
 
-	@CommandLine.Option(names = {"-c", "--cli"}, description = "Launch as command-line interface", defaultValue = "false")
+	private static LaunchMode launchMode = LaunchMode.WEB;
+
+	@CommandLine.Option(names = {"--cli"}, description = "Launch as command-line interface", defaultValue = "false")
 	boolean cli_state;
 
 	@CommandLine.Spec
@@ -35,6 +43,7 @@ public class SherlockClient implements Runnable {
 	@Override
 	public void run() {
 		String[] java_args = spec.commandLine().getParseResult().originalArgs().toArray(new String[0]);
+		launchMode = Arrays.asList(java_args).contains("--cli") ? LaunchMode.CLI : LaunchMode.WEB;
 		if (cli_state) {
 			System.out.println("Starting Sherlock client in CLI mode...");
 			cli_launcher(java_args);
@@ -92,9 +101,12 @@ public class SherlockClient implements Runnable {
 
 	@EventHandler
 	public void postInitialisation(EventPostInitialisation event) {
-		SherlockClient.splash.close();
+		if (SherlockClient.splash != null) {
+			SherlockClient.splash.close();
+		}
 		try {
-			if (Desktop.isDesktopSupported()) {
+			if (Desktop.isDesktopSupported() && launchMode == LaunchMode.WEB) {
+				System.out.println("Opening web interface in default browser...");
 				Desktop.getDesktop().browse(new URI("http://localhost:2218"));
 			}
 		}

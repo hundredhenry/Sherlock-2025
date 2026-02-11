@@ -1,4 +1,4 @@
-package uk.ac.warwick.dcs.sherlock.module.cli;
+package uk.ac.warwick.dcs.sherlock.module.cli.commands;
 
 import picocli.CommandLine;
 
