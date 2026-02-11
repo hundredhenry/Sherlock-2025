@@ -32,6 +32,10 @@ java {
     }
 }
 
+configurations {
+    jsMinifier
+}
+
 dependencies {
     antlr('org.antlr:antlr4:4.13.2')
 
@@ -84,6 +88,8 @@ dependencies {
 
     compileOnly('org.springframework.boot:spring-boot-configuration-processor')
     annotationProcessor('org.springframework.boot:spring-boot-configuration-processor')
+
+    jsMinifier 'com.google.javascript:closure-compiler:v20240317'
 }
 
 configurations.configureEach {
@@ -195,17 +201,29 @@ tasks.register('combineJs') {
     }
 }
 
-// For now, just copy the combined JS as the minified version
-tasks.register('minifyJs', Copy) {
+// Minify the combined JS using Google Closure Compiler
+tasks.register('minifyJs', JavaExec) {
     dependsOn(tasks.named('combineJs'))
-    
+
+    def inputPath = "${projectDir}/src/main/resources/static/js/default.js"
+    def outputPath = "${projectDir}/src/main/resources/static/js/default.min.js"
+
+    inputs.file(inputPath)
+    outputs.file(outputPath)
+
+    classpath = configurations.jsMinifier
+    mainClass = 'com.google.javascript.jscomp.CommandLineRunner'
+    args = [
+        '--js', inputPath,
+        '--js_output_file', outputPath,
+        '--compilation_level', 'SIMPLE',
+        '--warning_level', 'QUIET',
+        '--charset', 'UTF-8'
+    ]
+
     doFirst {
-        delete("${projectDir}/src/main/resources/static/js/default.min.js")
+        delete(outputPath)
     }
-    
-    from("${projectDir}/src/main/resources/static/js/default.js")
-    into("${projectDir}/src/main/resources/static/js")
-    rename('default.js', 'default.min.js')
 }
 
 // Compile SASS files
