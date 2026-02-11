@@ -5,6 +5,7 @@ import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * Contains all data for a single matched pair.
@@ -17,7 +18,7 @@ import java.util.ArrayList;
  *     A pointer to the checked file (File2).
  * </p>
  */
-public class NgramMatch implements Serializable {
+public class NGramMatch implements Serializable {
     /**
      * The line positions of both blocks.
      */
@@ -41,7 +42,7 @@ public class NgramMatch implements Serializable {
      * @param file1 The first file.
      * @param file2 The second file.
      */
-    NgramMatch(int refStart, int refEnd, int checkStart, int checkEnd, float similarity, ISourceFile file1, ISourceFile file2) {
+    NGramMatch(int refStart, int refEnd, int checkStart, int checkEnd, float similarity, ISourceFile file1, ISourceFile file2) {
         // init the array list
         lines = new ArrayList<>();
         // fill with line positions
@@ -57,11 +58,31 @@ public class NgramMatch implements Serializable {
     }
 
     /**
-     * Checks if the two stored blocks are the same.
-     * @param pair The match to check for equality.
-     * @return True if the blocks are the same.
+     * Checks if two matches reference the same line ranges.
+     * Two matches are equal if they span the same lines in both files,
+     * regardless of similarity score or file references.
+     *
+     * @param obj the object to compare with
+     * @return true if both matches have identical line ranges, false otherwise
      */
-    public boolean equals(NgramMatch pair) {
-        return this.lines.get(0).equals(pair.lines.get(0)) && this.lines.get(1).equals(pair.lines.get(1));
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof NGramMatch)) return false;
+        NGramMatch other = (NGramMatch) obj;
+        
+        return this.lines.get(0).equals(other.lines.get(0))
+            && this.lines.get(1).equals(other.lines.get(1));
+    }
+
+    /**
+     * Returns hash code based on line ranges.
+     * Consistent with equals() — only considers line positions, not similarity or files.
+     *
+     * @return hash code value for this match
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(lines.get(0), lines.get(1));
     }
 }

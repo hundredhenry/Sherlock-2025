@@ -3,7 +3,7 @@ package uk.ac.warwick.dcs.sherlock.module.model.base.scoring;
 import uk.ac.warwick.dcs.sherlock.api.component.ICodeBlockGroup;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
-import uk.ac.warwick.dcs.sherlock.module.model.base.detection.NgramMatch;
+import uk.ac.warwick.dcs.sherlock.module.model.base.detection.NGramMatch;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +44,7 @@ public class NGramScorer {
 	 * </p>
 	 * @param pair The pair of files and their local match score.
 	 */
-	public void add(NgramMatch pair) {
+	public void add(NGramMatch pair) {
 		// for both files
 		for (int i = 0 ; i < 2 ; i++) {
 			// check for if the files exist in file_list, if they do add to them, if not make a new object to add to the list
@@ -70,9 +70,9 @@ public class NGramScorer {
 	 * @param list The list of matches (unused parameter, kept for API compatibility).
 	 * @return true if the match group is uncommon (should be kept), false if common (should be filtered).
 	 */
-	public boolean checkSize(int file_count, ArrayList<NgramMatch> list) {
+	public boolean checkSize(int file_count, ArrayList<NGramMatch> list) {
 		// if the match is uncommon (appears in few files), return true to keep it
-		if ((file_list.size() / file_count) <= threshold) {
+		if (((float) file_list.size() / file_count) <= threshold) {
 			return true;
 		}
 		// if the match is common (appears in many files), return false to filter it out
