@@ -2,6 +2,7 @@ package uk.ac.warwick.dcs.sherlock.api.model.detection;
 
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.util.IndexedString;
+import uk.ac.warwick.dcs.sherlock.api.util.IPreprocessArtifact;
 
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.Map;
 public class ModelDataItem {
 
 	private final ISourceFile file;
-	private final Map<String, List<IndexedString>> mapping;
+	private final Map<String, IPreprocessArtifact> mapping;
 
 	/**
 	 * Build data item for file
@@ -29,9 +30,9 @@ public class ModelDataItem {
 	 * Build data item for file
 	 *
 	 * @param file file to build for
-	 * @param map  map of indexed lines against the tag for their producing strategy
+	 * @param map  map of preprocessed artifacts against the tag for their producing strategy
 	 */
-	public ModelDataItem(ISourceFile file, Map<String, List<IndexedString>> map) {
+	public ModelDataItem(ISourceFile file, Map<String, IPreprocessArtifact> map) {
 		this.file = file;
 		this.mapping = new HashMap<>(map);
 	}
@@ -40,10 +41,10 @@ public class ModelDataItem {
 	 * Adds a mapping for a preprocessing strategy
 	 *
 	 * @param strategyName tag for strategy
-	 * @param lines        index lines
+	 * @param artifact     preprocessed artifact
 	 */
-	public void addPreProcessedLines(String strategyName, List<IndexedString> lines) {
-		this.mapping.put(strategyName, lines);
+	public void addPreProcessedArtifact(String strategyName, IPreprocessArtifact artifact) {
+		this.mapping.put(strategyName, artifact);
 	}
 
 	/**
@@ -56,13 +57,13 @@ public class ModelDataItem {
 	}
 
 	/**
-	 * get the preprocessed lines for a strategy, returns null if strategy does not exist
+	 * get the preprocessed artifact for a strategy, returns null if strategy does not exist
 	 *
 	 * @param strategyName strategy tag
 	 *
-	 * @return lines, null if strategy does not exist
+	 * @return artifact, null if strategy does not exist
 	 */
-	public List<IndexedString> getPreProcessedLines(String strategyName) {
+	public IPreprocessArtifact getPreProcessedArtifact(String strategyName) {
 		return this.mapping.get(strategyName);
 	}
 }

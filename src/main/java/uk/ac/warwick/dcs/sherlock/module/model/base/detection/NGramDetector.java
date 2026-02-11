@@ -8,6 +8,7 @@ import uk.ac.warwick.dcs.sherlock.api.model.detection.ModelDataItem;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.PairwiseDetector;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.PairwiseDetectorWorker;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy;
+import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.LineListArtifact;
 import uk.ac.warwick.dcs.sherlock.module.model.base.detection.NGramDetector.NGramDetectorWorker;
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.NGramRawResult;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.TrimWhitespaceOnly;
@@ -103,7 +104,7 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 	/**
 	 * Load the contents of a file into an array list of N-Grams for easy reference
 	 * <p>
-	 * Each line of the file is taken and converted into N-Grams which are in turn stored in a list. 
+	 * Each line of the file is taken and converted into N-Grams which are in turn stored in a list.
 	 * Each N-Gram is stored with its line number to allow for easy reference back to the file when a match is found.
 	 * </p>
 	 *
@@ -187,6 +188,14 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 			ArrayList<IndexedString> linesF1 = new ArrayList<>(this.file1.getPreProcessedLines("no_whitespace"));
 			ArrayList<IndexedString> linesF2 = new ArrayList<>(this.file2.getPreProcessedLines("no_whitespace"));
 
+			// Gets each line as a string in the list, as returned by the specified preprocessor
+			LineListArtifact artiF1 = (LineListArtifact) this.file1.getPreProcessedArtifact("no_whitespace");
+			LineListArtifact artiF2 = (LineListArtifact) this.file2.getPreProcessedArtifact("no_whitespace");
+
+			ArrayList<IndexedString> linesF1 = new ArrayList<IndexedString>(artiF1.lines());
+			ArrayList<IndexedString> linesF2 = new ArrayList<IndexedString>(artiF2.lines());
+
+			// make raw result output container
 			NGramRawResult<NGramMatch> res = new NGramRawResult<>(this.file1.getFile(), this.file2.getFile());
 
 			// Build flat N-Gram sequences for both files

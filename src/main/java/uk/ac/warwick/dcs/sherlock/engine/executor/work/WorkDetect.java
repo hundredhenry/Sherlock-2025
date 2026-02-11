@@ -16,19 +16,19 @@ public class WorkDetect extends RecursiveTask<List<AbstractModelTaskRawResult>> 
 
 	private final JobStatus status;
 
-	private final List<DetectorWorker> workers;
+	private final List<? extends DetectorWorker> workers;
 	private final int threshold;
 	private final int begin;
 	private final int end;
 
 	private volatile List<AbstractModelTaskRawResult> result;
 
-	public WorkDetect(JobStatus jobStatus, List<DetectorWorker> workers, int threshold) {
+	public WorkDetect(JobStatus jobStatus, List<? extends DetectorWorker> workers, int threshold) {
 		this(jobStatus, workers, threshold, 0, workers.size());
 		this.result = Collections.emptyList();
 	}
 
-	private WorkDetect(JobStatus jobStatus, List<DetectorWorker> workers, int threshold, int begin, int end) {
+	private WorkDetect(JobStatus jobStatus, List<? extends DetectorWorker> workers, int threshold, int begin, int end) {
 		this.status = jobStatus;
 
 		this.workers = workers;
