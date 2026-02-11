@@ -11,6 +11,8 @@ import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 import uk.ac.warwick.dcs.sherlock.engine.executor.common.ExecutorUtils;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.StandardStringifier;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.StandardTokeniser;
+import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.LineListArtifact;
+import uk.ac.warwick.dcs.sherlock.api.util.IPreprocessArtifact;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -74,17 +76,22 @@ public class WorkPreProcessFile extends RecursiveAction {
 
 	@SuppressWarnings ("Duplicates")
 	private void process(IWorkTask task) {
-		Map<String, List<IndexedString>> map = new HashMap<>();
+		Map<String, IPreprocessArtifact> map = new HashMap<>();
 
 		task.getPreProcessingStrategies().forEach(strategy -> {
 			if (strategy.isAdvanced()) {
 				try {
+					@SuppressWarnings("unchecked")
 					Class<? extends IAdvancedPreProcessorGroup> groupClass = (Class<? extends IAdvancedPreProcessorGroup>) strategy.getPreProcessorClasses().get(0);
 					ITuple<Class<? extends IAdvancedPreProcessor>, Class<? extends Lexer>> t = SherlockRegistry.getAdvancedPostProcessorForLanguage(groupClass, task.getLanguage());
 
 					Lexer lexer = t.getValue().getDeclaredConstructor(CharStream.class).newInstance(CharStreams.fromStream(file.getFileContents()));
+					@SuppressWarnings({"unchecked", "rawtypes"})
 					IAdvancedPreProcessor processor = t.getKey().getConstructor().newInstance();
-					map.put(strategy.getName(), processor.process(lexer));
+					List<?> result = (List<?>) processor.getClass().getMethod("process", t.getValue()).invoke(processor, lexer);
+					@SuppressWarnings("unchecked")
+					List<IndexedString> indexedResult = (List<IndexedString>) result;
+					map.put(strategy.getName(), new LineListArtifact(indexedResult));
 				}
 				catch (InstantiationException | IllegalAccessException | NoSuchMethodException | IOException | InvocationTargetException e) {
 					e.printStackTrace();
@@ -119,7 +126,7 @@ public class WorkPreProcessFile extends RecursiveAction {
 							stringifier = new StandardStringifier();
 						}
 
-						map.put(strategy.getName(), stringifier.processTokens(tokens, lexer.getVocabulary()));
+						map.put(strategy.getName(), new LineListArtifact(stringifier.processTokens(tokens, lexer.getVocabulary())));
 					}
 					else {
 						ExecutorUtils.logger.error("Strategy is not valid for the passed language, this should have been caught at startup!");

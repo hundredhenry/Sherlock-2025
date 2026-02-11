@@ -5,6 +5,7 @@ import uk.ac.warwick.dcs.sherlock.api.model.detection.ModelDataItem;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.PairwiseDetectorWorker;
 import uk.ac.warwick.dcs.sherlock.api.util.IndexedString;
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.ASTRawResult;
+import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.ParseTreeArtifact;
 
 import java.util.List;
 
@@ -37,8 +38,8 @@ public class ASTDetectorWorker extends PairwiseDetectorWorker<ASTRawResult> {
     @Override
     public void execute() {
         // Retrieve pre-processed lines using the strategy name defined in ASTDetector
-        List<IndexedString> linesF1 = this.file1.getPreProcessedLines("no_whitespace");
-        List<IndexedString> linesF2 = this.file2.getPreProcessedLines("no_whitespace");
+        ParseTreeArtifact treeF1 = (ParseTreeArtifact) this.file1.getPreProcessedArtifact("parseTree");
+        ParseTreeArtifact treeF2 = (ParseTreeArtifact) this.file2.getPreProcessedArtifact("parseTree");
 
         // Create raw result container
         ASTRawResult result = new ASTRawResult(this.file1.getFile(), this.file2.getFile());
