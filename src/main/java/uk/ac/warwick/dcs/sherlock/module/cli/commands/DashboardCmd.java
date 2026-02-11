@@ -3,7 +3,7 @@ package uk.ac.warwick.dcs.sherlock.module.cli.commands;
 import picocli.CommandLine;
 import uk.ac.warwick.dcs.sherlock.module.cli.services.StatisticsService;
 
-@CommandLine.Command(name="dashboard", description="Display dashboard statistics")
+@CommandLine.Command(name="dashboard", description="Display dashboard statistics", mixinStandardHelpOptions = true)
 public class DashboardCmd implements Runnable {
     
     private StatisticsService statisticsService;

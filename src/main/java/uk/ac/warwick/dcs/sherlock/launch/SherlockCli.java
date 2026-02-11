@@ -2,21 +2,29 @@ package uk.ac.warwick.dcs.sherlock.launch;
 
 import java.util.Scanner;
 
+import org.eclipse.persistence.sessions.coordination.Command;
+
 import picocli.CommandLine;
 import uk.ac.warwick.dcs.sherlock.module.cli.commands.*;
 import uk.ac.warwick.dcs.sherlock.api.util.Side;
 import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
 
 @CommandLine.Command(
+    name = "sherlock",
+    description = "Sherlock Command Line Interface",
     subcommands = {
         DisplayCmd.class,
-        HelpCmd.class,
-        DashboardCmd.class
-    }
+        DashboardCmd.class,
+        TemplateCmd.class
+    },
+    mixinStandardHelpOptions = true
 )
 public class SherlockCli {
     
     private final CommandLine cmd = new CommandLine(this);
+
+    @CommandLine.Spec
+    private CommandLine.Model.CommandSpec spec;
 
     public void launch_cli() {
         SherlockEngine engine = new SherlockEngine(Side.CLIENT);
@@ -29,6 +37,7 @@ public class SherlockCli {
 
         System.out.println("Welcome to the Sherlock CLI Interface!");
 
+        CommandLine commandLine = spec.commandLine();
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
@@ -41,6 +50,11 @@ public class SherlockCli {
 
             if (line.equalsIgnoreCase("exit")) {
                 break;
+            } else if (line.equalsIgnoreCase("help")) {
+                for (String name : commandLine.getSubcommands().keySet()) {
+                    System.out.println(" - " + name);
+                }
+                continue;
             }
 
             String[] args = line.split("\\s+");
