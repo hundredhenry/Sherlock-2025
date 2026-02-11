@@ -38,7 +38,7 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 	int callType;
 	private List<PreProcessingStrategy> preProcessingStrategies;
 	// Use volatile as accessed across threads
-	private volatile List<? extends DetectorWorker> workers;
+	private volatile List<DetectorWorker> workers;
 
 	PoolExecutorTask(JobStatus jobStatus, IPriorityWorkSchedulerWrapper scheduler, ITask task, String language) {
 		this.callType = 1;
@@ -51,8 +51,7 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 		this.workers = null;
 
 		try {
-			@SuppressWarnings("unchecked")
-			IDetector<? extends DetectorWorker> instance = (IDetector<? extends DetectorWorker>) task.getDetector().getConstructor().newInstance();
+			IDetector instance = task.getDetector().getConstructor().newInstance();
 			this.preProcessingStrategies = instance.getPreProcessors();
 		}
 		catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
@@ -109,9 +108,9 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 	}
 
 	void build() {
-		IDetector<? extends DetectorWorker> detector;
+		IDetector detector;
 		try {
-			detector = (IDetector<? extends DetectorWorker>) task.getDetector().getConstructor().newInstance();
+			detector = this.task.getDetector().getConstructor().newInstance();
 		}
 		catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
 			e.printStackTrace();
@@ -181,8 +180,7 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 			List<AbstractModelTaskRawResult> rawResults = task.getRawResults();
 			if (rawResults != null && rawResults.size() > 0) {
 				try {
-					@SuppressWarnings("unchecked")
-					IPostProcessor<AbstractModelTaskRawResult> postProcessor = SherlockRegistry.getPostProcessorInstance(rawResults.get(0).getClass());
+					IPostProcessor postProcessor = SherlockRegistry.getPostProcessorInstance(rawResults.get(0).getClass());
 					if (postProcessor == null) {
 						ExecutorUtils.logger.error("Could not find a postprocessor for '{}', check that it is being correctly registered", rawResults.get(0).getClass().getName());
 						return null;

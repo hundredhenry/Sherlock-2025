@@ -11,8 +11,6 @@ import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 import uk.ac.warwick.dcs.sherlock.engine.executor.common.ExecutorUtils;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.StandardStringifier;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.StandardTokeniser;
-import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.LineListArtifact;
-import uk.ac.warwick.dcs.sherlock.api.util.IPreprocessArtifact;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -21,6 +19,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.RecursiveAction;
+import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.LineListArtifact;
+import uk.ac.warwick.dcs.sherlock.api.util.IPreprocessArtifact;
 
 /**
  * Recursive task to preprocess a list of files for a single task
@@ -81,17 +81,14 @@ public class WorkPreProcessFile extends RecursiveAction {
 		task.getPreProcessingStrategies().forEach(strategy -> {
 			if (strategy.isAdvanced()) {
 				try {
-					@SuppressWarnings("unchecked")
 					Class<? extends IAdvancedPreProcessorGroup> groupClass = (Class<? extends IAdvancedPreProcessorGroup>) strategy.getPreProcessorClasses().get(0);
 					ITuple<Class<? extends IAdvancedPreProcessor>, Class<? extends Lexer>> t = SherlockRegistry.getAdvancedPostProcessorForLanguage(groupClass, task.getLanguage());
 
 					Lexer lexer = t.getValue().getDeclaredConstructor(CharStream.class).newInstance(CharStreams.fromStream(file.getFileContents()));
-					@SuppressWarnings({"unchecked", "rawtypes"})
 					IAdvancedPreProcessor processor = t.getKey().getConstructor().newInstance();
-					List<?> result = (List<?>) processor.getClass().getMethod("process", t.getValue()).invoke(processor, lexer);
 					@SuppressWarnings("unchecked")
-					List<IndexedString> indexedResult = (List<IndexedString>) result;
-					map.put(strategy.getName(), new LineListArtifact(indexedResult));
+					List<IndexedString> result = (List<IndexedString>) processor.getClass().getMethod("process", t.getValue()).invoke(processor, lexer);
+					map.put(strategy.getName(), new LineListArtifact(result));
 				}
 				catch (InstantiationException | IllegalAccessException | NoSuchMethodException | IOException | InvocationTargetException e) {
 					e.printStackTrace();
