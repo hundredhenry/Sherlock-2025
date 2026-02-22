@@ -1,11 +1,8 @@
 package uk.ac.warwick.dcs.sherlock.engine.storage;
 
-import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
 import uk.ac.warwick.dcs.sherlock.api.component.ICodeBlock;
 import uk.ac.warwick.dcs.sherlock.api.component.ICodeBlockGroup;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
-import uk.ac.warwick.dcs.sherlock.api.exception.UnknownDetectionTypeException;
-import uk.ac.warwick.dcs.sherlock.api.model.detection.DetectionType;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
 import jakarta.persistence.Entity;
@@ -28,13 +25,13 @@ public class EntityCodeBlockGroup implements ICodeBlockGroup, Serializable {
 
 	Map<Long, EntityCodeBlock> blockMap;
 
-	private String type;
 	private String comment;
+	private boolean markedForRemoval;
 
 	public EntityCodeBlockGroup() {
 		super();
-		this.type = null;
 		this.comment = null;
+		this.markedForRemoval = false;
 		this.blockMap = new HashMap<>();
 	}
 
@@ -106,16 +103,6 @@ public class EntityCodeBlockGroup implements ICodeBlockGroup, Serializable {
 	}
 
 	@Override
-	public DetectionType getDetectionType() throws UnknownDetectionTypeException {
-		return SherlockRegistry.getDetectionType(this.type);
-	}
-
-	@Override
-	public void setDetectionType(String detectionTypeIdentifier) throws UnknownDetectionTypeException {
-		this.type = detectionTypeIdentifier;
-	}
-
-	@Override
 	public boolean isPopulated() {
 		return this.blockMap.size() > 1;
 	}
@@ -124,7 +111,6 @@ public class EntityCodeBlockGroup implements ICodeBlockGroup, Serializable {
 		for (EntityCodeBlock e : this.blockMap.values()) {
 			e.markRemove();
 		}
-
-		this.type = "---remove---";
+		this.markedForRemoval = true;
 	}
 }

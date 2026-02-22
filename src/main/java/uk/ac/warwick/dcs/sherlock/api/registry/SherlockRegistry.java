@@ -2,8 +2,6 @@ package uk.ac.warwick.dcs.sherlock.api.registry;
 
 import org.antlr.v4.runtime.*;
 import uk.ac.warwick.dcs.sherlock.api.annotation.AdjustableParameterObj;
-import uk.ac.warwick.dcs.sherlock.api.exception.UnknownDetectionTypeException;
-import uk.ac.warwick.dcs.sherlock.api.model.detection.DetectionType;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.IDetector;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.AbstractModelTaskRawResult;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.IPostProcessor;
@@ -36,22 +34,6 @@ public class SherlockRegistry {
 			return registry.getAdvancedPostProcessorForLanguage(group, language);
 		}
 
-		return null;
-	}
-
-	/**
-	 * Fetches the DetectionType object for an identifier if it is present
-	 *
-	 * @param identifier String identifier for the detection type
-	 *
-	 * @return the detection type object
-	 *
-	 * @throws UnknownDetectionTypeException if the identifier is not registered
-	 */
-	public static DetectionType getDetectionType(String identifier) throws UnknownDetectionTypeException {
-		if (registry != null) {
-			return registry.getDetectionType(identifier);
-		}
 		return null;
 	}
 
@@ -221,20 +203,6 @@ public class SherlockRegistry {
 	public static boolean registerAdvancedPreProcessorImplementation(String groupClassPath, Class<? extends IAdvancedPreProcessor> preProcessor) {
 		if (registry != null) {
 			return registry.registerAdvancedPreProcessorImplementation(groupClassPath, preProcessor);
-		}
-		return false;
-	}
-
-	/**
-	 * Registers a detection type
-	 *
-	 * @param detectionType object for the new detection type
-	 *
-	 * @return was successful?
-	 */
-	public static boolean registerDetectionType(DetectionType detectionType) {
-		if (registry != null) {
-			return registry.registerDetectionType(detectionType);
 		}
 		return false;
 	}
