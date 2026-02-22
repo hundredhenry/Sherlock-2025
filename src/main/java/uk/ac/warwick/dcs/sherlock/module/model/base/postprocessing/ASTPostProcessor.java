@@ -3,7 +3,6 @@ package uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing;
 import uk.ac.warwick.dcs.sherlock.api.annotation.AdjustableParameter;
 import uk.ac.warwick.dcs.sherlock.api.component.ICodeBlockGroup;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
-import uk.ac.warwick.dcs.sherlock.api.exception.UnknownDetectionTypeException;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.IPostProcessor;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.ModelTaskProcessedResults;
 import uk.ac.warwick.dcs.sherlock.module.model.base.detection.ASTMatch;
@@ -75,13 +74,8 @@ public class ASTPostProcessor implements IPostProcessor<ASTRawResult> {
                 group.addCodeBlock(match.files[1], match.similarity, match.lines.get(1));
 
                 group.setComment("AST Structural Match");
-                try {
-                    group.setDetectionType("BASE_AST_STRUCTURAL");
-                } catch (UnknownDetectionTypeException e) {
-                    e.printStackTrace();
-                }
 
-                // Remove empty groups
+				// Remove empty groups
                 if (group.getCodeBlocks().isEmpty()) {
                     results.removeGroup(group);
                 }

@@ -1029,6 +1029,72 @@ function bindTables() {
         parent.removeClass("col-md-6");
         parent.addClass("col-md-12");
     });
+
+    bindScoreCutoffSlider();
+}
+
+/**
+ * Binds the score cutoff slider on the results page to filter
+ * submission rows and match buttons based on their score.
+ */
+function bindScoreCutoffSlider() {
+    // Only inject on the results page — identified by rows with data-score attributes
+    if (!$("tr[data-score]").length) return;
+
+    // Find the dataTables_wrapper that contains the score rows
+    var tableWrapper = $("tr[data-score]").closest(".dataTables_wrapper");
+    var filterDiv = tableWrapper.find(".dataTables_filter");
+    if (!filterDiv.length) return;
+
+    // Only inject if not already present
+    if ($("#score-cutoff-slider").length) return;
+
+    // Build the slider markup
+    var sliderHtml =
+        '<div class="d-flex align-items-center" id="score-slider-container" style="display:inline-flex !important; margin-right: 15px;">' +
+            '<label for="score-cutoff-slider" class="mr-2 mb-0 text-nowrap">Minimum Score:</label>' +
+            '<input type="range" class="custom-range mr-2" id="score-cutoff-slider" min="0" max="100" value="0" step="1" style="width: 300px;">' +
+            '<span id="score-cutoff-value" class="badge badge-primary" style="min-width: 45px;">0</span>' +
+        '</div>';
+
+    // Wrap filter content in a flex row and prepend the slider
+    var wrapper = filterDiv.parent();
+    wrapper.css({
+        "display": "flex",
+        "align-items": "center",
+        "justify-content": "space-between"
+    });
+    filterDiv.before(sliderHtml);
+
+    // Bind the slider input event
+    $("#score-cutoff-slider").on("input", function () {
+        var threshold = parseFloat(this.value);
+        $("#score-cutoff-value").text(threshold);
+
+        // Filter each submission row by its data-score attribute
+        $("tr[data-score]").each(function () {
+            var row = $(this);
+            var score = parseFloat(row.attr("data-score"));
+
+            if (score < threshold) {
+                row.hide();
+            } else {
+                row.show();
+            }
+
+            // Filter individual match buttons within visible rows
+            row.find("a[data-match-score]").each(function () {
+                var btn = $(this);
+                var matchScore = parseFloat(btn.attr("data-match-score"));
+
+                if (matchScore < threshold) {
+                    btn.hide();
+                } else {
+                    btn.show();
+                }
+            });
+        });
+    });
 }
 
 /**

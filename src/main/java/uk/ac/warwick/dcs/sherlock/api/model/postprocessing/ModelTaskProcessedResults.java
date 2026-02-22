@@ -2,7 +2,6 @@ package uk.ac.warwick.dcs.sherlock.api.model.postprocessing;
 
 import uk.ac.warwick.dcs.sherlock.api.component.ICodeBlockGroup;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
-import uk.ac.warwick.dcs.sherlock.api.exception.UnknownDetectionTypeException;
 import uk.ac.warwick.dcs.sherlock.api.util.SherlockHelper;
 
 import java.lang.reflect.InvocationTargetException;
@@ -48,20 +47,12 @@ public class ModelTaskProcessedResults {
 	}
 
 	/**
-	 * Remove empty groups from the list, or ones with an unknown detection type
+	 * Remove unpopulated groups from the list (groups covering fewer than 2 files)
 	 *
-	 * @return returns true if one of the groups does not have a detection type set
-	 *
-	 * @throws UnknownDetectionTypeException detection type is not registered
+	 * @return always returns false
 	 */
-	public boolean cleanGroups() throws UnknownDetectionTypeException {
+	public boolean cleanGroups() {
 		this.groups = this.groups.stream().filter(ICodeBlockGroup::isPopulated).collect(Collectors.toList());
-
-		for (ICodeBlockGroup g : this.groups) {
-			if (g.getDetectionType() == null) {
-				return true;
-			}
-		}
 		return false;
 	}
 

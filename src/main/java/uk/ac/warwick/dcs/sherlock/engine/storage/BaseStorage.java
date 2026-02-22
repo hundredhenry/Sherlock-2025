@@ -255,7 +255,7 @@ public class BaseStorage implements IStorageWrapper {
 	}
 
 	void removeCodeBlockGroups() {
-		Query q = BaseStorage.instance.database.createQuery("DELETE FROM CodeBlockGroup e WHERE e.type = \"---remove---\"");
+		Query q = BaseStorage.instance.database.createQuery("DELETE FROM CodeBlockGroup e WHERE e.markedForRemoval = true");
 		BaseStorage.instance.database.executeUpdate(q);
 
 		q = BaseStorage.instance.database.createQuery("DELETE FROM CodeBlock b WHERE b.size = -5");

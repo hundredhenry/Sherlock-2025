@@ -3,12 +3,8 @@ package uk.ac.warwick.dcs.sherlock.engine;
 import org.antlr.v4.runtime.Lexer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
 import uk.ac.warwick.dcs.sherlock.api.annotation.AdjustableParameter;
 import uk.ac.warwick.dcs.sherlock.api.annotation.AdjustableParameterObj;
-import uk.ac.warwick.dcs.sherlock.api.exception.UnknownDetectionTypeException;
-import uk.ac.warwick.dcs.sherlock.api.model.detection.DetectionType;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.DetectorWorker;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.IDetector;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.AbstractModelTaskRawResult;
@@ -37,7 +33,6 @@ public class Registry implements IRegistry {
 	private final Logger logger = LoggerFactory.getLogger(Registry.class);
 
 	private final Map<String, LanguageData> languageRegistry;
-	private final Map<String, DetectionType> detectionTypeRegistry;
 
 	private final Map<Class<? extends IGeneralPreProcessor>, PreProcessorData> preProcessorRegistry;
 	private final Map<String, AdvPreProcessorGroupData> advPreProcessorRegistry;
@@ -48,7 +43,6 @@ public class Registry implements IRegistry {
 
 	Registry() {
 		this.languageRegistry = new ConcurrentHashMap<>();
-		this.detectionTypeRegistry = new ConcurrentHashMap<>();
 
 		this.preProcessorRegistry = new ConcurrentHashMap<>();
 		this.advPreProcessorRegistry = new ConcurrentHashMap<>();
@@ -103,24 +97,6 @@ public class Registry implements IRegistry {
 		}
 		logger.error("Group has not been registered, this should have been validated and disallowed the detector");
 		return null;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public DetectionType getDetectionType(String identifier) throws UnknownDetectionTypeException {
-		if (identifier != null) {
-			if (this.detectionTypeRegistry.containsKey(identifier)) {
-				return this.detectionTypeRegistry.get(identifier);
-			}
-			else {
-				throw new UnknownDetectionTypeException(String.format("Detection Type '%s' is not recognised, verify that all required modules are present and active", identifier));
-			}
-		}
-		else {
-			return null;
-		}
 	}
 
 	/**
@@ -366,24 +342,6 @@ public class Registry implements IRegistry {
 
 		logger.info("Group at classpath '{}' does not exist", groupClassPath);
 		return false;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean registerDetectionType(DetectionType detectionType) {
-		if (detectionType == null) {
-			return false;
-		}
-
-		if (this.detectionTypeRegistry.containsKey(detectionType.getIdentifier())) {
-			logger.error("DetectionType object with identifier '{}' already registered", detectionType.getIdentifier());
-			return false;
-		}
-
-		this.detectionTypeRegistry.put(detectionType.getIdentifier(), detectionType);
-		return true;
 	}
 
 	/**
@@ -659,57 +617,6 @@ public class Registry implements IRegistry {
 			v.languages = supportedLanguages;
 			supportedLanguages.forEach(l -> this.languageRegistry.get(l).detectors.add(k));
 		});
-	}
-
-	/**
-	 * Load the detection type weightings from the config file
-	 */
-	void loadDetectionTypeWeights() {
-		if (this.detectionTypeRegistry.size() == 0) {
-			return;
-		}
-
-		Map<String, Double> map = null;
-		int mapSize = 0;
-		File weightFile = new File(SherlockEngine.configDir.getAbsolutePath() + File.separator + "Weightings.yaml");
-		if (!weightFile.exists()) {
-			map = new LinkedHashMap();
-			mapSize = 0;
-		}
-		else {
-			try {
-				Yaml yaml = new Yaml();
-				map = yaml.load(new FileInputStream(weightFile));
-				mapSize = map.size();
-			}
-			catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-		}
-
-		if (map != null) {
-			for (DetectionType type : this.detectionTypeRegistry.values()) {
-				if (map.containsKey(type.getIdentifier())) {
-					type.setWeighting(map.get(type.getIdentifier()).floatValue());
-				}
-				else {
-					map.put(type.getIdentifier(), type.getWeighting());
-				}
-			}
-
-			if (map.size() != mapSize) {
-				try {
-					DumperOptions options = new DumperOptions();
-					options.setPrettyFlow(true);
-					Yaml yaml = new Yaml(options);
-					FileWriter writer = new FileWriter(weightFile);
-					yaml.dump(map, writer);
-				}
-				catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
 	}
 
 	/**
