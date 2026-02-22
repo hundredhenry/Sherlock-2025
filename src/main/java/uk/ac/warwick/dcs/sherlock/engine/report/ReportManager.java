@@ -74,8 +74,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 			if (resultFile.getFile() == null) return;
 			ISubmission submission = resultFile.getFile().getSubmission();
 			if (submission == null) return;
-			// Use max score across all files in the submission
-			this.submissionScores.merge(submission.getId(), resultFile.getOverallScore(), Math::max);
+			this.submissionScores.put(submission.getId(), resultFile.getOverallScore());
 		});
 
 		FillSubmissionFileMap();
