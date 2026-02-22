@@ -216,17 +216,19 @@ public class PoolExecutorJob implements Runnable {
 	@SuppressWarnings ("Duplicates")
 	private void calculateScoreForBlockList(ISourceFile file, List<ITuple<ICodeBlockGroup, Float>> groupScores, Object obj, Method methodTotal, Method methodPerFile) {
 		try {
-			// Score the task overall as a simple sum of block scores
-			float s = (float) groupScores.stream().mapToDouble(x -> x.getValue()).sum();
-			methodTotal.invoke(obj, s > 1 ? 1 : s); // cap to 100%
-
-			// Score each file for the task
+			// Score each file for the task first, then use the max as the overall score
+			float maxScore = 0f;
 			for (ISourceFile fileComp : this.job.getWorkspace().getFiles()) {
 				if (!fileComp.equals(file)) {
-					s = (float) groupScores.stream().filter(g -> g.getKey().filePresent(fileComp)).mapToDouble(x -> x.getValue()).sum();
-					methodPerFile.invoke(obj, fileComp, s > 1 ? 1 : s); // cap to 100%
+					float s = (float) groupScores.stream().filter(g -> g.getKey().filePresent(fileComp)).mapToDouble(x -> x.getValue()).sum();
+					float capped = s > 1 ? 1 : s;
+					methodPerFile.invoke(obj, fileComp, capped);
+					if (capped > maxScore) maxScore = capped;
 				}
 			}
+
+			// Overall score = maximum score against any single other file
+			methodTotal.invoke(obj, maxScore);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
