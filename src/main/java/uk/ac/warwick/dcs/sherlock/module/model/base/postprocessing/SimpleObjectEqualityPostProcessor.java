@@ -2,7 +2,6 @@ package uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing;
 
 import uk.ac.warwick.dcs.sherlock.api.component.ICodeBlockGroup;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
-import uk.ac.warwick.dcs.sherlock.api.exception.UnknownDetectionTypeException;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.IPostProcessor;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.ModelTaskProcessedResults;
 
@@ -33,12 +32,6 @@ public class SimpleObjectEqualityPostProcessor implements IPostProcessor<SimpleO
 				if (!map.containsKey(o)) {
 					group = results.addGroup();
 					group.setComment("Variable: " + o.toString());
-					try {
-						group.setDetectionType("BASE_VARIABLE_NAME");
-					}
-					catch (UnknownDetectionTypeException e) {
-						e.printStackTrace();
-					}
 					map.put(o, group);
 				}
 				else {

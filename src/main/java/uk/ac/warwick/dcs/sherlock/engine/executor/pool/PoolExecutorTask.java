@@ -2,7 +2,6 @@ package uk.ac.warwick.dcs.sherlock.engine.executor.pool;
 
 import uk.ac.warwick.dcs.sherlock.api.component.ITask;
 import uk.ac.warwick.dcs.sherlock.api.component.WorkStatus;
-import uk.ac.warwick.dcs.sherlock.api.exception.UnknownDetectionTypeException;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.DetectorWorker;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.IDetector;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.ModelDataItem;
@@ -188,19 +187,7 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 					}
 					ExecutorUtils.processAdjustableParameters(postProcessor, this.task.getParameterMapping());
 					ModelTaskProcessedResults processedResults = postProcessor.processResults(this.task.getJob().getWorkspace().getFiles(), rawResults);
-					try {
-						if (processedResults.cleanGroups()) {
-							ExecutorUtils.logger.warn("At least one result group for job {} [task {}] does not have it's detection type set, results will be ignored", this.getTask().getJob().getPersistentId(),
-									this.getTask().getPersistentId());
-							return null;
-						}
-					}
-					catch (UnknownDetectionTypeException e) {
-						ExecutorUtils.logger.warn("At least one result group for job {} [task {}] has an unknown detection type set", this.getTask().getJob().getPersistentId(),
-								this.getTask().getPersistentId());
-						e.printStackTrace();
-						return null;
-					}
+					processedResults.cleanGroups();
 					this.status.incrementProgress();
 
 					return processedResults;

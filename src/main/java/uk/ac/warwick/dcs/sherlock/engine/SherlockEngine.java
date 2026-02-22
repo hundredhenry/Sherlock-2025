@@ -14,7 +14,6 @@ import uk.ac.warwick.dcs.sherlock.api.event.EventInitialisation;
 import uk.ac.warwick.dcs.sherlock.api.event.EventPostInitialisation;
 import uk.ac.warwick.dcs.sherlock.api.event.EventPreInitialisation;
 import uk.ac.warwick.dcs.sherlock.api.executor.IExecutor;
-import uk.ac.warwick.dcs.sherlock.api.model.detection.DetectionType;
 import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
 import uk.ac.warwick.dcs.sherlock.api.storage.IStorageWrapper;
 import uk.ac.warwick.dcs.sherlock.api.util.SherlockHelper;
@@ -223,10 +222,8 @@ public class SherlockEngine {
 		AnnotationLoader modules = new AnnotationLoader();
 		modules.registerModules();
 
-		DetectionType.addDefaultDetectionTypes();
 		SherlockEngine.eventBus.publishEvent(new EventPreInitialisation());
 		SherlockEngine.eventBus.publishEvent(new EventInitialisation());
-		SherlockEngine.registry.loadDetectionTypeWeights();
 		SherlockEngine.registry.analyseDetectors();
 		SherlockEngine.eventBus.publishEvent(new EventPostInitialisation());
 

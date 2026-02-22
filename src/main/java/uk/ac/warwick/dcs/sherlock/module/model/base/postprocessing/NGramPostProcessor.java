@@ -3,7 +3,6 @@ package uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing;
 import uk.ac.warwick.dcs.sherlock.api.annotation.AdjustableParameter;
 import uk.ac.warwick.dcs.sherlock.api.component.ICodeBlockGroup;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
-import uk.ac.warwick.dcs.sherlock.api.exception.UnknownDetectionTypeException;
 import uk.ac.warwick.dcs.sherlock.module.model.base.detection.NGramMatch;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.IPostProcessor;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.ModelTaskProcessedResults;
@@ -122,12 +121,6 @@ public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 					scorer.addScoredBlock(file, out_group);
 				}
 				out_group.setComment("N-Gram Match Group");
-				try {
-					out_group.setDetectionType("BASE_BODY_REPLACE_CALL");
-				}
-				catch (UnknownDetectionTypeException e) {
-					e.printStackTrace();
-				}
 			}
 		}
 	}
