@@ -71,10 +71,10 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 		HashMap<String, Integer> bag2 = new HashMap<>();
 		
 		for (NGram ngram : string1) {
-			bag1.merge(ngram.getNgram(), 1, (a, b) -> a + b);
+			bag1.merge(ngram.getNgram(), 1, Integer::sum);
 		}
 		for (NGram ngram : string2) {
-			bag2.merge(ngram.getNgram(), 1, (a, b) -> a + b);
+			bag2.merge(ngram.getNgram(), 1, Integer::sum);
 		}
 
 		// Calculate multiset Jaccard similarity: |intersection| / |union|
@@ -101,9 +101,10 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 
 
 	/**
-	 * Load the contents of a file into a linked list of N-Grams for easy reference
+	 * Load the contents of a file into an array list of N-Grams for easy reference
 	 * <p>
-	 * Each line of the file is taken and converted into N-Grams which are in turn put into a linked list as N-Gram objects containing the N-Gram and it's line number
+	 * Each line of the file is taken and converted into N-Grams which are in turn stored in a list. 
+	 * Each N-Gram is stored with its line number to allow for easy reference back to the file when a match is found.
 	 * </p>
 	 *
 	 * @param storage_list The list the N-Grams are going to be stored in
@@ -122,8 +123,6 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 		for (IndexedString lineC : file) {
 			// acquire line
 			line = lineC.getValue();
-			// to prevent N-Gram matches across lines
-			ngram = null;
 			// if line is shorter than the ngram_size pad it with whitespace
 			// this should function without issue as an equivalent lines will also be too short and be padded the same
 			if (line.length() < ngram_size) {
@@ -200,6 +199,8 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 			HashMap<String, ArrayList<Integer>> index = buildIndex(ngramsF1);
 
 			// Seed-and-extend: scan file 2 for matching regions
+			// Track positions in file 1 already covered by a recorded match to prevent double-counting
+			HashSet<Integer> usedInFile1 = new HashSet<>();
 			int i = 0;
 			while (i < ngramsF2.size()) {
 				String ngram = ngramsF2.get(i).getNgram();
@@ -216,6 +217,9 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 				int bestSeed = -1;
 
 				for (int j : seeds) {
+					// Skip seeds already covered by a previously recorded match in file 1
+					if (usedInFile1.contains(j)) continue;
+
 					// Extend the match from this seed
 					int len = 1;
 					float lastValidSim = 0.0f;
@@ -252,6 +256,12 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 							refStart, refEnd, checkStart, checkEnd,
 							bestSim, this.file1.getFile(), this.file2.getFile());
 					res.put(match, refStart, refEnd, checkStart, checkEnd);
+
+					// Mark matched positions in file 1 as used to prevent the same region
+					// from contributing to multiple matches and inflating scores
+					for (int k = bestSeed; k < bestSeed + bestLen; k++) {
+						usedInFile1.add(k);
+					}
 
 					// Advance past the matched region in file 2
 					i += bestLen;
