@@ -1,8 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.engine.executor.pool;
 
 import uk.ac.warwick.dcs.sherlock.api.component.*;
-import uk.ac.warwick.dcs.sherlock.api.exception.UnknownDetectionTypeException;
-import uk.ac.warwick.dcs.sherlock.api.model.detection.DetectionType;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.ModelTaskProcessedResults;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
@@ -218,40 +216,15 @@ public class PoolExecutorJob implements Runnable {
 	@SuppressWarnings ("Duplicates")
 	private void calculateScoreForBlockList(ISourceFile file, List<ITuple<ICodeBlockGroup, Float>> groupScores, Object obj, Method methodTotal, Method methodPerFile) {
 		try {
-			// Calculate types and their relative weightings within this task
-			Map<DetectionType, Double> typeWeights = new HashMap<>();
-			for (ITuple<ICodeBlockGroup, Float> g : groupScores) {
-				typeWeights.putIfAbsent(g.getKey().getDetectionType(), 0.0);
-			}
-
-			double weightSum = typeWeights.keySet().stream().mapToDouble(DetectionType::getWeighting).sum();
-			typeWeights.keySet().forEach(z -> typeWeights.put(z, z.getWeighting() / weightSum));
-
-			// Score the task overall from relative weightings
-			float s = (float) groupScores.stream().mapToDouble(x -> {
-				try {
-					return x.getValue() * typeWeights.get(x.getKey().getDetectionType());
-				}
-				catch (UnknownDetectionTypeException e) {
-					e.printStackTrace();
-					return 0;
-				}
-			}).sum();
+			// Score the task overall as a simple sum of block scores
+			float s = (float) groupScores.stream().mapToDouble(x -> x.getValue()).sum();
 			methodTotal.invoke(obj, s > 1 ? 1 : s); // cap to 100%
 
-			// Score each file for the task from relative weightings
+			// Score each file for the task
 			for (ISourceFile fileComp : this.job.getWorkspace().getFiles()) {
 				if (!fileComp.equals(file)) {
-					s = (float) groupScores.stream().filter(g -> g.getKey().filePresent(fileComp)).mapToDouble(x -> {
-						try {
-							return x.getValue() * typeWeights.get(x.getKey().getDetectionType());
-						}
-						catch (UnknownDetectionTypeException e) {
-							e.printStackTrace();
-							return 0;
-						}
-					}).sum();
-					methodPerFile.invoke(obj, fileComp, s > 1 ? 1 : s);  // cap to 100%
+					s = (float) groupScores.stream().filter(g -> g.getKey().filePresent(fileComp)).mapToDouble(x -> x.getValue()).sum();
+					methodPerFile.invoke(obj, fileComp, s > 1 ? 1 : s); // cap to 100%
 				}
 			}
 		}

@@ -1,7 +1,5 @@
 package uk.ac.warwick.dcs.sherlock.api.component;
 
-import uk.ac.warwick.dcs.sherlock.api.exception.UnknownDetectionTypeException;
-import uk.ac.warwick.dcs.sherlock.api.model.detection.DetectionType;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
 import java.util.List;
@@ -72,22 +70,6 @@ public interface ICodeBlockGroup {
 	 * @param comment string
 	 */
 	void setComment(String comment);
-
-	/**
-	 * @return the type of plagiarism that was detected for these blocks of code
-	 *
-	 * @throws UnknownDetectionTypeException thrown if the stored identifier is not registered in the current session
-	 */
-	DetectionType getDetectionType() throws UnknownDetectionTypeException;
-
-	/**
-	 * Set the detection type for this block
-	 *
-	 * @param detectionTypeIdentifier detection type
-	 *
-	 * @throws UnknownDetectionTypeException thrown if the passed identifier is not registered in the current session
-	 */
-	void setDetectionType(String detectionTypeIdentifier) throws UnknownDetectionTypeException;
 
 	/**
 	 * Check whether the group covers at least two files
