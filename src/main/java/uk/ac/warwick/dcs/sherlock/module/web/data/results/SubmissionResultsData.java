@@ -63,6 +63,12 @@ public class SubmissionResultsData {
     private float score;
 
     /**
+     * The match scores between file pairs (for comparison view)
+     * Maps "file1Name|file2Name" to the match score percentage
+     */
+    private Map<String, Float> fileScores;
+
+    /**
      * Initialise the report data object
      *
      * @param job the job getting the results from
@@ -151,6 +157,7 @@ public class SubmissionResultsData {
         this.matches = new HashMap<>();
         this.submissions = new ArrayList<>();
         this.score = 0;
+        this.fileScores = new HashMap<>();
 
         IReportManager report = null;
         try {
@@ -172,6 +179,13 @@ public class SubmissionResultsData {
                 group.getMatches().forEach(m -> this.matches.get(group.getReason()).add(new FileMatch(m)));
             }
 //            list.forEach(group -> group.getMatches().forEach(m -> this.matches.add(new FileMatch(m))));
+
+            // Get file match scores
+            Map<ITuple<ISourceFile, ISourceFile>, Float> scores = report.GetFileMatchScores(submission1, submission2);
+            for (Map.Entry<ITuple<ISourceFile, ISourceFile>, Float> entry : scores.entrySet()) {
+                String key = entry.getKey().getKey().getFileDisplayName() + "|" + entry.getKey().getValue().getFileDisplayName();
+                this.fileScores.put(key, entry.getValue() * 100);
+            }
         }
 
         //Loop through the matches, setting the ids
@@ -239,6 +253,16 @@ public class SubmissionResultsData {
      */
     public float getScore() {
         return score;
+    }
+
+    /**
+     * Get the file match scores for the comparison view.
+     * Maps "file1Name|file2Name" to the match score percentage.
+     *
+     * @return the file scores map
+     */
+    public Map<String, Float> getFileScores() {
+        return fileScores;
     }
 
     /**
