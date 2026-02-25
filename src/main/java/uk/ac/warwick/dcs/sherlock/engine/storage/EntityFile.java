@@ -235,7 +235,9 @@ public class EntityFile implements ISourceFile, IStorable, Serializable {
 	private void getFileDisplayNameRecurse(StringBuilder build, EntityArchive archive, String sep) {
 		if (archive.hasParent()) {
 			this.getFileDisplayNameRecurse(build, archive.getParent_(), sep);
+			build.append(archive.getName()).append(sep);
+		} else if (!archive.getName().equals(this.filename)) {
+			build.append(archive.getName()).append(sep);
 		}
-		build.append(archive.getName()).append(sep);
 	}
 }
