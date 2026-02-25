@@ -8,8 +8,10 @@ import uk.ac.warwick.dcs.sherlock.api.util.SherlockHelper;
 import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,13 +31,30 @@ public class ExecutorUtils {
 	}
 
 	/**
+	 * Returns all declared fields on a class and all of its superclasses, up to (but not including) Object.
+	 * This allows @AdjustableParameter fields inherited from abstract base classes (e.g. PairwiseDetector)
+	 * to be discovered when scanning a concrete subclass.
+	 *
+	 * @param clazz the class to scan
+	 * @return list of all fields in the class hierarchy
+	 */
+	public static List<Field> getAllFields(Class<?> clazz) {
+		List<Field> fields = new ArrayList<>();
+		while (clazz != null && clazz != Object.class) {
+			fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+			clazz = clazz.getSuperclass();
+		}
+		return fields;
+	}
+
+	/**
 	 * Populates the adjustables in an object
 	 * @param instance object to populate
 	 * @param params list of param references and values
 	 * @param <T> type of the object to populate
 	 */
 	public static <T> void processAdjustableParameters(T instance, Map<String, Float> params) {
-		Arrays.stream(instance.getClass().getDeclaredFields()).map(f -> new Tuple<>(f, f.getDeclaredAnnotationsByType(AdjustableParameter.class))).filter(x -> x.getValue().length == 1).forEach(x -> {
+		getAllFields(instance.getClass()).stream().map(f -> new Tuple<>(f, f.getDeclaredAnnotationsByType(AdjustableParameter.class))).filter(x -> x.getValue().length == 1).forEach(x -> {
 			String ref = SherlockHelper.buildFieldReference(x.getKey());
 			boolean isInt = x.getKey().getType().equals(int.class);
 			float val;

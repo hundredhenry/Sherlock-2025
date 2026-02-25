@@ -38,12 +38,12 @@
                                 <input type="number"
                                        class="form-control"
                                        th:disabled="${!detector.isOwner() ? true : false}"
-                                       th:min="${parametersMap.get(parameter.key).getMinimumBound()}"
-                                       th:max="${parametersMap.get(parameter.key).getMaximumBound()}"
-                                       th:step="${parametersMap.get(parameter.key).getStep()}"
+                                       th:min="${parametersMap.get(parameter.key).isInt() ? parametersMap.get(parameter.key).getMinimumBound().intValue() : parametersMap.get(parameter.key).getMinimumBound()}"
+                                       th:max="${parametersMap.get(parameter.key).isInt() ? parametersMap.get(parameter.key).getMaximumBound().intValue() : parametersMap.get(parameter.key).getMaximumBound()}"
+                                       th:step="${parametersMap.get(parameter.key).isInt() ? parametersMap.get(parameter.key).getStep().intValue() : parametersMap.get(parameter.key).getStep()}"
                                        th:name="|${'parameters[''' + parameter.key + ''']'}|"
                                        th:placeholder="${parametersMap.get(parameter.key).getDisplayName()}"
-                                       th:value="${parameter.value}" />
+                                       th:value="${parametersMap.get(parameter.key).isInt() ? parameter.value.intValue() : parameter.value}" />
                             </div>
                         </div>
                     </th:block>
@@ -69,12 +69,12 @@
                                 <input type="number"
                                        class="form-control"
                                        th:disabled="${!detector.isOwner() ? true : false}"
-                                       th:min="${postprocessingMap.get(parameter.key).getMinimumBound()}"
-                                       th:max="${postprocessingMap.get(parameter.key).getMaximumBound()}"
-                                       th:step="${postprocessingMap.get(parameter.key).getStep()}"
+                                       th:min="${postprocessingMap.get(parameter.key).isInt() ? postprocessingMap.get(parameter.key).getMinimumBound().intValue() : postprocessingMap.get(parameter.key).getMinimumBound()}"
+                                       th:max="${postprocessingMap.get(parameter.key).isInt() ? postprocessingMap.get(parameter.key).getMaximumBound().intValue() : postprocessingMap.get(parameter.key).getMaximumBound()}"
+                                       th:step="${postprocessingMap.get(parameter.key).isInt() ? postprocessingMap.get(parameter.key).getStep().intValue() : postprocessingMap.get(parameter.key).getStep()}"
                                        th:name="|${'postprocessing[''' + parameter.key + ''']'}|"
                                        th:placeholder="${postprocessingMap.get(parameter.key).getDisplayName()}"
-                                       th:value="${parameter.value}" />
+                                       th:value="${postprocessingMap.get(parameter.key).isInt() ? parameter.value.intValue() : parameter.value}" />
                             </div>
                         </div>
                     </th:block>
