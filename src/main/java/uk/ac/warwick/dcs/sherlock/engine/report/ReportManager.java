@@ -47,9 +47,9 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 	private final Map<Long, Float> submissionScores;
 
 	/**
-	 * Maps pairs of file ids to the relative scores between them
+	 * Maps pairs of file ids to the match scores between them
 	 */
-	private final Map<List<Long>, Float> relativeFileScores;
+	private final Map<List<Long>, Float> fileMatchScores;
 
 	/**
 	 * The object used to generate the report information.
@@ -67,9 +67,9 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 		this.fileMap = new HashMap<>();
 		this.results = results;
 		this.submissionScores = new HashMap<>();
-		this.relativeFileScores = new HashMap<>();
+		this.fileMatchScores = new HashMap<>();
 		this.results.getFileResults().forEach(resultFile -> this.fileMap.put(resultFile.getFile().getPersistentId(), resultFile.getFile()));
-		this.results.getFileResults().forEach(resultFile -> resultFile.getFileScores().keySet().forEach(file2 -> this.relativeFileScores.put(new ArrayList<Long>(Arrays.asList(resultFile.getFile().getPersistentId(), file2.getPersistentId())), resultFile.getFileScore(file2))));
+		this.results.getFileResults().forEach(resultFile -> resultFile.getFileScores().keySet().forEach(file2 -> this.fileMatchScores.put(new ArrayList<Long>(Arrays.asList(resultFile.getFile().getPersistentId(), file2.getPersistentId())), resultFile.getFileScore(file2))));
 		this.results.getFileResults().forEach(resultFile -> {
 			if (resultFile.getFile() == null) return;
 			ISubmission submission = resultFile.getFile().getSubmission();
@@ -116,43 +116,59 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 	}
 
 	/**
-	 * Calculates the relative score between two submissions, by taking the average of the maximum relative scores between each individual file within them.
-	 * NOTE FOR FUTURE DEVS: This is not necessarily the best way to calculate this score, and it should probably be handled elsewhere, so please consider changing it.
+	 * Calculates the maximum match score between two submissions by finding the highest score among all file pairs.
 	 * @param sub_id1 the id of the first submission.
 	 * @param sub_id2 the id of the second submission.
-	 * @return a float relative score between the two submissions.
+	 * @return the maximum file match score between any pair of files in the two submissions, or 0 if no matches exist.
 	 */
-	private float GetSubmissionRelativeScore(long sub_id1, long sub_id2) {
-		//use to calculate the average of the max relative file scores
-		float total_max_score_tally = 0f;
-		int file_count = 0;
+	private float getMaxMatchScore(long sub_id1, long sub_id2) {
+		float maxScore = 0f;
 
-		//Go through all the files in the first submission
-		for(Long id1 : submissionFileMap.get(sub_id1)) {
-			//For each file, look at its relative score with each file in the other submission and get the largest
-			float max_score = 0f;
-			for(Long id2 : submissionFileMap.get(sub_id2)) {
-				List<Long> id_tuple = new ArrayList<>(Arrays.asList(id1, id2));
+		for (Long id1 : submissionFileMap.get(sub_id1)) {
+			for (Long id2 : submissionFileMap.get(sub_id2)) {
+				List<Long> filePair = new ArrayList<>(Arrays.asList(id1, id2));
+				float score = fileMatchScores.getOrDefault(filePair, 0f);
 
-				//If there's a relative score between these files, retrieve it, otherwise set it to 0.
-				float score = 0f;
-				if(relativeFileScores.containsKey(id_tuple))
-					score = relativeFileScores.get(id_tuple);
-
-				if(score > max_score)
-					max_score = score;
+				if (score > maxScore) {
+					maxScore = score;
+				}
 			}
-
-			total_max_score_tally += max_score;
-			file_count++;
 		}
 
-		//Avoid division by zero though this shouldn't happen unless a submission doesn't have anything in it
-		if(file_count == 0)
-			return 0f;
+		return maxScore;
+	}
 
-		//Return the average maximum score.
-		return total_max_score_tally / (float)file_count;
+	/**
+	 * Gets the match scores between all pairs of files from two submissions.
+	 * @param submission1 the first submission.
+	 * @param submission2 the second submission.
+	 * @return a map of file pairs (as ITuple<ISourceFile, ISourceFile>) to their match scores.
+	 */
+	@Override
+	public Map<ITuple<ISourceFile, ISourceFile>, Float> GetFileMatchScores(ISubmission submission1, ISubmission submission2) {
+		Map<ITuple<ISourceFile, ISourceFile>, Float> result = new HashMap<>();
+
+		List<Long> fileIds1 = submissionFileMap.get(submission1.getId());
+		List<Long> fileIds2 = submissionFileMap.get(submission2.getId());
+
+		if (fileIds1 == null || fileIds2 == null) {
+			return result;
+		}
+
+		for (Long id1 : fileIds1) {
+			for (Long id2 : fileIds2) {
+				List<Long> filePair = new ArrayList<>(Arrays.asList(id1, id2));
+				float score = fileMatchScores.getOrDefault(filePair, 0f);
+
+				if (score > 0f) {
+					ISourceFile file1 = fileMap.get(id1);
+					ISourceFile file2 = fileMap.get(id2);
+					result.put(new Tuple<>(file1, file2), score);
+				}
+			}
+		}
+
+		return result;
 	}
 
 	/**
@@ -193,10 +209,9 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 					for(ICodeBlock codeBlock : codeBlockGroup.getCodeBlocks()) {
 						long currentId = codeBlock.getFile().getSubmission().getId();
 						if(currentId != submissionId && !matchingSubIds.contains(currentId)) {
-							//Get the relative submission score
-							float relativeScore = GetSubmissionRelativeScore(submissionId, currentId);
+							float matchScore = getMaxMatchScore(submissionId, currentId);
 
-							matchingSubs.add(new Tuple<>(currentId, relativeScore));
+							matchingSubs.add(new Tuple<>(currentId, matchScore));
 							matchingSubIds.add(currentId);
 						}
 					}
