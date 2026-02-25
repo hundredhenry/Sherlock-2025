@@ -5,16 +5,20 @@ import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Account;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Workspace;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceRepository;
+<<<<<<< HEAD
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.WorkspaceWrapper;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.WorkspaceForm;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
 import java.util.List;
 
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.WorkspaceNameNotUnique;
+=======
+>>>>>>> caa7d407 (Integrated spring to CLI (has bugs))
 
 
 public class WorkspaceManagementService {
 
+<<<<<<< HEAD
     public void createWorkspace(AccountWrapper accountWrapper, WorkspaceRepository workspaceRepository, WorkspaceForm workspaceForm) {
         try {
             WorkspaceWrapper workspaceWrapper = new WorkspaceWrapper(workspaceForm, accountWrapper.getAccount(), workspaceRepository);
@@ -41,4 +45,12 @@ public class WorkspaceManagementService {
             System.out.println("Workspace deleted successfully.");
         }
     }
+=======
+    public void createWorkspace(Account account, WorkspaceRepository workspaceRepository, String name, String language) {
+        IWorkspace iWorkspace = SherlockEngine.storage.createWorkspace(name, language);
+        Workspace workspace = new Workspace(account, iWorkspace.getPersistentId());
+        workspaceRepository.save(workspace);
+    }
+
+>>>>>>> caa7d407 (Integrated spring to CLI (has bugs))
 }
