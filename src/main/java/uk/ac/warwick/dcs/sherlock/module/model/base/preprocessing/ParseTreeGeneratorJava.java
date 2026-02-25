@@ -23,7 +23,6 @@ public class ParseTreeGeneratorJava implements IAdvancedPreProcessor<JavaLexer> 
 
         Tree tree = parser.compilationUnit();
 
-        //System.out.println("field -> " + fields.toString());
         return new ParseTreeArtifact(tree, parser);
     }
 }
