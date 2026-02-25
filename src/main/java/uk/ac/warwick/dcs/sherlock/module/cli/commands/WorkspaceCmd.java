@@ -6,6 +6,7 @@ import uk.ac.warwick.dcs.sherlock.module.cli.services.WorkspaceManagementService
 // import uk.ac.warwick.dcs.sherlock.module.cli.services.AccountsService;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Account;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.AccountRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceRepository;
 
 @CommandLine.Command(name="workspace", description="Commands for workspace management", mixinStandardHelpOptions = true,
     subcommands = {

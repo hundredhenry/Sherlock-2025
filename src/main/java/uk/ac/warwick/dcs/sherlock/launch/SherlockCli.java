@@ -12,6 +12,8 @@ import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
 import uk.ac.warwick.dcs.sherlock.module.core.configuration.CoreSecurityConfig;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Account;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.AccountRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceRepository;
+
 
 @CommandLine.Command(
     name = "sherlock",
