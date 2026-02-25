@@ -196,7 +196,10 @@ tasks.register('combineJs') {
         def outputDir = file("${projectDir}/src/main/resources/static/js")
         outputDir.mkdirs()
         def combinedFile = outputs.files.singleFile
-        combinedFile.text = jsFiles.collect { it.text }.join('\n')
+        combinedFile.setText(
+                jsFiles.collect { it.getText('UTF-8') }.join('\n'),
+                'UTF-8'
+        )
     }
 }
 
