@@ -82,6 +82,11 @@ h2 .btn {
     border-bottom: $card-border-width solid $card-border-color !important;
 }
 
+/* File score table rows are clickable */
+tr[data-js='file-score-row']:hover {
+    background-color: rgba(#f47b2a, 0.15) !important;
+}
+
 .bg-orange {
     background-color: #9f4508 !important;
 }

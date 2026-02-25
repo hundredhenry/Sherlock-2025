@@ -352,6 +352,38 @@ function submissionResultsPage() {
                 $(".restore-right").addClass("d-none");
             });
 
+            // Listener for click events on a file score row - toggles the matching file collapses
+            $("[data-js='file-score-row']").unbind();
+            $("[data-js='file-score-row']").click(function(e) {
+                var file1 = $(this).attr('data-file1');
+                var file2 = $(this).attr('data-file2');
+                var leftCollapse = null;
+                var rightCollapse = null;
+
+                $('#left .accordion button').each(function() {
+                    if ($(this).text().indexOf(file1) !== -1) {
+                        leftCollapse = $($(this).attr('data-target'));
+                    }
+                });
+
+                $('#right .accordion button').each(function() {
+                    if ($(this).text().indexOf(file2) !== -1) {
+                        rightCollapse = $($(this).attr('data-target'));
+                    }
+                });
+
+                var isOpening = leftCollapse && !leftCollapse.hasClass('show');
+                if (leftCollapse) leftCollapse.collapse('toggle');
+                if (rightCollapse) rightCollapse.collapse('toggle');
+
+                if (isOpening) {
+                    var scrollTarget = leftCollapse || rightCollapse;
+                    if (scrollTarget) {
+                        $('html, body').animate({ scrollTop: scrollTarget.offset().top - 100 }, 500);
+                    }
+                }
+            });
+
             //List for click events on the "toggle table" button
             $("[data-js='matches-list']").unbind();
             $("[data-js='matches-list']").click(function(e) {
@@ -450,6 +482,12 @@ function submissionResultsPage() {
                 hideAll();
                 loaded++;
                 printEvent();
+
+                // Once all files have loaded on the non-print page, collapse them
+                // (files start open so Prism can position highlights correctly)
+                if (!isPrinting() && (loaded + failed) >= $('pre').length) {
+                    $('#left .accordion .collapse, #right .accordion .collapse').removeClass('show');
+                }
             }
 
             //Listens for click events on highlighted lines
