@@ -262,7 +262,13 @@ public class SubmissionResultsData {
      * @return the file scores map
      */
     public Map<String, Float> getFileScores() {
-        return fileScores;
+        return fileScores.entrySet().stream()
+                .sorted(Map.Entry.<String, Float>comparingByValue().reversed())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new));
     }
 
     /**
