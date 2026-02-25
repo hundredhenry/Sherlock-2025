@@ -6,15 +6,15 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
-import uk.ac.warwick.dcs.sherlock.module.web.data.models.db.Template;
-import uk.ac.warwick.dcs.sherlock.module.web.data.repositories.TParameterRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Template;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TParameterRepository;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.*;
-import uk.ac.warwick.dcs.sherlock.module.web.data.models.forms.TemplateForm;
-import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.AccountWrapper;
-import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.EngineDetectorWrapper;
-import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.TemplateWrapper;
-import uk.ac.warwick.dcs.sherlock.module.web.data.repositories.TDetectorRepository;
-import uk.ac.warwick.dcs.sherlock.module.web.data.repositories.TemplateRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.TemplateForm;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.EngineDetectorWrapper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.TemplateWrapper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TDetectorRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TemplateRepository;
 
 import jakarta.validation.Valid;
 

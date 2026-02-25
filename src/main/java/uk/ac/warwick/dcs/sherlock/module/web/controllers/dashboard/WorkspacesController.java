@@ -7,10 +7,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.NotAjaxRequest;
-import uk.ac.warwick.dcs.sherlock.module.web.data.models.forms.WorkspaceForm;
-import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.AccountWrapper;
-import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.WorkspaceWrapper;
-import uk.ac.warwick.dcs.sherlock.module.web.data.repositories.WorkspaceRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.WorkspaceForm;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.WorkspaceWrapper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceRepository;
 
 import jakarta.validation.Valid;
 

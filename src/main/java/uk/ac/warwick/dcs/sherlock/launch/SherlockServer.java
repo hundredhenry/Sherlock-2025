@@ -19,10 +19,10 @@ import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
 import javax.sql.DataSource;
 
 @SpringBootApplication
-@ComponentScan("uk.ac.warwick.dcs.sherlock.module.web")
+@ComponentScan("uk.ac.warwick.dcs.sherlock.module")
 @ServletComponentScan("uk.ac.warwick.dcs.sherlock.module.web")
-@EnableJpaRepositories("uk.ac.warwick.dcs.sherlock.module.web")
-@EntityScan("uk.ac.warwick.dcs.sherlock.module.web")
+@EnableJpaRepositories("uk.ac.warwick.dcs.sherlock.module.core")
+@EntityScan("uk.ac.warwick.dcs.sherlock.module.core")
 public class SherlockServer extends SpringBootServletInitializer {
 
 	public static SherlockEngine engine;

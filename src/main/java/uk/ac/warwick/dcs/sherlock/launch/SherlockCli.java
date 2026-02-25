@@ -3,11 +3,15 @@ package uk.ac.warwick.dcs.sherlock.launch;
 import java.util.Scanner;
 
 import org.eclipse.persistence.sessions.coordination.Command;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import picocli.CommandLine;
 import uk.ac.warwick.dcs.sherlock.module.cli.commands.*;
 import uk.ac.warwick.dcs.sherlock.api.util.Side;
 import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
+import uk.ac.warwick.dcs.sherlock.module.core.configuration.CoreSecurityConfig;
+import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Account;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.AccountRepository;
 
 @CommandLine.Command(
     name = "sherlock",
@@ -15,29 +19,32 @@ import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
     subcommands = {
         DisplayCmd.class,
         DashboardCmd.class,
-        TemplateCmd.class
+        TemplateCmd.class,
+        WorkspaceCmd.class
     },
     mixinStandardHelpOptions = true
 )
 public class SherlockCli {
-    
+    private final AnnotationConfigApplicationContext context;
+
     private final CommandLine cmd = new CommandLine(this);
 
-    @CommandLine.Spec
-    private CommandLine.Model.CommandSpec spec;
+    public SherlockCli(AnnotationConfigApplicationContext context) {
+        this.context = context;
+    }
 
     public void launch_cli() {
-        SherlockEngine engine = new SherlockEngine(Side.CLIENT);
-        if (!engine.isValidInstance()) {
-            System.err.println("Sherlock is already running, closing...");
-            System.exit(1);
-        }
-
-        engine.initialise();
-
+        // SherlockEngine engine = context.getBean(SherlockEngine.class);
+        AccountRepository accountRepository = context.getBean(AccountRepository.class);
+        WorkspaceRepository workspaceRepository = context.getBean(WorkspaceRepository.class);
+        Account account = accountRepository.findByEmail(CoreSecurityConfig.getLocalEmail());
+        System.out.println("Authenticated as: " + account.getEmail() + " (" + account.getUsername() + ")");
+        
         System.out.println("Welcome to the Sherlock CLI Interface!");
 
-        CommandLine commandLine = spec.commandLine();
+        WorkspaceCmd workspaceCmd = new WorkspaceCmd(accountRepository, workspaceRepository, account);
+        // cmd = new CommandLine(this);
+        // cmd.addSubcommand(workspaceCmd);
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
@@ -50,11 +57,6 @@ public class SherlockCli {
 
             if (line.equalsIgnoreCase("exit")) {
                 break;
-            } else if (line.equalsIgnoreCase("help")) {
-                for (String name : commandLine.getSubcommands().keySet()) {
-                    System.out.println(" - " + name);
-                }
-                continue;
             }
 
             String[] args = line.split("\\s+");
@@ -68,7 +70,6 @@ public class SherlockCli {
         }
         System.out.println("Exiting Sherlock CLI. Goodbye!");
         scanner.close();
-        System.exit(0);
     }
 
 }

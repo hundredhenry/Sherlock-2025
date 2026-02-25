@@ -9,13 +9,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import uk.ac.warwick.dcs.sherlock.module.web.configuration.SecurityConfig;
+import uk.ac.warwick.dcs.sherlock.module.core.configuration.CoreSecurityConfig;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.NotAjaxRequest;
-import uk.ac.warwick.dcs.sherlock.module.web.data.models.db.Account;
-import uk.ac.warwick.dcs.sherlock.module.web.data.models.db.Role;
-import uk.ac.warwick.dcs.sherlock.module.web.data.models.forms.AccountForm;
-import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.AccountWrapper;
-import uk.ac.warwick.dcs.sherlock.module.web.data.repositories.AccountRepository;
-import uk.ac.warwick.dcs.sherlock.module.web.data.repositories.RoleRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Account;
+import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Role;
+import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.AccountForm;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.AccountRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.RoleRepository;
 
 import jakarta.validation.Valid;
 
@@ -97,7 +98,7 @@ public class AdminController {
 		if (!result.hasErrors()) {
 			if (accountRepository.findByEmail(accountForm.getEmail()) == null) {
                 //Generate a random password
-                String newPassword = SecurityConfig.generateRandomPassword();
+                String newPassword = CoreSecurityConfig.generateRandomPassword();
 
                 Account newAccount = new Account(
                         accountForm.getEmail(),

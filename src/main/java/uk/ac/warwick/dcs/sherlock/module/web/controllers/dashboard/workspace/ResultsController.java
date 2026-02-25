@@ -9,12 +9,12 @@ import uk.ac.warwick.dcs.sherlock.api.component.IJob;
 import uk.ac.warwick.dcs.sherlock.api.component.ISubmission;
 import uk.ac.warwick.dcs.sherlock.api.executor.IJobStatus;
 import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
-import uk.ac.warwick.dcs.sherlock.module.web.data.repositories.WorkspaceRepository;
-import uk.ac.warwick.dcs.sherlock.module.web.data.results.JobResultsData;
-import uk.ac.warwick.dcs.sherlock.module.web.data.results.ResultsHelper;
-import uk.ac.warwick.dcs.sherlock.module.web.data.results.SubmissionResultsData;
-import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.AccountWrapper;
-import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.WorkspaceWrapper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.results.JobResultsData;
+import uk.ac.warwick.dcs.sherlock.module.core.data.results.ResultsHelper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.results.SubmissionResultsData;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.WorkspaceWrapper;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.*;
 
 import jakarta.servlet.http.HttpServletRequest;

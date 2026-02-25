@@ -1,6 +1,8 @@
 package uk.ac.warwick.dcs.sherlock.launch;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
 import uk.ac.warwick.dcs.sherlock.api.annotation.EventHandler;
 import uk.ac.warwick.dcs.sherlock.api.annotation.SherlockModule;
 import uk.ac.warwick.dcs.sherlock.api.annotation.SherlockModule.Instance;
@@ -10,11 +12,18 @@ import uk.ac.warwick.dcs.sherlock.api.event.EventPreInitialisation;
 import uk.ac.warwick.dcs.sherlock.api.util.Side;
 import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
 import uk.ac.warwick.dcs.sherlock.module.client.Splash;
+import uk.ac.warwick.dcs.sherlock.module.core.configuration.CoreSecurityConfig;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import java.awt.Desktop;
 import java.net.URI;
+import java.text.Annotation;
+
 import picocli.CommandLine;
 import java.util.Arrays;
 
@@ -58,8 +67,29 @@ public class SherlockClient implements Runnable {
 	}
 
 	public void cli_launcher(String[] args) {
-		SherlockCli cli = new SherlockCli();
+		SherlockEngine engine = new SherlockEngine(Side.CLIENT);
+		if (!engine.isValidInstance()) {
+			System.err.println("Sherlock is already running, closing...");
+			System.exit(1);
+		}
+		engine.initialise();	
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+		context.getEnvironment().setActiveProfiles("cli");
+		context.register(SherlockCliSpring.class);
+		context.refresh();
+		AuthenticationManager authenticationManager = context.getBean(AuthenticationManager.class);
+
+		UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(CoreSecurityConfig.getLocalEmail(), CoreSecurityConfig.getLocalPassword());
+        Authentication authentication = authenticationManager.authenticate(authRequest);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        System.out.println("CLI configuration complete, authentication manager initialized with local user");
+
+		// SherlockEngine engine = context.getBean(SherlockEngine.class);
+		SherlockCli cli = new SherlockCli(context);
 		cli.launch_cli();
+
+		context.close();
+		System.exit(0);
 	}
 
 	public void web_launcher(String[] args) {
