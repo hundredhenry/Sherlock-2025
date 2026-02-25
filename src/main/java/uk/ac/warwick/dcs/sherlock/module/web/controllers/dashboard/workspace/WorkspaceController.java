@@ -152,7 +152,6 @@ public class WorkspaceController {
 
                 if (isSingleFileUpload){
                     List<MultipartFile> processedFiles = new ArrayList<>();
-                    System.out.println("Num files: " + submissionsForm.getFiles().length);
                     // For loop technically unneeded since upload only permits ONE zip file but keeping for robustness
                     for (MultipartFile file : submissionsForm.getFiles()){
                         String filename = file.getOriginalFilename();
