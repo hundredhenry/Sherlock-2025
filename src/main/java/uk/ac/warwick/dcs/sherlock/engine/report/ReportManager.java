@@ -77,14 +77,14 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 			this.submissionScores.put(submission.getId(), resultFile.getOverallScore());
 		});
 
-		FillSubmissionFileMap();
+		fillSubmissionFileMap();
 	}
 
 	/**
 	 * Retrieve every ICodeBlockGroup stored in results.
 	 * @return a list of ICodeBlockGroups.
 	 */
-	private List<ICodeBlockGroup> GetCodeBlockGroups() {
+	private List<ICodeBlockGroup> getCodeBlockGroups() {
 		List<ICodeBlockGroup> codeBlockGroups = new ArrayList<>();
 		this.results.getFileResults().stream().flatMap(file -> file.getTaskResults().stream()).filter(task -> task.getContainingBlocks() != null)
 				.forEach(task -> codeBlockGroups.addAll(task.getContainingBlocks()));
@@ -96,7 +96,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 	 * @param submission the submission to find relevant ICodeBlockGroups for.
 	 * @return a list of relevant ICodeBlockGroups.
 	 */
-	private List<ICodeBlockGroup> GetCodeBlockGroups(ISubmission submission) {
+	private List<ICodeBlockGroup> getCodeBlockGroups(ISubmission submission) {
 		List<ICodeBlockGroup> codeBlockGroups = new ArrayList<>();
 		this.results.getFileResults().stream().flatMap(file -> file.getTaskResults().stream()).filter(task -> task.getContainingBlocks() != null)
 				.flatMap(task -> task.getContainingBlocks().stream().filter(group -> group.submissionIdPresent(submission.getId()))).forEach(group -> codeBlockGroups.add(group));
@@ -108,7 +108,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 	 * @param submissions the submissions to find relevant ICodeBlockGroups for.
 	 * @return a list of relevant ICodeBlockGroups.
 	 */
-	private List<ICodeBlockGroup> GetCodeBlockGroups(List<ISubmission> submissions) {
+	private List<ICodeBlockGroup> getCodeBlockGroups(List<ISubmission> submissions) {
 		List<ICodeBlockGroup> codeBlockGroups = new ArrayList<>();
 		this.results.getFileResults().stream().flatMap(file -> file.getTaskResults().stream()).filter(task -> task.getContainingBlocks() != null)
 				.flatMap(task -> task.getContainingBlocks().stream().filter(group -> group.submissionIdPresent(submissions.get(0).getId()) && group.submissionIdPresent(submissions.get(1).getId()))).forEach(group -> codeBlockGroups.add(group));
@@ -145,7 +145,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 	 * @return a map of file pairs (as ITuple<ISourceFile, ISourceFile>) to their match scores.
 	 */
 	@Override
-	public Map<ITuple<ISourceFile, ISourceFile>, Float> GetFileMatchScores(ISubmission submission1, ISubmission submission2) {
+	public Map<ITuple<ISourceFile, ISourceFile>, Float> getFileMatchScores(ISubmission submission1, ISubmission submission2) {
 		Map<ITuple<ISourceFile, ISourceFile>, Float> result = new HashMap<>();
 
 		List<Long> fileIds1 = submissionFileMap.get(submission1.getId());
@@ -174,7 +174,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 	/**
 	 * Fill in submissionFileMap based off of the contents of fileMap.
 	 */
-	private void FillSubmissionFileMap() {
+	private void fillSubmissionFileMap() {
 		for(ISourceFile file : this.fileMap.values()) {
 			//If this is the first file of this submission seen, create a new list and put it into submissionFileMap.
 			//otherwise add to the existing list.
@@ -193,7 +193,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 	 * @return a list of the matching SubmissionSummaries, each containing their ids, overall scores, and a list of the submissions that they were matched with.
 	 */
 	@Override
-	public List<SubmissionSummary> GetMatchingSubmissions() {
+	public List<SubmissionSummary> getMatchingSubmissions() {
 		ArrayList<SubmissionSummary> output = new ArrayList<>();
 
 		for(Long submissionId : submissionFileMap.keySet()) {
@@ -203,7 +203,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 			ArrayList<Long> matchingSubIds = new ArrayList<>();
 
 			//Look through all the code block groups to determine which submissions have been matched with which other submissions.
-			for(ICodeBlockGroup codeBlockGroup : GetCodeBlockGroups()) {
+			for(ICodeBlockGroup codeBlockGroup : getCodeBlockGroups()) {
 				//If this group contains a file for the current submission, add all other submissions in the group to the list, if they aren't already added
 				if(codeBlockGroup.submissionIdPresent(submissionId)) {
 					for(ICodeBlock codeBlock : codeBlockGroup.getCodeBlocks()) {
@@ -218,7 +218,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 				}
 
 			}
-			submissionSummary.AddMatchingSubmissions(matchingSubs);
+			submissionSummary.addMatchingSubmissions(matchingSubs);
 			output.add(submissionSummary);
 		}
 
@@ -232,7 +232,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 	 * @return A list of SubmissionMatchGroup objects which contain lists of SubmissionMatch objects; each have ids of the two matching files, a score for the match, a reason from the DetectionType, and the line numbers in each file where the match occurs.
 	 */
 	@Override
-	public List<SubmissionMatchGroup> GetSubmissionComparison(List<ISubmission> submissions) {
+	public List<SubmissionMatchGroup> getSubmissionComparison(List<ISubmission> submissions) {
 		if (submissions.stream().anyMatch(ISubmission::hasParent)) {
 			// one of the submissions is not top level, don't make reports on non-top level submission.
 
@@ -251,7 +251,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 			return null;
 
 
-		List<ICodeBlockGroup> relevantGroups = GetCodeBlockGroups(submissions);
+		List<ICodeBlockGroup> relevantGroups = getCodeBlockGroups(submissions);
 
 		return reportGenerator.generateSubmissionComparison(submissions, relevantGroups);
 	}
@@ -263,7 +263,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 	 * @return A tuple. The key contains a list of SubmissionMatchGroup objects which contain lists of SubmissionMatch objects; each have objects which contain ids of the two matching files, a score for the match, a reason from the DetectionType, and the line numbers in each file where the match occurs. The value is the report summary.
 	 */
 	@Override
-	public ITuple<List<SubmissionMatchGroup>, String> GetSubmissionReport(ISubmission submission) {
+	public ITuple<List<SubmissionMatchGroup>, String> getSubmissionReport(ISubmission submission) {
 
 		if (submission.hasParent()) {
 			// submission is not top level, don't make reports on non-top level submission.
@@ -279,7 +279,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 			}*/
 		}
 
-		List<ICodeBlockGroup> relevantGroups = GetCodeBlockGroups(submission);
+		List<ICodeBlockGroup> relevantGroups = getCodeBlockGroups(submission);
 
 		//Generate and return the report.
 		return reportGenerator.generateSubmissionReport(submission, relevantGroups, submissionScores.get(submission.getId()));
