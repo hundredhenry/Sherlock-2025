@@ -21,12 +21,14 @@ import uk.ac.warwick.dcs.sherlock.module.web.exceptions.*;
 import uk.ac.warwick.dcs.sherlock.module.core.util.ZipMultipartFile;
 
 import jakarta.validation.Valid;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * The controller that deals with the manage workspace pages
@@ -178,8 +180,45 @@ public class WorkspaceController {
                         }
                     }
                     submissionsForm.setFiles(processedFiles.toArray(new MultipartFile[0]));
+                } else if (submissionsForm.isMultiFolder()) {
+                    // Folder upload for multi-file submissions.
+                    // The browser sends files with paths like "selectedFolder/student1/Main.java".
+                    // Strip the common top-level prefix so paths become "student1/Main.java",
+                    // then pack into a synthetic ZIP for storeArchive(archiveHasManySubmissions=true).
+                    try {
+                        String commonPrefix = null;
+                        for (MultipartFile file : submissionsForm.getFiles()) {
+                            String path = file.getOriginalFilename();
+                            if (path != null && path.contains("/")) {
+                                String prefix = path.substring(0, path.indexOf('/'));
+                                if (commonPrefix == null) {
+                                    commonPrefix = prefix;
+                                }
+                            }
+                        }
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+                            for (MultipartFile file : submissionsForm.getFiles()) {
+                                if (file.getSize() > 0) {
+                                    String path = file.getOriginalFilename();
+                                    if (path != null && commonPrefix != null && path.startsWith(commonPrefix + "/")) {
+                                        path = path.substring(commonPrefix.length() + 1);
+                                    }
+                                    zos.putNextEntry(new ZipEntry(path));
+                                    zos.write(file.getBytes());
+                                    zos.closeEntry();
+                                }
+                            }
+                        }
+                        MultipartFile syntheticZip = new ZipMultipartFile(
+                                "files", "submissions.zip", "application/zip", baos.toByteArray());
+                        submissionsForm.setFiles(new MultipartFile[]{syntheticZip});
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        result.reject("error.file.failed");
+                    }
                 }
-                
+
                 collisions = workspaceWrapper.addSubmissions(submissionsForm);
                 model.addAttribute("collisions", collisions);
 

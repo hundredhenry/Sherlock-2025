@@ -22,6 +22,8 @@ public class SubmissionsForm {
     @Max(value=2, message = "{error.duplicate}")
     public int duplicate;
 
+    public boolean multiFolder = false;
+
     public SubmissionsForm() { }
 
     public SubmissionsForm(MultipartFile[] files, boolean single) {
@@ -55,5 +57,17 @@ public class SubmissionsForm {
 
     public void setDuplicate(int duplicate) {
         this.duplicate = duplicate;
+    }
+
+    public boolean isMultiFolder() {
+        return multiFolder;
+    }
+
+    public boolean getMultiFolder() {
+        return multiFolder;
+    }
+
+    public void setMultiFolder(boolean multiFolder) {
+        this.multiFolder = multiFolder;
     }
 }
