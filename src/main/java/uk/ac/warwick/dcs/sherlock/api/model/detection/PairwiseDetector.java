@@ -1,5 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.api.model.detection;
 
+import uk.ac.warwick.dcs.sherlock.api.annotation.AdjustableParameter;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy;
 import uk.ac.warwick.dcs.sherlock.engine.executor.common.ExecutorUtils;
 
@@ -18,6 +19,14 @@ import java.util.stream.Stream;
  * More advanced implementations should directly implement the IDetector interface.
  */
 public class PairwiseDetector<T extends PairwiseDetectorWorker> extends Detector<T> {
+
+	/**
+	 * When enabled (set to 1), only files with the same filename across different submissions will be compared.
+	 * Useful for multi-file submissions where each submission contains files with the same names (e.g. Main.java, Helper.java).
+	 */
+	@AdjustableParameter(name = "Match by Filename Only", defaultValue = 0, minimumBound = 0, maximumBound = 1, step = 1,
+			description = "When set to 1, only compare files with the same filename across submissions. Useful for multi-file submissions.")
+	public int matchByFilename = 0;
 
 	/**
 	 * Class object for the generic type of this detector's worker
@@ -78,7 +87,11 @@ public class PairwiseDetector<T extends PairwiseDetectorWorker> extends Detector
 	 */
 	@Override
 	public final List<T> buildWorkers(List<ModelDataItem> data) {
-		return combinations(data, 2).filter(x -> !x.get(0).getFile().getSubmission().equals(x.get(1).getFile().getSubmission())).map(x -> this.getAbstractPairwiseDetectorWorker(x.get(0), x.get(1)))
+		return combinations(data, 2)
+				.filter(x -> !x.get(0).getFile().getSubmission().equals(x.get(1).getFile().getSubmission()))
+				.filter(x -> matchByFilename == 0 ||
+						x.get(0).getFile().getFileDisplayName().equals(x.get(1).getFile().getFileDisplayName()))
+				.map(x -> this.getAbstractPairwiseDetectorWorker(x.get(0), x.get(1)))
 				.filter(Objects::nonNull).collect(Collectors.toList());
 	}
 

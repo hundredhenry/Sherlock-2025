@@ -1,9 +1,11 @@
 package uk.ac.warwick.dcs.sherlock.api.report;
 
+import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.component.ISubmission;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IReportManager<T extends ISubmissionMatchGroup, S extends ISubmissionSummary> {
 
@@ -28,5 +30,14 @@ public interface IReportManager<T extends ISubmissionMatchGroup, S extends ISubm
 	 * @return A tuple. The key contains a list of SubmissionMatchGroup objects which contain lists of SubmissionMatch objects; each have objects which contain ids of the two matching files, a score for the match, a reason from the DetectionType, and the line numbers in each file where the match occurs. The value is the report summary.
 	 */
 	ITuple<List<T>, String> GetSubmissionReport(ISubmission submission);
+
+	/**
+	 * Get the match scores between files from two submissions.
+	 *
+	 * @param submission1 The first submission.
+	 * @param submission2 The second submission.
+	 * @return A map where keys are file pairs (as ITuple of ISourceFile) and values are their match scores.
+	 */
+	Map<ITuple<ISourceFile, ISourceFile>, Float> GetFileMatchScores(ISubmission submission1, ISubmission submission2);
 
 }

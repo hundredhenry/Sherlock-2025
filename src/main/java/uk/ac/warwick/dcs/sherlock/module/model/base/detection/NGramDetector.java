@@ -26,7 +26,7 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 	 * In theory smaller is more sensitive, but realistically you don't want to use lower than 3 or higher than 8.
 	 * </p>
 	 */
-	@AdjustableParameter (name = "N-Gram Size", defaultValue = 4, minimumBound = 1, maximumBound = 10, step = 1, description = "The width in characters of each N-Gram. Smaller is more sensitive.")
+	@AdjustableParameter (name = "N-Gram Size", defaultValue = 8, minimumBound = 1, maximumBound = 10, step = 1, description = "The width in characters of each N-Gram. Smaller is more sensitive.")
 	public int ngram_size;
 	/**
 	 * The minimum size of a list of N-Grams before checks begin.
@@ -35,7 +35,7 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 	 * Before this size is reached if the match ends then nothing is flagged.
 	 * </p>
 	 */
-	@AdjustableParameter (name = "Minimum Window", defaultValue = 5, minimumBound = 0, maximumBound = 20, step = 1, description = "The minimum number of N-Grams that can be detected as a matched block. Character width of minimum block is N-Gram size + minimum window - 1.")
+	@AdjustableParameter (name = "Minimum Window", defaultValue = 10, minimumBound = 0, maximumBound = 20, step = 1, description = "The minimum number of N-Grams that can be detected as a matched block. Character width of minimum block is N-Gram size + minimum window - 1.")
 	public int minimum_window;
 	/**
 	 * The threshold on the similarity value over which something is considered suspicious.
@@ -44,7 +44,7 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 	 * long enough to consider it possible plagerism.
 	 * </p>
 	 */
-	@AdjustableParameter (name = "Threshold", defaultValue = 0.8f, minimumBound = 0.0f, maximumBound = 1.0f, step = 0.001f, description = "The threshold on the similarity at which a block of code will be no longer considered similar. This determines where the similarity ends, 1 will give only pure matches, 0 will match anything")
+	@AdjustableParameter (name = "Threshold", defaultValue = 0.9f, minimumBound = 0.0f, maximumBound = 1.0f, step = 0.001f, description = "The threshold on the similarity at which a block of code will be no longer considered similar. This determines where the similarity ends, 1 will give only pure matches, 0 will match anything")
 	public float threshold;
 
 	/**

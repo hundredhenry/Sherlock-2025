@@ -13,6 +13,7 @@ import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.*;
 import uk.ac.warwick.dcs.sherlock.api.registry.IRegistry;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
+import uk.ac.warwick.dcs.sherlock.engine.executor.common.ExecutorUtils;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -406,7 +407,7 @@ public class Registry implements IRegistry {
 
 		//Do @DetectorParameter stuff - find the annotations for the params in the detector, check them and add to the map
 		List<AdjustableParameterObj> tuneables =
-				Arrays.stream(detector.getDeclaredFields()).map(f -> new Tuple<>(f, f.getDeclaredAnnotationsByType(AdjustableParameter.class))).filter(x -> x.getValue().length == 1).map(x -> {
+				ExecutorUtils.getAllFields(detector).stream().map(f -> new Tuple<>(f, f.getDeclaredAnnotationsByType(AdjustableParameter.class))).filter(x -> x.getValue().length == 1).map(x -> {
 					if (!(x.getKey().getType().equals(float.class) || x.getKey().getType().equals(int.class))) {
 						logger.warn("Detector '{}' not registered, contains @DetectorParameter {} which is not an int or float", tester.getDisplayName(), x.getKey().getName());
 						return null;
@@ -568,7 +569,7 @@ public class Registry implements IRegistry {
 
 		// Do @DetectorParameter stuff - find the annotations for the params in the postprocessor, check them and add to the map
 		List<AdjustableParameterObj> tuneables =
-				Arrays.stream(postProcessor.getDeclaredFields()).map(f -> new Tuple<>(f, f.getDeclaredAnnotationsByType(AdjustableParameter.class))).filter(x -> x.getValue().length == 1).map(x -> {
+				ExecutorUtils.getAllFields(postProcessor).stream().map(f -> new Tuple<>(f, f.getDeclaredAnnotationsByType(AdjustableParameter.class))).filter(x -> x.getValue().length == 1).map(x -> {
 					if (!(x.getKey().getType().equals(float.class) || x.getKey().getType().equals(int.class))) {
 						logger.warn("PostProcessor '{}' not registered, contains @DetectorParameter {} which is not an int or float", postProcessor.getName(), x.getKey().getName());
 						return null;

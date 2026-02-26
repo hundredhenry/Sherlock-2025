@@ -295,6 +295,43 @@
                             </div>
                         </th:block>
                         <th:block th:unless="${printing}">
+                            <div class="row mb-3" th:if="${!wrapper.getFileScores().empty}">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">
+                                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#file-scores-collapse" th:text="#{results.compare.file_scores}">File Match Scores</button>
+                                            </h5>
+                                        </div>
+                                        <div id="file-scores-collapse" class="collapse show">
+                                            <div class="card-body">
+                                                <table class="table table-sm table-striped mb-0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th th:text="${submission1.getName()}">Submission 1</th>
+                                                            <th th:text="${submission2.getName()}">Submission 2</th>
+                                                            <th th:text="#{results.compare.score_header}">Score</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr th:each="entry : ${wrapper.getFileScores()}"
+                                                            data-js="file-score-row"
+                                                            style="cursor: pointer;"
+                                                            th:data-file1="${#strings.substringBefore(entry.key, '|')}"
+                                                            th:data-file2="${#strings.substringAfter(entry.key, '|')}">
+                                                            <td th:text="${#strings.substringBefore(entry.key, '|')}"></td>
+                                                            <td th:text="${#strings.substringAfter(entry.key, '|')}"></td>
+                                                            <td>
+                                                                <span th:text="${#numbers.formatDecimal(entry.value, 1, 1)}"></span>%
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="row">
                                 <div class="col-lg-6" id="left">
                                     <h5>

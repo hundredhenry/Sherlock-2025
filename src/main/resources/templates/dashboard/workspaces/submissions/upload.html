@@ -138,6 +138,92 @@
                         </div>
                     </div>
                 </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="num_sub" id="num_sub_multifile" value="num_sub_multifile_div" data-js="radio-div">
+                    <label class="form-check-label" for="num_sub_multifile">
+                        <span th:text="#{workspaces.submissions.upload.multifile}"></span>
+                    </label>
+                </div>
+                <div id="num_sub_multifile_div" class="card bg-primary num_sub ml-4 d-none">
+                    <div class="card-body">
+                        <h6>
+                            <span th:text="#{workspaces.submissions.upload.multifile.organisation}"></span>
+                        </h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="multi_org" id="multi_org_folder" value="multi_org_folder_div" data-js="radio-div">
+                            <label class="form-check-label" for="multi_org_folder">
+                                <span th:text="#{workspaces.submissions.upload.multifile.folder}"></span>
+                            </label>
+                        </div>
+                        <div id="multi_org_folder_div" class="multi_org ml-4 d-none">
+                            <span th:text="#{workspaces.submissions.upload.multifile.instructions.folder}" style="font-style: italic;"></span>
+
+                            <form th:action="@{/dashboard/workspaces/manage/{id}/submissions/upload(id=${workspace.getId()})}" enctype="multipart/form-data" data-js='form' data-js-target="#upload-parent" method="post" class="mt-3">
+                                <div class="form-row">
+                                    <div class="form-group col-md-12">
+                                        <!-- folder upload using webkitdirectory -->
+                                        <input type="file" name="files" webkitdirectory multiple>
+                                        <input type="hidden" name="single" value="false">
+                                        <input type="hidden" name="multiFolder" value="true">
+                                    </div>
+                                    <div class="form-group col-md-12">
+                                        <label for="duplicate6" th:text="#{variable.duplicate}"></label>
+                                        <select class="form-control" name="duplicate" id="duplicate6">
+                                            <option th:value="0"
+                                                    th:text="#{variable.duplicate.zero}">
+                                            </option>
+                                            <option th:value="1"
+                                                    th:text="#{variable.duplicate.one}">
+                                            </option>
+                                            <option th:value="2"
+                                                    th:text="#{variable.duplicate.two}">
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-12">
+                                        <button type="submit" class="btn btn-primary float-right" th:text="#{link.upload}"></button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="multi_org" id="multi_org_zip" value="multi_org_zip_div" data-js="radio-div">
+                            <label class="form-check-label" for="multi_org_zip">
+                                <span th:text="#{workspaces.submissions.upload.multifile.zip}"></span>
+                            </label>
+                        </div>
+                        <div id="multi_org_zip_div" class="multi_org ml-4 d-none">
+                            <span th:text="#{workspaces.submissions.upload.multifile.instructions.zip}" style="font-style: italic;"></span><a href="https://www.wikihow.com/Make-a-Zip-File" target="_blank" th:text="#{workspaces.submissions.upload.instructions.zip_link}"></a>
+
+                            <form th:action="@{/dashboard/workspaces/manage/{id}/submissions/upload(id=${workspace.getId()})}" enctype="multipart/form-data" data-js='form' data-js-target="#upload-parent" method="post" class="mt-3">
+                                <div class="form-row">
+                                    <div class="form-group col-md-12">
+                                        <input type="file" name="files" accept=".zip,.tar,.tar.gz,.tgz">
+                                        <input type="hidden" name="single" value="false">
+                                        <input type="hidden" name="multiFolder" value="false">
+                                    </div>
+                                    <div class="form-group col-md-12">
+                                        <label for="duplicate7" th:text="#{variable.duplicate}"></label>
+                                        <select class="form-control" name="duplicate" id="duplicate7">
+                                            <option th:value="0"
+                                                    th:text="#{variable.duplicate.zero}">
+                                            </option>
+                                            <option th:value="1"
+                                                    th:text="#{variable.duplicate.one}">
+                                            </option>
+                                            <option th:value="2"
+                                                    th:text="#{variable.duplicate.two}">
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-12">
+                                        <button type="submit" class="btn btn-primary float-right" th:text="#{link.upload}"></button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary d-none js-cancel" data-dismiss="modal" th:text="#{link.close}"></button>
