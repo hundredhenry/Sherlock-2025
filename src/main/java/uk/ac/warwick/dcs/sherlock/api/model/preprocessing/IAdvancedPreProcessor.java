@@ -2,6 +2,7 @@ package uk.ac.warwick.dcs.sherlock.api.model.preprocessing;
 
 import org.antlr.v4.runtime.Lexer;
 import uk.ac.warwick.dcs.sherlock.api.util.IndexedString;
+import uk.ac.warwick.dcs.sherlock.api.util.IPreprocessArtifact;
 
 import java.util.List;
 
@@ -18,6 +19,6 @@ public interface IAdvancedPreProcessor<T extends Lexer> {
 	 *
 	 * @return list of processed strings, indexed by line number
 	 */
-	List<IndexedString> process(T lexer);
+	IPreprocessArtifact process(T lexer);
 
 }

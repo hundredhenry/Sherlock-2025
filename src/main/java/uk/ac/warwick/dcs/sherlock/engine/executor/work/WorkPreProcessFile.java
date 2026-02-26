@@ -8,10 +8,10 @@ import uk.ac.warwick.dcs.sherlock.api.model.detection.ModelDataItem;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.*;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy.GenericGeneralPreProcessingStrategy;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
+import uk.ac.warwick.dcs.sherlock.api.util.IPreprocessArtifact;
 import uk.ac.warwick.dcs.sherlock.engine.executor.common.ExecutorUtils;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.StandardStringifier;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.StandardTokeniser;
-
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -19,6 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.RecursiveAction;
+import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.LineListArtifact;
 
 /**
  * Recursive task to preprocess a list of files for a single task
@@ -74,7 +75,7 @@ public class WorkPreProcessFile extends RecursiveAction {
 
 	@SuppressWarnings ("Duplicates")
 	private void process(IWorkTask task) {
-		Map<String, List<IndexedString>> map = new HashMap<>();
+		Map<String, IPreprocessArtifact> map = new HashMap<>();
 
 		task.getPreProcessingStrategies().forEach(strategy -> {
 			if (strategy.isAdvanced()) {
@@ -84,7 +85,9 @@ public class WorkPreProcessFile extends RecursiveAction {
 
 					Lexer lexer = t.getValue().getDeclaredConstructor(CharStream.class).newInstance(CharStreams.fromStream(file.getFileContents()));
 					IAdvancedPreProcessor processor = t.getKey().getConstructor().newInstance();
-					map.put(strategy.getName(), processor.process(lexer));
+					@SuppressWarnings("unchecked")
+					IPreprocessArtifact artifact = (IPreprocessArtifact) processor.getClass().getMethod("process", t.getValue()).invoke(processor, lexer);
+					map.put(strategy.getName(), artifact);
 				}
 				catch (InstantiationException | IllegalAccessException | NoSuchMethodException | IOException | InvocationTargetException e) {
 					e.printStackTrace();
@@ -119,7 +122,7 @@ public class WorkPreProcessFile extends RecursiveAction {
 							stringifier = new StandardStringifier();
 						}
 
-						map.put(strategy.getName(), stringifier.processTokens(tokens, lexer.getVocabulary()));
+						map.put(strategy.getName(), new LineListArtifact(stringifier.processTokens(tokens, lexer.getVocabulary())));
 					}
 					else {
 						ExecutorUtils.logger.error("Strategy is not valid for the passed language, this should have been caught at startup!");
