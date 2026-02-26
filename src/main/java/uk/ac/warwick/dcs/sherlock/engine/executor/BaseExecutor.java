@@ -48,7 +48,7 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 
 					job.getStatus().startJob();
 
-					Future f = this.exec.submit(job);
+					Future<?> f = this.exec.submit(job);
 					f.get();
 
 					job.getStatus().finishJob();

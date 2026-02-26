@@ -50,13 +50,13 @@ public class SubmissionController {
         ISourceFile sourceFile = this.getFile(submission, fileid);
 
         if (isPrinting) {
-            String result = "";
+            StringBuilder result = new StringBuilder();
             int i = 1;
             for (String line : sourceFile.getFileContentsAsStringList()) {
-                result += i + " | " + line + System.getProperty("line.separator");
+                result.append(i).append(" | ").append(line).append(System.getProperty("line.separator"));
                 i++;
             }
-            return result;
+            return result.toString();
         }
 
         return sourceFile.getFileContentsAsString();
