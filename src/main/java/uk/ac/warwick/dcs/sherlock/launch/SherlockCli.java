@@ -14,6 +14,9 @@ import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Account;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.AccountRepository;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceRepository;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TDetectorRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TemplateRepository;
+
 
 
 @CommandLine.Command(
@@ -22,7 +25,6 @@ import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
     subcommands = {
         DisplayCmd.class,
         DashboardCmd.class,
-        TemplateCmd.class,
     },
     mixinStandardHelpOptions = true
 )
@@ -40,15 +42,24 @@ public class SherlockCli {
         AccountRepository accountRepository = context.getBean(AccountRepository.class);
         WorkspaceRepository workspaceRepository = context.getBean(WorkspaceRepository.class);
         AccountWrapper accountWrapper = new AccountWrapper(accountRepository.findByEmail(CoreSecurityConfig.getLocalEmail()));
+        TemplateRepository templateRepository = context.getBean(TemplateRepository.class);
+        TDetectorRepository tDetectorRepository = context.getBean(TDetectorRepository.class);
         System.out.println("Authenticated as: " + accountWrapper.getAccount().getEmail() + " (" + accountWrapper.getAccount().getUsername() + ")");
         
         System.out.println("Welcome to the Sherlock CLI Interface!");
 
         WorkspaceCmd workspaceCmd = new WorkspaceCmd(accountRepository, workspaceRepository, accountWrapper);
         CommandLine workspaceCmdLine = new CommandLine(workspaceCmd);
+        TemplateCmd templateCmd = new TemplateCmd(accountRepository, templateRepository, accountWrapper, tDetectorRepository);
+        CommandLine templateCmdLine = new CommandLine(templateCmd);
 
+        // cmd = new CommandLine(this);
+
+        // cmd.addSubcommand(workspaceCmd);
         CommandLine cmd = new CommandLine(this);
+        
         cmd.addSubcommand("workspace", workspaceCmdLine);
+        cmd.addSubcommand("template", templateCmdLine);
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
