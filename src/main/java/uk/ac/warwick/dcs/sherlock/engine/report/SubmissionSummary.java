@@ -41,7 +41,7 @@ public class SubmissionSummary implements ISubmissionSummary {
 	 * Adds new submissions to the matchingSubmissions list that this submission had plagiarism detected between.
 	 * @param matches a list of the submission ids and the scores between that submission and this one.
 	 */
-	public void AddMatchingSubmissions(List<? extends ITuple<Long, Float>> matches) {
+	public void addMatchingSubmissions(List<? extends ITuple<Long, Float>> matches) {
 		matchingSubmissions.addAll(matches);
 	}
 

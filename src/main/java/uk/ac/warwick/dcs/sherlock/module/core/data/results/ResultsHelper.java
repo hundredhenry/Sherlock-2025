@@ -4,7 +4,6 @@ import uk.ac.warwick.dcs.sherlock.api.component.ISubmission;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.SubmissionNotFound;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.WorkspaceWrapper;
 
-import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -116,12 +115,7 @@ public class ResultsHelper {
      */
     public static String randomColour() {
         Random random = new Random();
-
-        float r = random.nextFloat();
-        float g = random.nextFloat();
-        float b = random.nextFloat();
-
-        return "#" + Integer.toHexString(new Color(r, g, b).getRGB()).substring(2);
+        return String.format("#%06x", random.nextInt(0xFFFFFF + 1));
     }
 
     /**
@@ -134,26 +128,9 @@ public class ResultsHelper {
      * @return the score group
      */
     public static int getScoreGroup(float score) {
-        if (score > 90) {
-            return 9;
-        } else if (score > 80) {
-            return 8;
-        } else if (score > 70) {
-            return 7;
-        } else if (score > 60) {
-            return 6;
-        } else if (score > 50) {
-            return 5;
-        } else if (score > 40) {
-            return 4;
-        } else if (score > 30) {
-            return 3;
-        } else if (score > 20) {
-            return 2;
-        } else if (score > 10) {
-            return 1;
+        if (score <= 0) {
+            return 0;
         }
-
-        return 0;
+        return Math.min(9, (int) (score / 10));
     }
 }

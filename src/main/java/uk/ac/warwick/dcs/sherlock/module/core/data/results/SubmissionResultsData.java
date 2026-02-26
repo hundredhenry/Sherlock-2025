@@ -94,7 +94,7 @@ public class SubmissionResultsData {
 
         if (report != null) {
             //Get the list of submission match groups and the report summary
-            ITuple<List<SubmissionMatchGroup>, String> result = report.GetSubmissionReport(submission1);
+            ITuple<List<SubmissionMatchGroup>, String> result = report.getSubmissionReport(submission1);
 
             //Set the summary
             this.summary = result.getValue();
@@ -107,7 +107,7 @@ public class SubmissionResultsData {
 //            result.getKey().forEach(group -> group.getMatches().forEach(m -> this.matches.add(new FileMatch(m))));
 
             //Fetch the submission summary for this submission
-            List<ISubmissionSummary> summaryList = report.GetMatchingSubmissions();
+            List<ISubmissionSummary> summaryList = report.getMatchingSubmissions();
             summaryList = summaryList.stream().filter(s -> s.getPersistentId() == submission1.getId()).collect(Collectors.toList());
 
             //Create a map linking submission ids to their names
@@ -173,7 +173,7 @@ public class SubmissionResultsData {
             compare.add(submission2);
 
             //Loop through the submission groups, adding all the matches
-            List<SubmissionMatchGroup> list = report.GetSubmissionComparison(compare);
+            List<SubmissionMatchGroup> list = report.getSubmissionComparison(compare);
             for (SubmissionMatchGroup group : list){
                 this.matches.put(group.getReason(), new ArrayList<>());
                 group.getMatches().forEach(m -> this.matches.get(group.getReason()).add(new FileMatch(m)));
@@ -181,7 +181,7 @@ public class SubmissionResultsData {
 //            list.forEach(group -> group.getMatches().forEach(m -> this.matches.add(new FileMatch(m))));
 
             // Get file match scores
-            Map<ITuple<ISourceFile, ISourceFile>, Float> scores = report.GetFileMatchScores(submission1, submission2);
+            Map<ITuple<ISourceFile, ISourceFile>, Float> scores = report.getFileMatchScores(submission1, submission2);
             for (Map.Entry<ITuple<ISourceFile, ISourceFile>, Float> entry : scores.entrySet()) {
                 String key = entry.getKey().getKey().getFileDisplayName() + "|" + entry.getKey().getValue().getFileDisplayName();
                 this.fileScores.put(key, entry.getValue() * 100);

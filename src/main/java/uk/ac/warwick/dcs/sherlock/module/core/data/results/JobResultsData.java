@@ -199,7 +199,7 @@ public class JobResultsData {
 		job.getWorkspace().getSubmissions().forEach(s -> idToName.put(s.getId(), s.getName()));
 
 		Comparator<SubmissionScore> compare = (SubmissionScore s1, SubmissionScore s2) -> ((Float) s1.getScore()).compareTo(s2.getScore() );
-		List<SubmissionSummary> summaries = report.GetMatchingSubmissions();
+		List<SubmissionSummary> summaries = report.getMatchingSubmissions();
 		for (SubmissionSummary summary : summaries) {
 			String name = idToName.getOrDefault(summary.getPersistentId(), "Deleted");
 			SubmissionScore score = new SubmissionScore(summary.getPersistentId(), name, summary.getScore() * 100);
