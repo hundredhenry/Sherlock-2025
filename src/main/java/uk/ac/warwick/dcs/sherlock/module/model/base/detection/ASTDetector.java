@@ -3,7 +3,7 @@ package uk.ac.warwick.dcs.sherlock.module.model.base.detection;
 import uk.ac.warwick.dcs.sherlock.api.annotation.AdjustableParameter;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.PairwiseDetector;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy;
-import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.TrimWhitespaceOnly;
+import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ParseTreeGenerator;
 
 /**
  * AST-based plagiarism detector.
@@ -61,6 +61,6 @@ public class ASTDetector extends PairwiseDetector<ASTDetectorWorker> {
      */
     public ASTDetector() {
         super("AST Detector", "Detects plagiarism by comparing the abstract syntax tree structures of source files",
-                ASTDetectorWorker.class, PreProcessingStrategy.of("no_whitespace", TrimWhitespaceOnly.class));
+                ASTDetectorWorker.class, PreProcessingStrategy.of("parseTree", ParseTreeGenerator.class));
     }
 }
