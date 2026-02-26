@@ -13,6 +13,7 @@ import uk.ac.warwick.dcs.sherlock.module.core.configuration.CoreSecurityConfig;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Account;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.AccountRepository;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
 
 
 @CommandLine.Command(
@@ -38,12 +39,12 @@ public class SherlockCli {
         // SherlockEngine engine = context.getBean(SherlockEngine.class);
         AccountRepository accountRepository = context.getBean(AccountRepository.class);
         WorkspaceRepository workspaceRepository = context.getBean(WorkspaceRepository.class);
-        Account account = accountRepository.findByEmail(CoreSecurityConfig.getLocalEmail());
-        System.out.println("Authenticated as: " + account.getEmail() + " (" + account.getUsername() + ")");
+        AccountWrapper accountWrapper = new AccountWrapper(accountRepository.findByEmail(CoreSecurityConfig.getLocalEmail()));
+        System.out.println("Authenticated as: " + accountWrapper.getAccount().getEmail() + " (" + accountWrapper.getAccount().getUsername() + ")");
         
         System.out.println("Welcome to the Sherlock CLI Interface!");
 
-        WorkspaceCmd workspaceCmd = new WorkspaceCmd(accountRepository, workspaceRepository, account);
+        WorkspaceCmd workspaceCmd = new WorkspaceCmd(accountRepository, workspaceRepository, accountWrapper);
         CommandLine workspaceCmdLine = new CommandLine(workspaceCmd);
 
         CommandLine cmd = new CommandLine(this);

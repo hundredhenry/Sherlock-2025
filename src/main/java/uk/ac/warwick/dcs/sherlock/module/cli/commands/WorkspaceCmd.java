@@ -9,6 +9,8 @@ import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Account;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.AccountRepository;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceRepository;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.WorkspaceWrapper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.WorkspaceForm;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
 import java.util.List;
 
 @CommandLine.Command(name="workspace", description="Commands for workspace management", mixinStandardHelpOptions = true,
@@ -22,14 +24,14 @@ import java.util.List;
 public class WorkspaceCmd implements Runnable {
 
     private final AccountRepository accountRepository;
-    private final Account account;
+    private final AccountWrapper accountWrapper;
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceManagementService wms;
 
-    public WorkspaceCmd(AccountRepository accountRepository, WorkspaceRepository workspaceRepository, Account account) {
+    public WorkspaceCmd(AccountRepository accountRepository, WorkspaceRepository workspaceRepository, AccountWrapper accountWrapper) {
         this.accountRepository = accountRepository;
         this.workspaceRepository = workspaceRepository;
-        this.account = account;
+        this.accountWrapper = accountWrapper;
         this.wms = new WorkspaceManagementService();
     }
 
@@ -46,10 +48,10 @@ public class WorkspaceCmd implements Runnable {
 
         @Override
         public void run() {
-            Account account = parent.account;
+            AccountWrapper accountWrapper = parent.accountWrapper;
             WorkspaceRepository workspaceRepository = parent.workspaceRepository;
             WorkspaceManagementService service = parent.wms;
-            List<WorkspaceWrapper> user_workspaces = service.getWorkspaces(account, workspaceRepository);
+            List<WorkspaceWrapper> user_workspaces = service.getWorkspaces(accountWrapper, workspaceRepository);
             System.out.println("Your workspaces:");
             for (WorkspaceWrapper w : user_workspaces) {
                 System.out.println(String.format("- %s", w.getName()));
@@ -71,11 +73,14 @@ public class WorkspaceCmd implements Runnable {
         
         @Override
         public void run() {
-            Account account = parent.account;
+            AccountWrapper accountWrapper = parent.accountWrapper;
             WorkspaceRepository workspaceRepository = parent.workspaceRepository;
             WorkspaceManagementService service = parent.wms;
-            service.createWorkspace(account, workspaceRepository, workspace_name, workspace_language);
-            System.out.println(String.format("Workspace '%s' created successfully with language '%s'!", workspace_name, workspace_language));
+            WorkspaceForm wForm = new WorkspaceForm();
+            wForm.setName(workspace_name);
+            wForm.setLanguage(workspace_language);
+            service.createWorkspace(accountWrapper, workspaceRepository, wForm);
+            System.out.println(String.format("Workspace '%s' created successfully with language '%s'!", wForm.getName(), wForm.getLanguage()));
         }
     }
 
