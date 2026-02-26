@@ -22,7 +22,6 @@ import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceReposit
         DisplayCmd.class,
         DashboardCmd.class,
         TemplateCmd.class,
-        WorkspaceCmd.class
     },
     mixinStandardHelpOptions = true
 )
@@ -45,8 +44,10 @@ public class SherlockCli {
         System.out.println("Welcome to the Sherlock CLI Interface!");
 
         WorkspaceCmd workspaceCmd = new WorkspaceCmd(accountRepository, workspaceRepository, account);
-        // cmd = new CommandLine(this);
-        // cmd.addSubcommand(workspaceCmd);
+        CommandLine workspaceCmdLine = new CommandLine(workspaceCmd);
+
+        CommandLine cmd = new CommandLine(this);
+        cmd.addSubcommand("workspace", workspaceCmdLine);
         Scanner scanner = new Scanner(System.in);
 
         while (true) {

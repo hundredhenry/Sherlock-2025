@@ -56,6 +56,22 @@ public class WorkspaceWrapper {
     }
 
     /**
+     * Initialise the workspace wrapper using a known name and language to create
+     * a new workpace
+     * This is part of the CLI implementation
+     * 
+     * @param account the account of the current user
+     * @param workspaceRepository the database repository
+     * @param name the name of the workspace
+     * @param language the programming language associated with the workspace
+     */
+    public WorkspaceWrapper(Account account, WorkspaceRepository workspaceRepository, String name, String language) {
+        this.iWorkspace = SherlockEngine.storage.createWorkspace(name, language);
+        this.workspace = new Workspace(account, this.iWorkspace.getPersistentId());
+        workspaceRepository.save(this.workspace);
+    }
+
+    /**
      * Initialise the workspace wrapper using an existing workspace
      *
      * @param workspace the workspace to manage
