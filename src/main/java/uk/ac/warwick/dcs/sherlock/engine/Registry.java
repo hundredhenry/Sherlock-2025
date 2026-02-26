@@ -426,7 +426,7 @@ public class Registry implements IRegistry {
 					return x;
 				}).filter(Objects::nonNull).map(x -> new AdjustableParameterObj(x.getValue()[0], x.getKey(), true)).collect(Collectors.toList());
 
-		if (tuneables.size() > 0) {
+		if (!tuneables.isEmpty()) {
 			data.adjustables = tuneables;
 		}
 
@@ -588,7 +588,7 @@ public class Registry implements IRegistry {
 					return x;
 				}).filter(Objects::nonNull).map(x -> new AdjustableParameterObj(x.getValue()[0], x.getKey(), false)).collect(Collectors.toList());
 
-		if (tuneables.size() > 0) {
+		if (!tuneables.isEmpty()) {
 			data.adjustables = tuneables;
 		}
 
@@ -607,11 +607,11 @@ public class Registry implements IRegistry {
 
 			for (PreProcessingStrategy strat : v.strategies) {
 				if (strat.isAdvanced()) {
-					this.insersectSets(supportedLanguages, this.advPreProcessorRegistry.get(strat.getPreProcessorClasses().get(0).getName()).preProcessors.keySet());
+					this.intersectSets(supportedLanguages, this.advPreProcessorRegistry.get(strat.getPreProcessorClasses().get(0).getName()).preProcessors.keySet());
 				}
 				else {
 					Set<String> temp = this.languageRegistry.keySet().stream().filter(l -> this.getLexerForStrategy(strat, l) != null).collect(Collectors.toSet());
-					this.insersectSets(supportedLanguages, temp);
+					this.intersectSets(supportedLanguages, temp);
 				}
 			}
 
@@ -653,8 +653,8 @@ public class Registry implements IRegistry {
 	 * @param master set1
 	 * @param s2     set2
 	 */
-	private void insersectSets(Set master, Set s2) {
-		if (master.size() == 0) {
+	private void intersectSets(Set master, Set s2) {
+		if (master.isEmpty()) {
 			master.addAll(s2);
 		}
 		else {

@@ -317,10 +317,10 @@ public class WorkspaceWrapper {
      * @throws NoFilesUploaded if no files were uploaded
      */
     public long runTemplate(TemplateWrapper templateWrapper) throws TemplateContainsNoDetectors, ClassNotFoundException, ParameterNotFound, DetectorNotFound, NoFilesUploaded {
-		if (templateWrapper.getTemplate().getDetectors().size() == 0)
+		if (templateWrapper.getTemplate().getDetectors().isEmpty())
 		    throw new TemplateContainsNoDetectors("No detectors in chosen template.");
 
-		if (this.getFiles().size() == 0) {
+		if (this.getFiles().isEmpty()) {
 		    throw new NoFilesUploaded("No files in workspace");
         }
 

@@ -63,7 +63,7 @@ public class DetectorWrapper {
     ) throws DetectorNotFound {
         Optional<TDetector> optional = tDetectorRepository.findById(id);
 
-        if (!optional.isPresent()) {
+        if (optional.isEmpty()) {
             throw new DetectorNotFound("Detector not found.");
         }
 
@@ -71,7 +71,7 @@ public class DetectorWrapper {
 
         TemplateWrapper templateWrapper = new TemplateWrapper(this.tDetector.getTemplate(), account);
 
-        if (templateWrapper.isOwner() == false && templateWrapper.getTemplate().isPublic() == false)
+        if (!templateWrapper.isOwner() && !templateWrapper.getTemplate().isPublic())
             throw new DetectorNotFound("Detector not found.");
 
         this.isOwner = templateWrapper.isOwner();

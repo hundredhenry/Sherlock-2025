@@ -48,7 +48,7 @@ public class TaskWrapper {
      * @return the string result
      */
     public String getParameterString() {
-        String result = "";
+        StringBuilder result = new StringBuilder();
 
         List<AdjustableParameterObj> parameters = SherlockRegistry.getDetectorAdjustableParameters(task.getDetector());
         List<AdjustableParameterObj> postprocessing = SherlockRegistry.getPostProcessorAdjustableParametersFromDetector(task.getDetector());
@@ -63,11 +63,11 @@ public class TaskWrapper {
                 }
 
                 if (para.size() == 1) {
-                    result += para.get(0).getDisplayName() + " = " + entry.getValue() + "<br /><br />";
+                    result.append(para.get(0).getDisplayName()).append(" = ").append(entry.getValue()).append("<br /><br />");
                 } else if (post.size() == 1) {
-                    result += "Post: " + post.get(0).getDisplayName() + " = " + entry.getValue() + "<br /><br />";
+                    result.append("Post: ").append(post.get(0).getDisplayName()).append(" = ").append(entry.getValue()).append("<br /><br />");
                 } else {
-                    result += entry.getKey() + "=" + entry.getValue() + "<br /><br />";
+                    result.append(entry.getKey()).append("=").append(entry.getValue()).append("<br /><br />");
                 }
             }
         }
