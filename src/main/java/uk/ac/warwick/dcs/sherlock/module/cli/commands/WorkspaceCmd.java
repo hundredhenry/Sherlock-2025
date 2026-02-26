@@ -79,8 +79,12 @@ public class WorkspaceCmd implements Runnable {
             WorkspaceForm wForm = new WorkspaceForm();
             wForm.setName(workspace_name);
             wForm.setLanguage(workspace_language);
-            service.createWorkspace(accountWrapper, workspaceRepository, wForm);
-            System.out.println(String.format("Workspace '%s' created successfully with language '%s'!", wForm.getName(), wForm.getLanguage()));
+            if (WorkspaceWrapper.isWorkspaceUnique(wForm, accountWrapper.getAccount(), workspaceRepository))  {
+                service.createWorkspace(accountWrapper, workspaceRepository, wForm);
+                System.out.println(String.format("Workspace '%s' created successfully with language '%s'!", wForm.getName(), wForm.getLanguage()));
+            } else {
+                System.out.println(String.format("A workspace with the name '%s' already exists. Please choose a different name.", wForm.getName()));
+            }
         }
     }
 

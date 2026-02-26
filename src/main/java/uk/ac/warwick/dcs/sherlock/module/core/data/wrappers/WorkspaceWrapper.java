@@ -364,4 +364,15 @@ public class WorkspaceWrapper {
 
         return wrappers;
     }
+
+    public static Boolean isWorkspaceUnique(WorkspaceForm workspaceForm, Account account, WorkspaceRepository workspaceRepository) {
+        List<WorkspaceWrapper> wrappers = WorkspaceWrapper.findByAccount(account, workspaceRepository);
+        String newWorkspaceName = workspaceForm.getName();
+        for (WorkspaceWrapper wrapper : wrappers) {
+            if (wrapper.getName().equals(newWorkspaceName)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

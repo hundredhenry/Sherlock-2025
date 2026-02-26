@@ -94,8 +94,14 @@ public class WorkspacesController {
 			model.addAttribute("languageList", SherlockRegistry.getLanguages());
 			return "dashboard/workspaces/add";
 		}
-
-		WorkspaceWrapper workspaceWrapper = new WorkspaceWrapper(workspaceForm, account.getAccount(), workspaceRepository);
-		return "redirect:/dashboard/workspaces/manage/" + workspaceWrapper.getId();
+		
+		if (WorkspaceWrapper.isWorkspaceUnique(workspaceForm, account.getAccount(), workspaceRepository)) {
+			WorkspaceWrapper workspaceWrapper = new WorkspaceWrapper(workspaceForm, account.getAccount(), workspaceRepository);
+			return "redirect:/dashboard/workspaces/manage/" + workspaceWrapper.getId();
+			// If the workspace is not unique, we want to return an error
+			// Need to figure out how actually to return an error though
+		} else {
+			return "dashboard/workspaces/fragments/list";
+		}
 	}
 }
