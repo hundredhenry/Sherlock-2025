@@ -184,10 +184,6 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 		 */
 		@Override
 		public void execute() {
-			// Get preprocessed lines for both files
-			ArrayList<IndexedString> linesF1 = new ArrayList<>(this.file1.getPreProcessedLines("no_whitespace"));
-			ArrayList<IndexedString> linesF2 = new ArrayList<>(this.file2.getPreProcessedLines("no_whitespace"));
-
 			// Gets each line as a string in the list, as returned by the specified preprocessor
 			LineListArtifact artiF1 = (LineListArtifact) this.file1.getPreProcessedArtifact("no_whitespace");
 			LineListArtifact artiF2 = (LineListArtifact) this.file2.getPreProcessedArtifact("no_whitespace");
