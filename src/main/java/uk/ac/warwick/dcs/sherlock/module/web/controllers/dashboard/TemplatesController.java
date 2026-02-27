@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.NotAjaxRequest;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.NotTemplateOwner;
+import uk.ac.warwick.dcs.sherlock.module.web.exceptions.TemplateNameNotUnique;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.TemplateForm;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.EngineDetectorWrapper;
@@ -102,14 +103,28 @@ public class TemplatesController {
 			@ModelAttribute("account") AccountWrapper account,
 			@ModelAttribute("isAjax") boolean isAjax,
 			Model model
-	) throws NotTemplateOwner {
+	) throws NotTemplateOwner, TemplateNameNotUnique {
 		if (result.hasErrors()) {
 			model.addAttribute("detectorList", EngineDetectorWrapper.getDetectors(templateForm.getLanguage()));
 			model.addAttribute("languageList", SherlockRegistry.getLanguages());
 			return "dashboard/templates/add";
 		}
 
-		TemplateWrapper templateWrapper = new TemplateWrapper(templateForm, account.getAccount(), templateRepository, tDetectorRepository);
+		
+		// Might need to add a try catch here to properly output things to the user
+		TemplateWrapper templateWrapper;
+		try{
+			templateWrapper = new TemplateWrapper(templateForm, account.getAccount(), templateRepository, tDetectorRepository);
+
+		}catch(TemplateNameNotUnique e){
+			result.rejectValue(
+				"name",
+				"uk.ac.warwick.dcs.sherlock.module.web.exceptions.TemplateNameNotUnique"
+			);
+			model.addAttribute("detectorList", EngineDetectorWrapper.getDetectors(templateForm.getLanguage()));
+			model.addAttribute("languageList", SherlockRegistry.getLanguages());
+			return "dashboard/templates/add";
+		}
 		return "redirect:/dashboard/templates/manage/" + templateWrapper.getTemplate().getId();
 	}
 

@@ -16,6 +16,7 @@ import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.TemplateForm;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.TemplateNotFound;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.NotTemplateOwner;
+import uk.ac.warwick.dcs.sherlock.module.web.exceptions.TemplateNameNotUnique;
 
 
 
@@ -75,6 +76,8 @@ public class TemplateCmd implements Runnable {
                 TemplateWrapper templateWrapper = new TemplateWrapper(templateForm, parent.account.getAccount(), parent.templateRepository, parent.tDetectorRepository);
             }catch (NotTemplateOwner e) {
                 System.out.println("Error making template.");
+            }catch(TemplateNameNotUnique e) {
+                System.out.println("Name is already in use, please choose a different name.");
             }
         }
         

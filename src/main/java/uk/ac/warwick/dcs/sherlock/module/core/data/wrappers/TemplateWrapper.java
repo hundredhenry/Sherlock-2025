@@ -4,6 +4,7 @@ import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.TParameter;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TParameterRepository;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.TemplateNotFound;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.NotTemplateOwner;
+import uk.ac.warwick.dcs.sherlock.module.web.exceptions.TemplateNameNotUnique;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Account;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.TDetector;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Template;
@@ -37,13 +38,26 @@ public class TemplateWrapper {
      * @param tDetectorRepository the database repository
      *
      * @throws NotTemplateOwner if the user is not the owner of the template
+     * @throws TemplateNameNotUnique if the template name is already used by another owned or public template
      */
     public TemplateWrapper(
             TemplateForm templateForm,
             Account account,
             TemplateRepository templateRepository,
             TDetectorRepository tDetectorRepository
-    ) throws NotTemplateOwner {
+    ) throws NotTemplateOwner, TemplateNameNotUnique {
+        //check whether the template's name is unique:
+        List<TemplateWrapper> wrappers = TemplateWrapper.findByAccountAndPublic(account, templateRepository);
+        String newTemplateName = templateForm.getName();
+        for (TemplateWrapper wrapper : wrappers) {
+            //check that the template name is not null
+            if (wrapper.getTemplate().getName() == null) continue;
+            //then check whether the new template name is the same as a previous template's name
+            if (wrapper.getTemplate().getName().equals(newTemplateName)) {
+                throw new TemplateNameNotUnique("Template name is not unique.");
+            }
+        }
+        //if name is unique, then make the template
         this.template = new Template();
         this.template.setAccount(account);
         this.isOwner = true;

@@ -7,6 +7,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.NotAjaxRequest;
+import uk.ac.warwick.dcs.sherlock.module.web.exceptions.WorkspaceNameNotUnique;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.WorkspaceForm;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.WorkspaceWrapper;
@@ -95,13 +96,20 @@ public class WorkspacesController {
 			return "dashboard/workspaces/add";
 		}
 		
-		if (WorkspaceWrapper.isWorkspaceUnique(workspaceForm, account.getAccount(), workspaceRepository)) {
-			WorkspaceWrapper workspaceWrapper = new WorkspaceWrapper(workspaceForm, account.getAccount(), workspaceRepository);
-			return "redirect:/dashboard/workspaces/manage/" + workspaceWrapper.getId();
-			// If the workspace is not unique, we want to return an error
-			// Need to figure out how actually to return an error though
-		} else {
-			return "dashboard/workspaces/fragments/list";
+		WorkspaceWrapper workspaceWrapper;
+
+		try {
+			workspaceWrapper = new WorkspaceWrapper(workspaceForm, account.getAccount(), workspaceRepository);
+		}catch(WorkspaceNameNotUnique e){
+			result.rejectValue(
+				"name",
+				"uk.ac.warwick.dcs.sherlock.module.web.exceptions.WorkspaceNameNotUnique"
+			);
+			model.addAttribute("languageList", SherlockRegistry.getLanguages());
+			return "dashboard/workspaces/add";
 		}
+
+		return "redirect:/dashboard/workspaces/manage/" + workspaceWrapper.getId();
+
 	}
 }

@@ -10,11 +10,17 @@ import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.WorkspaceForm;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
 import java.util.List;
 
+import uk.ac.warwick.dcs.sherlock.module.web.exceptions.WorkspaceNameNotUnique;
+
 
 public class WorkspaceManagementService {
 
     public void createWorkspace(AccountWrapper accountWrapper, WorkspaceRepository workspaceRepository, WorkspaceForm workspaceForm) {
-        WorkspaceWrapper workspaceWrapper = new WorkspaceWrapper(workspaceForm, accountWrapper.getAccount(), workspaceRepository);
+        try{
+            WorkspaceWrapper workspaceWrapper = new WorkspaceWrapper(workspaceForm, accountWrapper.getAccount(), workspaceRepository);
+        }catch(WorkspaceNameNotUnique e){
+            System.out.println("Name is already in use, please choose a different name.");
+        }
     }
 
     public List<WorkspaceWrapper> getWorkspaces(AccountWrapper accountWrapper, WorkspaceRepository workspaceRepository) {

@@ -44,12 +44,26 @@ public class WorkspaceWrapper {
      * @param workspaceForm the form
      * @param account the account of the current user
      * @param workspaceRepository the database repository
+     * 
+     * @throws WorkspaceNameNotUnique if the workspace name is already in use by another owned or public workspace
      */
     public WorkspaceWrapper(
             WorkspaceForm workspaceForm,
             Account account,
             WorkspaceRepository workspaceRepository
-    ) {
+    ) throws WorkspaceNameNotUnique {
+        //check if workspace name is unique:
+        List<WorkspaceWrapper> wrappers = WorkspaceWrapper.findByAccount(account, workspaceRepository);
+        String newWorkspaceName = workspaceForm.getName();
+        for (WorkspaceWrapper wrapper : wrappers) {
+            //check that the template name is not null
+            if (wrapper.getName() == null) continue;
+            //then check whether the new template name is the same as a previous template's name
+            if (wrapper.getName().equals(newWorkspaceName)) {
+                throw new WorkspaceNameNotUnique("Workspace name is not unique.");
+            }
+        }
+        //if name is unique, make workspace
         this.iWorkspace = SherlockEngine.storage.createWorkspace(workspaceForm.getName(), workspaceForm.getLanguage());
         this.workspace = new Workspace(account, this.iWorkspace.getPersistentId());
         workspaceRepository.save(this.workspace);
