@@ -96,7 +96,7 @@ public class TemplateWrapper {
     public TemplateWrapper(Template template, Account account)  {
         this.template = template;
 
-        if (this.template.getAccount() == account)
+        if (this.template.getAccount().getId() == account.getId())
             this.isOwner = true;
     }
 

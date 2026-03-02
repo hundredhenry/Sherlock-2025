@@ -116,9 +116,34 @@ public class TemplateCmd implements Runnable {
     @CommandLine.Command(name="delete", description="Delete a template", mixinStandardHelpOptions = true)
     static class delete_template implements Runnable {
 
+        @CommandLine.ParentCommand
+        TemplateCmd parent;
+
+        @CommandLine.Option(names = {"-n", "--name"}, description = "Name of the template", required = true)
+        String template_name;
+
         @Override
         public void run() {
             System.out.println("Deleting a template...");
+            List<TemplateWrapper> wrapperList = TemplateWrapper.findByAccountAndPublic(parent.account.getAccount(), parent.templateRepository);
+            for (TemplateWrapper wrapper : wrapperList) {
+                //check that the name is a string
+                if (wrapper.getTemplate().getName() == null) continue;
+                //then check if the name is the same as one to be deleted
+                if (wrapper.getTemplate().getName().equals(template_name)) {
+                    try {
+                        wrapper.delete(parent.templateRepository);
+                    }catch(NotTemplateOwner e){
+                        System.out.println("Found template of same name, but it is not owned by you.");
+                        //this should not occur, if it does then keep searching for another template
+                        //with the same name which is owned by the user
+                        continue;
+                    }
+                    System.out.println(template_name+" was deleted.");
+                    return;
+                }
+            }
+            System.out.println("Template not found.");
         }
         
     }

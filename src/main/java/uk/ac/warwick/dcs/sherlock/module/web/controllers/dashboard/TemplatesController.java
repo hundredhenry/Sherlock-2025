@@ -111,7 +111,6 @@ public class TemplatesController {
 		}
 
 		
-		// Might need to add a try catch here to properly output things to the user
 		TemplateWrapper templateWrapper;
 		try{
 			templateWrapper = new TemplateWrapper(templateForm, account.getAccount(), templateRepository, tDetectorRepository);
