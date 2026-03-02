@@ -1,7 +1,6 @@
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+package uk.ac.warwick.dcs.sherlock.api.util;
+
+import java.util.*;
 
 // AST Node class, for building ASTs
 public class ASTNode {
@@ -51,32 +50,33 @@ public class ASTNode {
     public Map<String, Object> getAllMetadata() {
         return Collections.unmodifiableMap(metadata);
     }
+
+    // Enum to encode the type of AST node, can be expanded with new languages added
+    enum NodeKind {
+        PROGRAM,
+
+        FUNCTION_DECL,
+        PARAMETER,
+        BLOCK,
+
+        VARIABLE_DECL,
+        ASSIGNMENT,
+
+        IF_STATEMENT,
+        WHILE_LOOP,
+        FOR_LOOP,
+        RETURN,
+
+        BINARY_EXPR,
+        UNARY_EXPR,
+        CALL_EXPR,
+
+        IDENTIFIER,
+        LITERAL,
+
+        TYPE,
+
+        UNKNOWN
+    }
 }
 
-// Enum to encode the type of AST node, can be expanded with new languages added
-public enum NodeKind {
-    PROGRAM,
-
-    FUNCTION_DECL,
-    PARAMETER,
-    BLOCK,
-
-    VARIABLE_DECL,
-    ASSIGNMENT,
-
-    IF_STATEMENT,
-    WHILE_LOOP,
-    FOR_LOOP,
-    RETURN,
-
-    BINARY_EXPR,
-    UNARY_EXPR,
-    CALL_EXPR,
-
-    IDENTIFIER,
-    LITERAL,
-
-    TYPE,
-
-    UNKNOWN
-    }
