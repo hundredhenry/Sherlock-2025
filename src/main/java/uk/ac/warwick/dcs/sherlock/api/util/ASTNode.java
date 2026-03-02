@@ -52,7 +52,7 @@ public class ASTNode {
     }
 
     // Enum to encode the type of AST node, can be expanded with new languages added
-    enum NodeKind {
+    public enum NodeKind {
         PROGRAM,
 
         FUNCTION_DECL,

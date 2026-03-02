@@ -8,6 +8,8 @@ import uk.ac.warwick.dcs.sherlock.api.model.detection.PairwiseDetectorWorker;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy;
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.ASTRawResult;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.TrimWhitespaceOnly;
+import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.ASTArtifact;
+import uk.ac.warwick.dcs.sherlock.api.util.ASTNode;
 
 /**
  * AST-based plagiarism detector.
@@ -60,6 +62,11 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
          */
         @Override
         public void execute() {
+
+            // Gets each line as a string in the list, as returned by the specified preprocessor
+            ASTArtifact artiF1 = (ASTArtifact) this.file1.getPreProcessedArtifact("ast");
+            ASTArtifact artiF2 = (ASTArtifact) this.file2.getPreProcessedArtifact("ast");
+
             // TODO: Replace with actual AST parsing
 
             this.result = new ASTRawResult(file1.getFile(), file2.getFile());

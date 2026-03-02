@@ -22,6 +22,8 @@ import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.VariableExtrac
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.VariableExtractorJava;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ParseTreeGenerator;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ParseTreeGeneratorJava;
+import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ASTGenerator;
+import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ASTGeneratorJava;
 
 @SherlockModule
 public class ModuleModelBase {
@@ -33,6 +35,7 @@ public class ModuleModelBase {
 		SherlockRegistry.registerGeneralPreProcessor(TrimWhitespaceOnly.class);
 		SherlockRegistry.registerAdvancedPreProcessorImplementation("uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.VariableExtractor", VariableExtractorJava.class);
 		SherlockRegistry.registerAdvancedPreProcessorImplementation("uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ParseTreeGenerator", ParseTreeGeneratorJava.class);
+		SherlockRegistry.registerAdvancedPreProcessorImplementation("uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ASTGenerator", ASTGeneratorJava.class);
 
 		SherlockRegistry.registerDetector(VariableNameDetector.class);
 		SherlockRegistry.registerPostProcessor(SimpleObjectEqualityPostProcessor.class, SimpleObjectEqualityRawResult.class);
@@ -52,6 +55,7 @@ public class ModuleModelBase {
 
 		SherlockRegistry.registerAdvancedPreProcessorGroup(VariableExtractor.class);
 		SherlockRegistry.registerAdvancedPreProcessorGroup(ParseTreeGenerator.class);
+		SherlockRegistry.registerAdvancedPreProcessorGroup(ASTGenerator.class);
 	}
 
 }
