@@ -56,9 +56,9 @@ public class WorkspaceWrapper {
         List<WorkspaceWrapper> wrappers = WorkspaceWrapper.findByAccount(account, workspaceRepository);
         String newWorkspaceName = workspaceForm.getName();
         for (WorkspaceWrapper wrapper : wrappers) {
-            //check that the template name is not null
+            //check that the workspace name is not null
             if (wrapper.getName() == null) continue;
-            //then check whether the new template name is the same as a previous template's name
+            //then check whether the new workspace name is the same as a previous workspace's name
             if (wrapper.getName().equals(newWorkspaceName)) {
                 throw new WorkspaceNameNotUnique("Workspace name is not unique.");
             }
@@ -103,7 +103,7 @@ public class WorkspaceWrapper {
     /**
      * Finish initialising the wrapper
      *
-     * @param workspace the workspace ot initialise the wrapper with
+     * @param workspace the workspace to initialise the wrapper with
      *
      * @throws IWorkspaceNotFound if the workspace entity was not found in the engine
      */
@@ -379,14 +379,13 @@ public class WorkspaceWrapper {
         return wrappers;
     }
 
-    public static Boolean isWorkspaceUnique(WorkspaceForm workspaceForm, Account account, WorkspaceRepository workspaceRepository) {
-        List<WorkspaceWrapper> wrappers = WorkspaceWrapper.findByAccount(account, workspaceRepository);
-        String newWorkspaceName = workspaceForm.getName();
+    public static WorkspaceWrapper findByName(Account account, WorkspaceRepository workspaceRepository, String name) {
+        List<WorkspaceWrapper> wrappers = findByAccount(account, workspaceRepository);
         for (WorkspaceWrapper wrapper : wrappers) {
-            if (wrapper.getName().equals(newWorkspaceName)) {
-                return false;
+            if (wrapper.getName().equals(name)) {
+                return wrapper;
             }
         }
-        return true;
+        return null;
     }
 }

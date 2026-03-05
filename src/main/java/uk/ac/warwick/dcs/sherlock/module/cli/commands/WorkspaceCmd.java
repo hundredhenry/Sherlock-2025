@@ -1,5 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.module.cli.commands;
 
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService.Work;
 import org.stringtemplate.v4.compiler.CodeGenerator.primary_return;
 
 import groovyjarjarpicocli.CommandLine.ParentCommand;
@@ -79,12 +80,7 @@ public class WorkspaceCmd implements Runnable {
             WorkspaceForm wForm = new WorkspaceForm();
             wForm.setName(workspace_name);
             wForm.setLanguage(workspace_language);
-            if (WorkspaceWrapper.isWorkspaceUnique(wForm, accountWrapper.getAccount(), workspaceRepository))  {
-                service.createWorkspace(accountWrapper, workspaceRepository, wForm);
-                System.out.println(String.format("Workspace '%s' created successfully with language '%s'!", wForm.getName(), wForm.getLanguage()));
-            } else {
-                System.out.println(String.format("A workspace with the name '%s' already exists. Please choose a different name.", wForm.getName()));
-            }
+            service.createWorkspace(accountWrapper, workspaceRepository, wForm);
         }
     }
 
@@ -93,6 +89,7 @@ public class WorkspaceCmd implements Runnable {
 
         @CommandLine.Option(names = {"-n", "--name"}, description = "Name of the workspace")
         String workspace_name;
+
         @Override
         public void run() {
             System.out.println("Viewing a workspace...");
@@ -104,9 +101,16 @@ public class WorkspaceCmd implements Runnable {
 
         @CommandLine.Option(names = {"-n", "--name"}, description = "Name of the workspace", required=true)
         String workspace_name;
+
+        @CommandLine.ParentCommand
+        WorkspaceCmd parent;
+
         @Override
         public void run() {
-            System.out.println("Deleting a workspace...");
+            AccountWrapper accountWrapper = parent.accountWrapper;
+            WorkspaceRepository workspaceRepository = parent.workspaceRepository;
+            WorkspaceManagementService service = parent.wms;
+            service.deleteWorkspace(accountWrapper, workspaceRepository, workspace_name);
         }
     }
 
