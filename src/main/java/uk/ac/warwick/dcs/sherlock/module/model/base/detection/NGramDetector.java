@@ -44,7 +44,7 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 	 * long enough to consider it possible plagerism.
 	 * </p>
 	 */
-	@AdjustableParameter (name = "Threshold", defaultValue = 0.9f, minimumBound = 0.0f, maximumBound = 1.0f, step = 0.001f, description = "The threshold on the similarity at which a block of code will be no longer considered similar. This determines where the similarity ends, 1 will give only pure matches, 0 will match anything")
+	@AdjustableParameter (name = "Threshold", defaultValue = 0.8f, minimumBound = 0.0f, maximumBound = 1.0f, step = 0.001f, description = "The threshold on the similarity at which a block of code will be no longer considered similar. This determines where the similarity ends, 1 will give only pure matches, 0 will match anything")
 	public float threshold;
 
 	/**
@@ -268,8 +268,12 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 						usedInFile1.add(k);
 					}
 
-					// Advance past the matched region in file 2
-					i += bestLen;
+					// Advance past the matched region in file 2, snapping to the next line
+					// to prevent the boundary line being shared with the start of the next match
+					int matchEndLine = ngramsF2.get(i + bestLen - 1).getLineNumber();
+					while (i < ngramsF2.size() && ngramsF2.get(i).getLineNumber() <= matchEndLine) {
+						i++;
+					}
 				} else {
 					i++;
 				}
