@@ -31,16 +31,10 @@ function submissionResultsPage() {
         //Get the workspace id and submission id on the report page
         var workspaceId = 0;
         var submissionId = 0;
-        var submission1Id = 0;
-        var submission2Id = 0;
         if ($("#report-data").length) {
             workspaceId = getWorkspaceId();
-            submissionId = getSubmissionId();
         }
-        if ($("#compare-data").length) {
-            submission1Id = getSubmission1Id();
-            submission2Id = getSubmission2Id();
-        }
+        submissionId = getSubmissionId();
 
         var active = -1; // which match is active
         var loaded = 0; // how many files have loaded
@@ -527,7 +521,7 @@ function submissionResultsPage() {
                 // On the compare page, left = submission1, right = submission2.
                 var leftItems = [];
                 var rightItems = [];
-                var leftId = submissionId || submission1Id;
+                var leftId = submissionId;
 
                 for (var i = 0; i < match.matches.length; i++) {
                     var item = match.matches[i];
