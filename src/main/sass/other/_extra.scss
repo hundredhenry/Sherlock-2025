@@ -175,6 +175,91 @@ table .min {
     color: #FF5700;
 }
 
+/* Print match comparison - base styles (visible on print preview page too) */
+.print-match-section {
+    margin-bottom: 15px;
+    border: 1px solid #333;
+    padding: 10px;
+    page-break-inside: avoid;
+}
+.print-match-header {
+    border-bottom: 2px solid #333;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+}
+.print-match-title {
+    font-weight: bold;
+    font-size: 13px;
+}
+.print-score-label {
+    font-weight: bold;
+    font-size: 12px;
+    border: 1px solid #333;
+    padding: 2px 8px;
+    white-space: nowrap;
+}
+.print-match-columns {
+    display: flex;
+    gap: 8px;
+}
+.print-match-column {
+    width: 50%;
+    min-width: 0;
+    border: 1px solid #aaa;
+    overflow: hidden;
+}
+.print-file-header {
+    font-weight: bold;
+    font-size: 11px;
+    padding: 4px 6px;
+    border-bottom: 1px solid #aaa;
+    background: #f0f0f0;
+    color: #000;
+}
+.print-code-block {
+    font-family: Consolas, Monaco, 'Courier New', monospace;
+    font-size: 9px;
+    line-height: 1.35;
+}
+.print-code-line {
+    display: flex;
+    padding: 0 4px;
+    border-left: 3px solid transparent;
+}
+.print-highlight-line {
+    background: #d9d9d9;
+    border-left: 3px solid #000;
+    font-weight: bold;
+}
+.print-line-number {
+    min-width: 30px;
+    text-align: right;
+    padding-right: 8px;
+    color: #666;
+    user-select: none;
+    border-right: 1px solid #ccc;
+    margin-right: 4px;
+    flex-shrink: 0;
+}
+.print-line-content {
+    white-space: pre-wrap;
+    word-break: break-all;
+    flex: 1;
+    min-width: 0;
+}
+.print-context-separator {
+    text-align: center;
+    color: #999;
+    font-size: 10px;
+    padding: 2px 0;
+    border-top: 1px dashed #ccc;
+    border-bottom: 1px dashed #ccc;
+}
+
 /* Printing */
 @media print {
     * { background: transparent !important; }
@@ -247,5 +332,33 @@ table .min {
     }
     p, span, code[class*=language-], pre[class*=language-] {
         color: #000000 !important;
+    }
+
+    /* Print match comparison - B&W overrides */
+    .print-highlight-line {
+        background: #d9d9d9 !important;
+        border-left: 3px solid #000 !important;
+    }
+    .print-file-header {
+        background: #eee !important;
+    }
+    .print-match-section {
+        border: 1px solid #000 !important;
+        page-break-inside: avoid;
+    }
+    .print-match-column {
+        border: 1px solid #666 !important;
+    }
+    .print-match-columns {
+        display: flex !important;
+    }
+    .print-code-line {
+        color: #000 !important;
+    }
+    .print-line-number {
+        color: #444 !important;
+    }
+    .print-score-label {
+        color: #000 !important;
     }
 }
