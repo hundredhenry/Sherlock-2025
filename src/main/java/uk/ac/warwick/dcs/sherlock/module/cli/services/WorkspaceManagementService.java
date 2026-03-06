@@ -28,6 +28,10 @@ public class WorkspaceManagementService {
         return WorkspaceWrapper.findByAccount(accountWrapper.getAccount(), workspaceRepository);
     }
 
+    public WorkspaceWrapper getWorkspaceByName(AccountWrapper accountWrapper, WorkspaceRepository workspaceRepository, String workspace_name) {
+        return WorkspaceWrapper.findByName(accountWrapper.getAccount(), workspaceRepository, workspace_name);
+    }
+
     public void deleteWorkspace(AccountWrapper accountWrapper, WorkspaceRepository workspaceRepository, String workspace_name) {
         WorkspaceWrapper workspace_to_delete = WorkspaceWrapper.findByName(accountWrapper.getAccount(), workspaceRepository, workspace_name);
         if (workspace_to_delete == null) {

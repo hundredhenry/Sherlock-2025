@@ -5,6 +5,7 @@ import org.stringtemplate.v4.compiler.CodeGenerator.primary_return;
 
 import groovyjarjarpicocli.CommandLine.ParentCommand;
 import picocli.CommandLine;
+import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.module.cli.services.WorkspaceManagementService;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Account;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.AccountRepository;
@@ -90,9 +91,37 @@ public class WorkspaceCmd implements Runnable {
         @CommandLine.Option(names = {"-n", "--name"}, description = "Name of the workspace")
         String workspace_name;
 
+        @CommandLine.ParentCommand
+        WorkspaceCmd parent;
+
         @Override
         public void run() {
-            System.out.println("Viewing a workspace...");
+            // Display name, language, list submissions, list results
+            AccountWrapper accountWrapper = parent.accountWrapper;
+            WorkspaceRepository workspaceRepository = parent.workspaceRepository;
+            WorkspaceManagementService service = parent.wms;
+            WorkspaceWrapper workspace = service.getWorkspaceByName(accountWrapper, workspaceRepository, workspace_name);
+            if (workspace == null) {
+                System.out.println("Could not find a workspace with that name.");
+            } else {
+                String name = workspace.getName();
+                String language = workspace.getLanguage();
+                List<ISourceFile> allFiles = workspace.getFiles();
+                int fileCount = allFiles.size();
+                System.out.println("Workspace details:");
+                System.out.println(String.format("-- Name: %s", name));
+                System.out.println(String.format("-- Language: %s", language));
+                System.out.println(String.format("-- Files (%d):", fileCount));
+
+                if (fileCount == 0) {
+                    System.out.println("---- There are no files in this workspace.");
+                } else {
+                    for (ISourceFile f : allFiles) {
+                        System.out.println(String.format("---- %s (%sB)", f.getFileDisplayName(), f.getFileSize()));
+                    }
+                }
+
+            }
         }
     }
 
