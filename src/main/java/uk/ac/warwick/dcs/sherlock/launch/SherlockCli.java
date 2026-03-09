@@ -15,6 +15,7 @@ import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.AccountRepositor
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceRepository;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TDetectorRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TParameterRepository;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TemplateRepository;
 
 
@@ -44,13 +45,14 @@ public class SherlockCli {
         AccountWrapper accountWrapper = new AccountWrapper(accountRepository.findByEmail(CoreSecurityConfig.getLocalEmail()));
         TemplateRepository templateRepository = context.getBean(TemplateRepository.class);
         TDetectorRepository tDetectorRepository = context.getBean(TDetectorRepository.class);
+        TParameterRepository tParameterRepository = context.getBean(TParameterRepository.class);
         System.out.println("Authenticated as: " + accountWrapper.getAccount().getEmail() + " (" + accountWrapper.getAccount().getUsername() + ")");
         
         System.out.println("Welcome to the Sherlock CLI Interface!");
 
         WorkspaceCmd workspaceCmd = new WorkspaceCmd(accountRepository, workspaceRepository, accountWrapper);
         CommandLine workspaceCmdLine = new CommandLine(workspaceCmd);
-        TemplateCmd templateCmd = new TemplateCmd(accountRepository, templateRepository, accountWrapper, tDetectorRepository);
+        TemplateCmd templateCmd = new TemplateCmd(accountRepository, templateRepository, accountWrapper, tDetectorRepository, tParameterRepository);
         CommandLine templateCmdLine = new CommandLine(templateCmd);
 
         // cmd = new CommandLine(this);
