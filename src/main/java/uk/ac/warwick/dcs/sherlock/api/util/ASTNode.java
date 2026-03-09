@@ -7,8 +7,9 @@ public class ASTNode {
 
     private final NodeKind kind;
     private String value;
-    private final List<ASTNode> children = new ArrayList<>();
-    private final Map<String, Object> metadata = new HashMap<>();
+    private ASTNode parent;
+    private ArrayList<ASTNode> children = new ArrayList<>();
+    private Map<String, Object> metadata = new HashMap<>();
 
     public ASTNode(NodeKind kind) {
         this(kind, null);
@@ -25,6 +26,18 @@ public class ASTNode {
 
     public String getValue() {
         return value;
+    }
+
+    public ASTNode getParent() { return parent; }
+
+    public void addChild(ASTNode child){
+        if(child != null){
+            children.add(child);
+        }
+    }
+
+    public void setParent(ASTNode parent) {
+        this.parent = parent;
     }
 
     public void setValue(String value) {
@@ -53,28 +66,62 @@ public class ASTNode {
 
     // Enum to encode the type of AST node, can be expanded with new languages added
     public enum NodeKind {
+
         PROGRAM,
 
+        CLASS_DECL,
+        INTERFACE_DECL,
+        ENUM_DECL,
+        RECORD_DECL,
+
         FUNCTION_DECL,
-        PARAMETER,
-        BLOCK,
+        CONSTRUCTOR_DECL,
 
         VARIABLE_DECL,
-        ASSIGNMENT,
+        PARAMETER,
+
+        BLOCK,
 
         IF_STATEMENT,
-        WHILE_LOOP,
         FOR_LOOP,
+        WHILE_LOOP,
+        DO_WHILE_LOOP,
+
         RETURN,
+        BREAK,
+        CONTINUE,
+        THROW,
+        ASSERT,
+
+        TRY_STATEMENT,
+        CATCH,
+        FINALLY,
+
+        SWITCH_EXPR,
+        CASE_GROUP,
+        CASE_LABEL,
 
         BINARY_EXPR,
         UNARY_EXPR,
+        POSTFIX_EXPR,
+        TERNARY_EXPR,
+        CAST_EXPR,
+
         CALL_EXPR,
 
+        NEW_OBJECT,
+        NEW_ARRAY,
+
+        LAMBDA_EXPR,
+
         IDENTIFIER,
-        LITERAL,
+        STRING_LITERAL,
+        NUMBER_LITERAL,
+        BOOL_LITERAL,
+        NULL_LITERAL,
 
         TYPE,
+        PATTERN,
 
         UNKNOWN
     }
