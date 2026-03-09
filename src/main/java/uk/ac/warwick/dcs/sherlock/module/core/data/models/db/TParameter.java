@@ -24,7 +24,7 @@ public class TParameter {
     private boolean postprocessing;
 
     @ManyToOne
-    @JoinColumn(name = "tDetector")
+    @JoinColumn(name = "t_Detector")
     private TDetector tDetector;
 
     public TParameter() { }
