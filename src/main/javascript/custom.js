@@ -408,6 +408,185 @@ function submissionResultsPage() {
             });
         }
 
+        /**
+         * Escapes HTML special characters in a string
+         *
+         * @param text the text to escape
+         * @returns {string} the escaped text
+         */
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        /**
+         * Extracts a code snippet from a loaded Prism <pre> element for
+         * the specified file, showing only the matched lines plus context.
+         *
+         * @param fileId the persistent ID of the file
+         * @param matchedLines array of line numbers that are part of the match
+         * @param contextLines how many lines of context to show above/below
+         * @returns {{html: string, startLine: number, endLine: number}}
+         */
+        function extractCodeSnippet(fileId, matchedLines, contextLines) {
+            var pre = $("pre[data-file-id='" + fileId + "']").first();
+
+            if (!pre.length) {
+                return {
+                    html: '<div class="print-code-line"><span class="print-line-content"><em>Code not available</em></span></div>',
+                    startLine: 0, endLine: 0
+                };
+            }
+
+            var code = pre.find('code').first();
+            if (!code.length) {
+                return {
+                    html: '<div class="print-code-line"><span class="print-line-content"><em>Code not available</em></span></div>',
+                    startLine: 0, endLine: 0
+                };
+            }
+
+            var allLines = code[0].textContent.split('\n');
+
+            // Remove trailing empty line (common with file loading)
+            if (allLines.length > 0 && allLines[allLines.length - 1] === '') {
+                allLines.pop();
+            }
+
+            if (!matchedLines || matchedLines.length === 0) {
+                return {
+                    html: '<div class="print-code-line"><span class="print-line-content"><em>No matched lines</em></span></div>',
+                    startLine: 0, endLine: 0
+                };
+            }
+
+            // Calculate the range (matched lines + context)
+            var minLine = Math.min.apply(null, matchedLines);
+            var maxLine = Math.max.apply(null, matchedLines);
+            var startLine = Math.max(1, minLine - contextLines);
+            var endLine = Math.min(allLines.length, maxLine + contextLines);
+
+            // Build a set of matched line numbers for quick lookup
+            var matchedSet = {};
+            for (var i = 0; i < matchedLines.length; i++) {
+                matchedSet[matchedLines[i]] = true;
+            }
+
+            // Build HTML for each line in the snippet
+            var html = '';
+            for (var lineNum = startLine; lineNum <= endLine; lineNum++) {
+                var lineContent = allLines[lineNum - 1] || '';
+                var isHighlighted = matchedSet[lineNum] === true;
+                var cls = 'print-code-line' + (isHighlighted ? ' print-highlight-line' : '');
+
+                html += '<div class="' + cls + '">';
+                html += '<span class="print-line-number">' + lineNum + '</span>';
+                html += '<span class="print-line-content">' + escapeHtml(lineContent) + '</span>';
+                html += '</div>';
+            }
+
+            return { html: html, startLine: startLine, endLine: endLine };
+        }
+
+        /**
+         * Generates side-by-side match comparison snippets for the print view.
+         * Called after all files have been loaded by Prism.
+         * For each match, shows this submission's code next to the matched
+         * submission's code, with highlighted lines and score labels.
+         */
+        function generatePrintMatches() {
+            var container = document.getElementById('print-matches-container');
+            if (!container) return;
+
+            var CONTEXT_LINES = 5;
+            var matchKeys = Object.keys(matches);
+
+            if (matchKeys.length === 0) {
+                container.innerHTML = '<p style="text-align:center; padding:20px;">No matches to display.</p>';
+                return;
+            }
+
+            var html = '';
+
+            for (var k = 0; k < matchKeys.length; k++) {
+                var matchId = matchKeys[k];
+                var match = matches[matchId];
+
+                // Separate into left/right columns.
+                // On the report page, left = this submission, right = others.
+                // On the compare page, left = submission1, right = submission2.
+                var leftItems = [];
+                var rightItems = [];
+                var leftId = submissionId;
+
+                for (var i = 0; i < match.matches.length; i++) {
+                    var item = match.matches[i];
+                    if (item.submission == leftId) {
+                        leftItems.push(item);
+                    } else {
+                        rightItems.push(item);
+                    }
+                }
+
+                if (leftItems.length === 0 || rightItems.length === 0) continue;
+
+                // Generate a side-by-side comparison for each left-right pair
+                for (var l = 0; l < leftItems.length; l++) {
+                    for (var r = 0; r < rightItems.length; r++) {
+                        var leftItem = leftItems[l];
+                        var rightItem = rightItems[r];
+
+                        var leftSnippet = extractCodeSnippet(leftItem.id, leftItem.lines, CONTEXT_LINES);
+                        var rightSnippet = extractCodeSnippet(rightItem.id, rightItem.lines, CONTEXT_LINES);
+
+                        var scoreFormatted = parseFloat(match.score).toFixed(1);
+
+                        html += '<div class="print-match-section">';
+
+                        // Match header with reason and score label
+                        html += '<div class="print-match-header">';
+                        html += '<span class="print-match-title">Match #' + matchId + ': ' + escapeHtml(match.reason) + '</span>';
+                        html += '<span class="print-score-label">Similarity: ' + scoreFormatted + '%</span>';
+                        html += '</div>';
+
+                        // Side-by-side columns
+                        html += '<div class="print-match-columns">';
+
+                        // Left column: this submission's code
+                        html += '<div class="print-match-column">';
+                        html += '<div class="print-file-header">';
+                        html += escapeHtml(leftItem.submissionName) + ': ' + escapeHtml(leftItem.displayName);
+                        if (leftSnippet.startLine > 0) {
+                            html += ' (Lines ' + leftSnippet.startLine + '\u2013' + leftSnippet.endLine + ')';
+                        }
+                        html += '</div>';
+                        html += '<div class="print-code-block">' + leftSnippet.html + '</div>';
+                        html += '</div>';
+
+                        // Right column: matched submission's code
+                        html += '<div class="print-match-column">';
+                        html += '<div class="print-file-header">';
+                        html += escapeHtml(rightItem.submissionName) + ': ' + escapeHtml(rightItem.displayName);
+                        if (rightSnippet.startLine > 0) {
+                            html += ' (Lines ' + rightSnippet.startLine + '\u2013' + rightSnippet.endLine + ')';
+                        }
+                        html += '</div>';
+                        html += '<div class="print-code-block">' + rightSnippet.html + '</div>';
+                        html += '</div>';
+
+                        html += '</div>'; // .print-match-columns
+                        html += '</div>'; // .print-match-section
+                    }
+                }
+            }
+
+            container.innerHTML = html;
+        }
+
         function printEvent() {
             if (isPrinting()) {
                 //Count the number of files that failed to load
@@ -431,6 +610,9 @@ function submissionResultsPage() {
                     printed = true;
 
                     setTimeout(function() {
+                        //Generate side-by-side match snippets for the print view
+                        generatePrintMatches();
+
                         //Show the print button
                         $("#print").removeClass("d-none");
 
