@@ -24,7 +24,7 @@ public class ASTNode {
     private int height;                  // Height of subtree
 
     // lablels whose values should be abstracted away (ignored) for plagiarism detection
-    private static final Set<String> ABSTRACT_VALUE_LABELS = Set.of(
+    private static final Set<NodeKind> ABSTRACT_VALUE_LABELS = Set.of(
         // Identifiers
         NodeKind.IDENTIFIER,
         // Declarations

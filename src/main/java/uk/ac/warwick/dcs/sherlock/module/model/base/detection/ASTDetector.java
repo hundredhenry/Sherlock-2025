@@ -8,6 +8,8 @@ import uk.ac.warwick.dcs.sherlock.api.model.detection.PairwiseDetectorWorker;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ParseTreeGenerator;
 
+import java.util.*;
+
 /**
  * AST-based plagiarism detector.
  * Parses source files into abstract syntax trees (ASTs) and compares
@@ -40,12 +42,12 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
     private Set<ASTNode> containerMatched1;
     private Set<ASTNode> containerMatched2;
 
-    @AdjustableParameter(
-        name = "Abstract Matching?",
-        defaultValue = true,
-        description = "When true, ignores differences in variable/method names and literal values. When false, requires exact matches."
-    )
-    public boolean ABSTRACT_MATCHING;
+    // @AdjustableParameter(
+    //     name = "Abstract Matching?",
+    //     defaultValue = true,
+    //     description = "When true, ignores differences in variable/method names and literal values. When false, requires exact matches."
+    // )
+    public boolean ABSTRACT_MATCHING = true;
 
 
 
@@ -101,7 +103,7 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
     }
 
     // helper function for adding to metadata output mappings
-    private void addToRawResult(ASTRawResult<ASTMatch> res, ASTNode n1, ASTNode n2, float similarityScore){
+    private void addToRawResult(ASTRawResult res, ASTNode n1, ASTNode n2, float similarityScore){
         int refStart = n1.getMetaData("startLine");
         int refEnd = n1.getMetaData("endLine");
         int checkStart = n2.getMetaData("startLine");
@@ -111,16 +113,16 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
     }
 
     // Recursively add mappings for isomorphic descendants of descendant anchor-mappings
-    private void addAnchorDescendantMappings(ASTRawResult<ASTMatch> res, ASTNode n1, ASTNode n2){
+    private void addAnchorDescendantMappings(ASTRawResult res, ASTNode n1, ASTNode n2){
         List<ASTNode> children1 = n1.getChildren();
         List<ASTNode> children2 = n2.getChildren();
         for (int i = 0; i < children1.size(); i++) {
-            ASTNode c1 = children.get(i);
+            ASTNode c1 = children1.get(i);
             ASTNode c2 = children2.get(i);
-            addToRawResult(res, n1, n2, 1.0);
+            addToRawResult(res, n1, n2, 1.0f);
             anchorMatched1.add(c1);
             anchorMatched2.add(c2);
-            addAnchorDescendantMappings(c1, c2); // recurse
+            addAnchorDescendantMappings(res, c1, c2); // recurse
         }
     }
 
@@ -150,7 +152,7 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
             ASTNode tree1 = artiF1.ast();
             ASTNode tree2 = artiF2.ast();
             // make raw result output container of "node mappings"
-            ASTRawResult<ASTMatch> res = new ASTRawResult<>(this.file1.getFile(), this.file2.getFile());
+            ASTRawResult res = new ASTRawResult(this.file1.getFile(), this.file2.getFile());
             // Preprocess: compute fingerprints, weights, and heights
             preprocessTree(tree1);
             preprocessTree(tree2);
@@ -179,17 +181,17 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
                 for (ASTNode n1 : nodes1) {
                     if (anchorMatched1.contains(n1)) continue;
                     
-                    for (ASTNode n : nodes2) {
+                    for (ASTNode n2 : nodes2) {
                         if (anchorMatched2.contains(n2)) continue;
 
                         // Anchor-mapping conditions depend on parametrised matching strictness
                         if (n1.getFingerprint(ABSTRACT_MATCHING).equals(n2.getFingerprint(ABSTRACT_MATCHING))) { 
                             // Add mapping for this subtree
-                            addToRawResult(res, n1, n2, 1.0);
+                            addToRawResult(res, n1, n2, 1.0f);
                             anchorMatched1.add(n1);
                             anchorMatched2.add(n2);
                             // Also add mappings for all descendants (they're isomorphic too)
-                            addAnchorDescendantMappings(n1, n2);
+                            addAnchorDescendantMappings(res, n1, n2);
                             break; // Move to the next node from tree1
                         }
                     }
