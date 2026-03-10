@@ -34,7 +34,7 @@ public class ASTGeneratorJava implements IAdvancedPreProcessor<JavaLexer> {
 
         JavaASTBuilder astBuilder = new JavaASTBuilder();
 
-        ASTNode astRoot = astBuilder.visit(parseTree);
+        ASTNode astRoot = astBuilder.visit(tree);
 
         return new ASTArtifact(astRoot);
     }
@@ -54,7 +54,23 @@ class JavaASTBuilder extends JavaParserBaseVisitor<ASTNode>{
             Map.entry("formalParameter", ASTNode.NodeKind.PARAMETER),
             Map.entry("block", ASTNode.NodeKind.BLOCK),
             Map.entry("identifier", ASTNode.NodeKind.IDENTIFIER),
-            Map.entry("typeType", ASTNode.NodeKind.TYPE)
+            Map.entry("typeType", ASTNode.NodeKind.TYPE),
+            Map.entry("ifStatement", ASTNode.NodeKind.IF_STATEMENT),
+            Map.entry("forStatement", ASTNode.NodeKind.FOR_LOOP),
+            Map.entry("whileStatement", ASTNode.NodeKind.WHILE_LOOP),
+            Map.entry("doWhileStatement", ASTNode.NodeKind.DO_WHILE_LOOP),
+            Map.entry("tryStatement", ASTNode.NodeKind.TRY_STATEMENT),
+            Map.entry("catchClause", ASTNode.NodeKind.CATCH),
+            Map.entry("finallyBlock", ASTNode.NodeKind.FINALLY),
+            Map.entry("switchStatement", ASTNode.NodeKind.SWITCH_EXPR),
+            Map.entry("switchExpression", ASTNode.NodeKind.SWITCH_EXPR),
+            Map.entry("switchLabeledRule", ASTNode.NodeKind.CASE_GROUP),
+            Map.entry("switchLabel", ASTNode.NodeKind.CASE_LABEL),
+            Map.entry("returnStatement", ASTNode.NodeKind.RETURN),
+            Map.entry("breakStatement", ASTNode.NodeKind.BREAK),
+            Map.entry("continueStatement", ASTNode.NodeKind.CONTINUE),
+            Map.entry("throwStatement", ASTNode.NodeKind.THROW),
+            Map.entry("assertStatement", ASTNode.NodeKind.ASSERT),
     );
 
     private static final Map<Integer, ASTNode.NodeKind> TOKEN_MAP = Map.of(
