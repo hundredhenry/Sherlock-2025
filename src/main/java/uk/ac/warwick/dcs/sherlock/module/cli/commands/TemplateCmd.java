@@ -41,18 +41,20 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @CommandLine.Command(name="template", description="Commands for template management", mixinStandardHelpOptions = true,
 subcommands = {
     TemplateCmd.add_template.class,
-    TemplateCmd.view_template.class,
+    TemplateCmd.view_template_details.class,
     TemplateCmd.delete_template.class,
     TemplateCmd.view_detectors.class,
     TemplateCmd.set_detectors.class,
     TemplateCmd.view_parameters.class,
     TemplateCmd.set_pre_processing_parameters.class,
-    TemplateCmd.set_post_processing_parameters.class
+    TemplateCmd.set_post_processing_parameters.class,
+    TemplateCmd.list_templates.class
 })
 public class TemplateCmd implements Runnable {
     
@@ -191,7 +193,7 @@ public class TemplateCmd implements Runnable {
         } 
     }
 
-    @CommandLine.Command(name="setDetectors", description="Set detectors for a template", mixinStandardHelpOptions = true)
+    @CommandLine.Command(name="updateDetectors", description="Change detectors for a template", mixinStandardHelpOptions = true)
     static class set_detectors implements Runnable {
         @CommandLine.ParentCommand
         TemplateCmd parent;
@@ -199,8 +201,9 @@ public class TemplateCmd implements Runnable {
         @CommandLine.Option(names = {"-t", "--template"}, description = "Name of the template", required = true)
         String template_name;
 
-        @CommandLine.Option(names = {"-d", "--detectors"}, description = "Detectors to be set", required = true)
-        List<String> detector_names;
+        @CommandLine.Parameters(arity = "1..*", paramLabel = "PARAM=VALUE", description = "Detectors to update, in the form of DETECTOR_NAME=TRUE/FALSE")
+        Map<String, Boolean> detector_names;
+
 
         @Override
         public void run() {
@@ -214,21 +217,28 @@ public class TemplateCmd implements Runnable {
                     //initialise a new template form
                     TemplateForm templateForm = new TemplateForm(wrapper);
                     //then intialise the detector list
-                    List<String> detector_list = new ArrayList<String>();
+                    Set<String> current_detectors = wrapper.getDetectors().stream().map(d -> d.getDetector().getName()).collect(Collectors.toSet());
                     //find the supported detectors for the template's language
                     List<String> detectors = EngineDetectorWrapper.getDetectorNames(wrapper.getTemplate().getLanguage());
                     //then for each detector name
-                    for (String detector_name : detector_names) {
+                    for (String detector_name : detector_names.keySet()) {
                         String fullDetectorName = parent.detectorNameFromReadable(detector_name);
                         //check that the detector name is supported
                         if (detectors.contains(fullDetectorName)){
-                            //then set the detector for the template
-                            detector_list.add(fullDetectorName);
+                            //check if user wanted to remove 
+                            if (!detector_names.get(detector_name)) {
+                                //then remove from current detectors if its there
+                                current_detectors.remove(fullDetectorName);
+                            }else{
+                                //then add to current detectors if its not there (handled by Set)
+                                current_detectors.add(fullDetectorName);
+                            }
                         }else{
                             System.out.println(detector_name + " is not supported for this template's language. Use 'view detectors' to view supported detectors.");
                         }
                     }
                     //set the detectors in the form
+                    List<String> detector_list = new ArrayList<String>(current_detectors);
                     templateForm.setDetectors(detector_list);
                     boolean success = false;
                     //then try and update the template
@@ -594,8 +604,8 @@ public class TemplateCmd implements Runnable {
         
     }
 
-    @CommandLine.Command(name="view", description="View template details", mixinStandardHelpOptions = true)
-    static class view_template implements Runnable {
+    @CommandLine.Command(name="list", description="View template details", mixinStandardHelpOptions = true)
+    static class list_templates implements Runnable {
         @CommandLine.ParentCommand
         TemplateCmd parent;
 
@@ -607,6 +617,79 @@ public class TemplateCmd implements Runnable {
             for (TemplateWrapper wrapper : wrapperList) {
                 System.out.println(wrapper.getTemplate().getName());
             }
+        }
+        
+    }
+
+    @CommandLine.Command(name="view", description="View template details", mixinStandardHelpOptions = true)
+    static class view_template_details implements Runnable {
+        @CommandLine.ParentCommand
+        TemplateCmd parent;
+
+        @CommandLine.Option(names = {"-t", "--template"}, description = "Name of the template", required = true)
+        String template_name;
+
+        @Override
+        public void run() {
+            System.out.println("Viewing a template...");
+            //initially just view all templates available to the user:
+            List<TemplateWrapper> wrapperList = TemplateWrapper.findByAccountAndPublic(parent.account.getAccount(), parent.templateRepository);
+            for (TemplateWrapper wrapper : wrapperList) {
+                //check that the name is a string
+                if (wrapper.getTemplate().getName() == null) continue;
+                //then check if the name is the same as one chosen
+                if (wrapper.getTemplate().getName().equals(template_name)) {
+                    //we need to output all active detectors, and all parameters for the detectors
+                    List<DetectorWrapper> templateDetectors = wrapper.getDetectors();
+                    for (DetectorWrapper detectorWrapper : templateDetectors) {
+                        //then find all parameters for that detector
+                        TDetector detector = detectorWrapper.getDetector();
+                        Set<TParameter> parameters = detector.getParameters();
+                        System.out.println("| Detector: " + parent.detectorNameToReadable(detector.getName()));
+                        Map<String, Float> preProcessingParameterValues = new HashMap<String, Float>();
+                        Map<String, Float> postProcessingParameterValues = new HashMap<String, Float>();
+                        Map<String, AdjustableParameterObj> preProcessingParameters;
+                        Map<String, AdjustableParameterObj> postProcessingParameters;
+                        for (TParameter parameter : parameters) {
+                            if (parameter.isPostprocessing()) {
+                                postProcessingParameterValues.put(parameter.getName(), parameter.getValue());
+                            }else{
+                                preProcessingParameterValues.put(parameter.getName(), parameter.getValue());
+                            }
+                        }
+
+                        try{
+                            preProcessingParameters = detectorWrapper.getEngineParametersMap();
+                            postProcessingParameters = detectorWrapper.getEnginePostProcessingParametersMap();
+                        }catch(DetectorNotFound e){
+                            System.out.println("Detector not found.");
+                            return;
+                        }
+
+                        System.out.println("|| Pre-Processing Parameters:");
+                        //then for each parameter
+                        for (Map.Entry<String, AdjustableParameterObj> entry : preProcessingParameters.entrySet()) {
+                            //then print the parameter
+                            if (preProcessingParameterValues.containsKey(entry.getKey())) {
+                                System.out.println("||| " + entry.getKey() + ": " + preProcessingParameterValues.get(entry.getKey()) + " (Range: " + entry.getValue().getMinimumBound() + " - " + entry.getValue().getMaximumBound() + ", Step: " + entry.getValue().getStep() + ")");
+                            }else{
+                                System.out.println("||| " + entry.getKey() + ": " + entry.getValue().getDefaultValue() + " (Range: " + entry.getValue().getMinimumBound() + " - " + entry.getValue().getMaximumBound() + ", Step: " + entry.getValue().getStep() + ")");
+                            }
+                        }
+                        System.out.println("|| Post-Processing Parameters:");
+                        for (Map.Entry<String, AdjustableParameterObj> entry : postProcessingParameters.entrySet()) {
+                            //then print the parameter
+                            if (postProcessingParameterValues.containsKey(entry.getKey())) {
+                                System.out.println("||| " + entry.getKey() + ": " + postProcessingParameterValues.get(entry.getKey()) + " (Range: " + entry.getValue().getMinimumBound() + " - " + entry.getValue().getMaximumBound() + ", Step: " + entry.getValue().getStep() + ")");
+                            }else{
+                                System.out.println("||| " + entry.getKey() + ": " + entry.getValue().getDefaultValue() + " (Range: " + entry.getValue().getMinimumBound() + " - " + entry.getValue().getMaximumBound() + ", Step: " + entry.getValue().getStep() + ")");
+                            }
+                        }
+                    }
+                    return;
+                }
+            }
+            System.out.println("Template not found.");
         }
         
     }
