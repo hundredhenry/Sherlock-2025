@@ -49,11 +49,9 @@ class JavaASTBuilder extends JavaParserBaseVisitor<ASTNode>{
             Map.entry("recordDeclaration", ASTNode.NodeKind.RECORD_DECL),
             Map.entry("methodDeclaration", ASTNode.NodeKind.FUNCTION_DECL),
             Map.entry("constructorDeclaration", ASTNode.NodeKind.CONSTRUCTOR_DECL),
-            Map.entry("fieldDeclaration", ASTNode.NodeKind.VARIABLE_DECL),
-            Map.entry("localVariableDeclaration", ASTNode.NodeKind.VARIABLE_DECL),
+            Map.entry("variableDeclarator", ASTNode.NodeKind.VARIABLE_DECL),
             Map.entry("formalParameter", ASTNode.NodeKind.PARAMETER),
             Map.entry("block", ASTNode.NodeKind.BLOCK),
-            Map.entry("identifier", ASTNode.NodeKind.IDENTIFIER),
             Map.entry("typeType", ASTNode.NodeKind.TYPE),
             Map.entry("ifStatement", ASTNode.NodeKind.IF_STATEMENT),
             Map.entry("forStatement", ASTNode.NodeKind.FOR_LOOP),
@@ -71,6 +69,7 @@ class JavaASTBuilder extends JavaParserBaseVisitor<ASTNode>{
             Map.entry("continueStatement", ASTNode.NodeKind.CONTINUE),
             Map.entry("throwStatement", ASTNode.NodeKind.THROW),
             Map.entry("assertStatement", ASTNode.NodeKind.ASSERT),
+            Map.entry("classBody", ASTNode.NodeKind.BLOCK)
     );
 
     private static final Map<Integer, ASTNode.NodeKind> TOKEN_MAP = Map.of(
@@ -157,6 +156,43 @@ class JavaASTBuilder extends JavaParserBaseVisitor<ASTNode>{
 
         attachMetadata(call, ctx);
         return call;
+    }
+
+    @Override
+    public ASTNode visitStatement(JavaParser.StatementContext ctx) {
+        if (ctx == null || ctx.getChildCount() == 0) return null;
+
+        ParseTree first = ctx.getChild(0);
+        ASTNode node = null;
+
+        if (first.getText().equals("if")) {  // first token is 'if'
+            node = new ASTNode(ASTNode.NodeKind.IF_STATEMENT);
+        } else if (first.getText().equals("while")) {
+            node = new ASTNode(ASTNode.NodeKind.WHILE_LOOP);
+        } else if (first.getText().equals("for")) {
+            node = new ASTNode(ASTNode.NodeKind.FOR_LOOP);
+        } else if (first.getText().equals("try")) {
+            node = new ASTNode(ASTNode.NodeKind.TRY_STATEMENT);
+        }
+
+        // If this isn't a control flow statement, just unwrap it
+        if (node == null) {
+            return visitChildren(ctx);
+        }
+
+        // Attach meaningful children only once
+        for (int i = 0; i < ctx.getChildCount(); i++) {
+
+            ParseTree child = ctx.getChild(i);
+
+            if (child instanceof ParserRuleContext) {
+                ASTNode childNode = visit(child);
+                addChildWithParent(node, childNode);
+            }
+        }
+
+        attachMetadata(node, ctx);
+        return node;
     }
 
     @Override
