@@ -19,28 +19,29 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
 
     @AdjustableParameter(
             name = "Minimum Height",
-            defaultValue = 2,
-            minimumBound = 1,
-            maximumBound = 10,
-            step = 1,
+            defaultValue = 2f,
+            minimumBound = 1f,
+            maximumBound = 10f,
+            step = 1f,
             description = "Minimum height for two AST subtrees to be considered a semantic match."
     )
     public float MIN_HEIGHT;
 
     @AdjustableParameter(
             name = "Minimum Dice Threshold",
-            defaultValue = 5,
-            minimumBound = 1,
-            maximumBound = 50,
-            step = 1,
+            defaultValue = 0.5f,
+            minimumBound = 0f,
+            maximumBound = 1f,
+            step = 0.1f,
             description = "Minimum similarity value between two AST subtrees to be considered a relative match (based on Dice Coefficient)"
     )
-    public int MIN_DICE;
+    public float MIN_DICE;
 
     private Set<ASTNode> anchorMatched1;
     private Set<ASTNode> anchorMatched2;
     private Set<ASTNode> containerMatched1;
     private Set<ASTNode> containerMatched2;
+    private Map<ASTNode, ASTNode> anchorMap; 
 
     // @AdjustableParameter(
     //     name = "Abstract Matching?",
@@ -50,14 +51,10 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
     public boolean ABSTRACT_MATCHING = true;
 
 
-
     public ASTDetector() {
         super("AST Detector", "Detects plagiarism by comparing the abstract syntax tree structures of source files",
                 ASTDetectorWorker.class, PreProcessingStrategy.of("parseTree", ParseTreeGenerator.class));
     }
-
-
-
 
     // Preprocess tree: compute fingerprints, weights, and heights
     private void preprocessTree(ASTNode root){
@@ -102,8 +99,33 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
         return heightMap;
     }
 
+    // Get nodes in post-order (children before parents)
+    private List<ASTNode> postOrder(ASTNode root) {
+        List<ASTNode> result = new ArrayList<>();
+        postOrderHelper(root, result);
+        return result;
+    }
+    private void postOrderHelper(ASTNode node, List<ASTNode> result) {
+        for (ASTNode child : node.getChildren()) {
+            postOrderHelper(child, result);
+        }
+        result.add(node);
+    }
 
+    // // Find the best container match for a node (for tree1 from tree2)
+    // private Object[] findBestContainerMatch(ASTNode n1, Map<ASTNode, ASTNode> anchorMap) {
+    //     List<ASTNode> candidates = findCandidates(n1, tree2);
+    //     if (candidates.isEmpty()) {
+    //         return null;
+    //     }
+    // }
 
+    // //Find candidate nodes from tree2 that could match n1 (BFS)
+    // private List<ASTNode> findCandidates(ASTNode n1, ASTNode root2) {
+    //     List<ASTNode> candidates = new ArrayList<>();
+    //     Queue<ASTNode> queue = new LinkedList<>();
+    //     queue.add(root2); // BFS process root2 level by level
+    // }
 
 
 
@@ -195,6 +217,8 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
                             addToRawResult(res, n1, n2, 1.0f);
                             anchorMatched1.add(n1);
                             anchorMatched2.add(n2);
+                            anchorMap.put(n1, n2); // Build a map of anchor-mapped nodes for O(1) lookup during container matching
+
                             // Also add mappings for all descendants (they're isomorphic too)
                             addAnchorDescendantMappings(res, n1, n2);
                             break; // Move to the next node from tree1
@@ -204,16 +228,31 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
             }
 
             // PHASE 2: Bottom-up search for similar subtrees (containers) based on Dice similarity of their children
-            //List<ASTNode> postOrder1 = postOrder(tree1);
+            // List<ASTNode> postOrder1 = postOrder(tree1);
+            // for (ASTNode n1 : postOrder1) {
+            //     if (anchorMatched1.contains(n1)) continue;
+            //     if (n1.getChildren().isEmpty()) continue; // container-type mappings cannot be leaves
+
+            //     // Check if this node has any anchor-mapped descendants 
+            //     boolean hasAnchorMatchedDescendants = false;
+            //     for (ASTNode desc : n1.getDescendants()) {
+            //         if (anchorMatched1.contains(desc)) hasAnchorMatchedDescendants = true;
+            //     } 
+            //     if (!hasAnchorMatchedDescendants) continue;
+
+            //     Object[] bestMatchAndDice = findBestContainerMatch(n1, anchorMap);
+            //     //
+            //     //
+            //     //
+            // }
+
             
+
+
+
+
             this.result = res;
 
         }
-
-
-    
     }
-
-
-
 }
