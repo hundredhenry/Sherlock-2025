@@ -8,6 +8,7 @@ import uk.ac.warwick.dcs.sherlock.api.model.detection.PairwiseDetectorWorker;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy;
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.ASTRawResult;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.TrimWhitespaceOnly;
+import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ASTGenerator;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.ASTArtifact;
 import uk.ac.warwick.dcs.sherlock.api.util.ASTNode;
 
@@ -58,7 +59,7 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
         super("AST Detector",
                 "Detects plagiarism by comparing abstract syntax tree structures of source files",
                 ASTDetectorWorker.class,
-                PreProcessingStrategy.of("no_whitespace", TrimWhitespaceOnly.class));
+                PreProcessingStrategy.of("ast", ASTGenerator.class));
     }
 
     // Preprocess tree: compute fingerprints, weights, and heights
