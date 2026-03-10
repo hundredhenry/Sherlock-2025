@@ -102,29 +102,8 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
         return heightMap;
     }
 
-    // helper function for adding to metadata output mappings
-    private void addToRawResult(ASTRawResult res, ASTNode n1, ASTNode n2, float similarityScore){
-        int refStart = n1.getMetaData("startLine");
-        int refEnd = n1.getMetaData("endLine");
-        int checkStart = n2.getMetaData("startLine");
-        int checkEnd = n2.getMetaData("endLine");  
-        ASTMatch match = new ASTMatch(refStart, refEnd, checkStart, checkEnd, similarityScore, this.file1.getFile(), this.file2.getFile());
-        res.addMatch(match);   
-    }
 
-    // Recursively add mappings for isomorphic descendants of descendant anchor-mappings
-    private void addAnchorDescendantMappings(ASTRawResult res, ASTNode n1, ASTNode n2){
-        List<ASTNode> children1 = n1.getChildren();
-        List<ASTNode> children2 = n2.getChildren();
-        for (int i = 0; i < children1.size(); i++) {
-            ASTNode c1 = children1.get(i);
-            ASTNode c2 = children2.get(i);
-            addToRawResult(res, n1, n2, 1.0f);
-            anchorMatched1.add(c1);
-            anchorMatched2.add(c2);
-            addAnchorDescendantMappings(res, c1, c2); // recurse
-        }
-    }
+
 
 
 
@@ -138,6 +117,32 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
         public ASTDetectorWorker(IDetector parent, ModelDataItem file1Data, ModelDataItem file2Data) {
             super(parent, file1Data, file2Data);
         }
+
+        // Recursively add mappings for isomorphic descendants of descendant anchor-mappings
+        private void addAnchorDescendantMappings(ASTRawResult res, ASTNode n1, ASTNode n2){
+            List<ASTNode> children1 = n1.getChildren();
+            List<ASTNode> children2 = n2.getChildren();
+            for (int i = 0; i < children1.size(); i++) {
+                ASTNode c1 = children1.get(i);
+                ASTNode c2 = children2.get(i);
+                addToRawResult(res, n1, n2, 1.0f);
+                anchorMatched1.add(c1);
+                anchorMatched2.add(c2);
+                addAnchorDescendantMappings(res, c1, c2); // recurse
+            }
+        }
+        // helper function for adding to metadata output mappings
+        private void addToRawResult(ASTRawResult res, ASTNode n1, ASTNode n2, float similarityScore){
+            int refStart = n1.getMetadata("startLine", Integer.class);
+            int refEnd = n1.getMetadata("endLine", Integer.class);
+            int checkStart = n2.getMetadata("startLine", Integer.class);
+            int checkEnd = n2.getMetadata("endLine", Integer.class);
+            ASTMatch match = new ASTMatch(refStart, refEnd, checkStart, checkEnd, similarityScore, this.file1.getFile(), this.file2.getFile());
+            res.addMatch(match);   
+        }
+
+
+
 
         /**
          * Core execution method.
@@ -205,6 +210,10 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
 
         }
 
+
+    
     }
+
+
 
 }
