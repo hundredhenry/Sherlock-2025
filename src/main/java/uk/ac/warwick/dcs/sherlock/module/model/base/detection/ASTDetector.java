@@ -41,11 +41,6 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
     )
     public float MIN_DICE;
 
-    private Set<ASTNode> anchorMatched1;
-    private Set<ASTNode> anchorMatched2;
-    private Set<ASTNode> containerMatched1;
-    private Set<ASTNode> containerMatched2;
-    private Map<ASTNode, ASTNode> anchorMap; 
 
     // @AdjustableParameter(
     //     name = "Abstract Matching?",
@@ -142,25 +137,35 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
     */
     public class ASTDetectorWorker extends PairwiseDetectorWorker<ASTRawResult> {
 
+        private Set<ASTNode> anchorMatched1;
+        private Set<ASTNode> anchorMatched2;
+        private Set<ASTNode> containerMatched1;
+        private Set<ASTNode> containerMatched2;
+        private Map<ASTNode, ASTNode> anchorMap; 
+
         public ASTDetectorWorker(IDetector parent, ModelDataItem file1Data, ModelDataItem file2Data) {
             super(parent, file1Data, file2Data);
         }
 
         // Recursively add mappings for isomorphic descendants of descendant anchor-mappings
-        private void addAnchorDescendantMappings(ASTRawResult res, ASTNode n1, ASTNode n2){
+        private void addAnchorDescendantMappings(Map<ASTNode, ASTNode> anchorMap, ASTNode n1, ASTNode n2){
             List<ASTNode> children1 = n1.getChildren();
             List<ASTNode> children2 = n2.getChildren();
             for (int i = 0; i < children1.size(); i++) {
                 ASTNode c1 = children1.get(i);
                 ASTNode c2 = children2.get(i);
-                addToRawResult(res, n1, n2, 1.0f);
                 anchorMatched1.add(c1);
                 anchorMatched2.add(c2);
-                addAnchorDescendantMappings(res, c1, c2); // recurse
+                anchorMap.put(c1, c2);
+                addAnchorDescendantMappings(anchorMap, c1, c2); // recurse
             }
         }
         // helper function for adding to metadata output mappings
         private void addToRawResult(ASTRawResult res, ASTNode n1, ASTNode n2, float similarityScore){
+            if (n1.getMetadata("startLine") == null || n2.getMetadata("startLine") == null) {
+                return; // skip unknown nodes
+            }   
+
             int refStart = n1.getMetadata("startLine", Integer.class);
             int refEnd = n1.getMetadata("endLine", Integer.class);
             int checkStart = n2.getMetadata("startLine", Integer.class);
@@ -178,17 +183,29 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
          */
         @Override
         public void execute() {
+            // Temp data-structure initialisation
+            this.anchorMatched1 = new HashSet<>();
+            this.anchorMatched2 = new HashSet<>();
+            this.containerMatched1 = new HashSet<>();
+            this.containerMatched2 = new HashSet<>();
+            this.anchorMap = new HashMap<>();
+
             // Gets each line as a string in the list, as returned by the specified preprocessor
             ASTArtifact artiF1 = (ASTArtifact) this.file1.getPreProcessedArtifact("ast");
             ASTArtifact artiF2 = (ASTArtifact) this.file2.getPreProcessedArtifact("ast");
             // Get the root node of each AST
             ASTNode tree1 = artiF1.ast();
             ASTNode tree2 = artiF2.ast();
+            
             // make raw result output container of "node mappings"
             ASTRawResult res = new ASTRawResult(this.file1.getFile(), this.file2.getFile());
             // Preprocess: compute fingerprints, weights, and heights
             preprocessTree(tree1);
             preprocessTree(tree2);
+
+            // Debugging
+            tree1.printTree("", true);
+            tree2.printTree("", true);
 
 
             /* ### PLAGIARISM DETECTION ALGORITHM BASED ON GUM-TREE DIFFING ### */
@@ -225,8 +242,8 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
                             anchorMatched2.add(n2);
                             anchorMap.put(n1, n2); // Build a map of anchor-mapped nodes for O(1) lookup during container matching
 
-                            // Also add mappings for all descendants (they're isomorphic too)
-                            addAnchorDescendantMappings(res, n1, n2);
+                            // Also add anchor-mappings for all descendants (they're isomorphic too)
+                            addAnchorDescendantMappings(anchorMap, n1, n2);
                             break; // Move to the next node from tree1
                         }
                     }
@@ -252,7 +269,6 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
             //     //
             // }
 
-            
 
 
 
@@ -261,4 +277,7 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
 
         }
     }
+
+
+
 }
