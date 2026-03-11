@@ -122,6 +122,15 @@ class JavaASTBuilder extends JavaParserBaseVisitor<ASTNode>{
         if (kind == null) return null;
 
         ASTNode ast = new ASTNode(kind, node.getText());
+
+        // Setup metadata for terminal nodes
+        Token token = node.getSymbol();
+        ast.setMetadata("startLine", token.getLine());
+        ast.setMetadata("startChar", token.getCharPositionInLine());
+        ast.setMetadata("endLine", token.getLine());
+        ast.setMetadata("endChar", token.getCharPositionInLine() + token.getText().length());
+
+
         return ast;
     }
 

@@ -84,7 +84,7 @@ public class ASTNode {
             if (!useAbstraction) {
                 nodeValue = kind.toString() + ":" + value; // strict: (kind + value) --> STRICT ISOMORPHISM
             } else { // abstract: (kind + value for specific kinds only) --> SEMANTIC ISOMORPHISM
-                if (ABSTRACT_VALUE_LABELS.contains(kind.toString())) {
+                if (ABSTRACT_VALUE_LABELS.contains(kind)) {
                     nodeValue = kind.toString() + ":";
                 } else {
                     nodeValue = kind.toString() + ":" + value; // Keep value (operators, types, etc.)
@@ -201,6 +201,11 @@ public class ASTNode {
     public Map<String, Object> getAllMetadata() { return Collections.unmodifiableMap(metadata);}
 
 
+    @Override // override implicit Object toString()
+    public String toString() {
+        return kind.toString() + (value.isEmpty() ? "" : ":" + value) + 
+               " [w=" + weight + ", h=" + height + "]";
+    }
 
     /**
      * Pretty print the AST structure
