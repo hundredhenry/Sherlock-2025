@@ -50,7 +50,7 @@ public class SherlockCli {
         
         System.out.println("Welcome to the Sherlock CLI Interface!");
 
-        WorkspaceCmd workspaceCmd = new WorkspaceCmd(accountRepository, workspaceRepository, accountWrapper);
+        WorkspaceCmd workspaceCmd = new WorkspaceCmd(accountRepository, workspaceRepository, templateRepository, accountWrapper);
         CommandLine workspaceCmdLine = new CommandLine(workspaceCmd);
         TemplateCmd templateCmd = new TemplateCmd(accountRepository, templateRepository, accountWrapper, tDetectorRepository, tParameterRepository);
         CommandLine templateCmdLine = new CommandLine(templateCmd);
