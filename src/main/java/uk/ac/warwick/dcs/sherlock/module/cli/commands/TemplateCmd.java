@@ -201,7 +201,7 @@ public class TemplateCmd implements Runnable {
         @CommandLine.Option(names = {"-t", "--template"}, description = "Name of the template", required = true)
         String template_name;
 
-        @CommandLine.Parameters(arity = "1..*", paramLabel = "PARAM=VALUE", description = "Detectors to update, in the form of DETECTOR_NAME=TRUE/FALSE")
+        @CommandLine.Parameters(arity = "1..*", paramLabel = "DETECTOR_NAME=TRUE/FALSE", description = "Detectors to update, in the form of DETECTOR_NAME=TRUE/FALSE")
         Map<String, Boolean> detector_names;
 
 
