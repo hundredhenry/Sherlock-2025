@@ -20,6 +20,9 @@ import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.WorkspaceWrapper;
 import uk.ac.warwick.dcs.sherlock.module.core.util.ZipMultipartFile;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.FileUploadFailed;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.NoFilesUploaded;
+import uk.ac.warwick.dcs.sherlock.module.web.exceptions.ParameterNotFound;
+import uk.ac.warwick.dcs.sherlock.module.web.exceptions.TemplateContainsNoDetectors;
+import uk.ac.warwick.dcs.sherlock.module.web.exceptions.DetectorNotFound;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.SubmissionsForm;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.WorkspaceForm;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
@@ -45,6 +48,8 @@ import java.util.ArrayList;
         WorkspaceCmd.view_workspace.class,
         WorkspaceCmd.delete_workspace.class,
         WorkspaceCmd.update_workspace.class,
+        WorkspaceCmd.run_workspace.class,
+        WorkspaceCmd.jobs_workspace.class
     }
 )
 public class WorkspaceCmd implements Runnable {
@@ -371,8 +376,75 @@ public class WorkspaceCmd implements Runnable {
                 }
             }
             // need to first implement adding files/folders to workspace
+            if (template != null) {
+                try {
+                    System.out.println("Running analysis...");
+                    long jobid = workspace.runTemplate(template);
+                    System.out.println(String.format("Anaysis complete. Saved with job ID %s", jobid));
+                } catch (TemplateContainsNoDetectors tcnd) {
+                    System.out.println("Template does not have any associated detectors.");
+                } catch (ClassNotFoundException cnfe) {
+                    System.out.println("Detector no longer exists.");
+                } catch (ParameterNotFound pnf) {
+                    System.out.println("Template detector parameters not found.");
+                } catch (DetectorNotFound dnf) {
+                    System.out.println("Detector not found.");
+                } catch (NoFilesUploaded nfu) {
+                    System.out.println("No files found.");
+                } catch (Exception e) {
+                    System.out.println("Error whilst trying to run this workspace.");
+                }
+            }
         }
+    }
 
+    @CommandLine.Command(name="jobs", description="Manage workspace jobs", mixinStandardHelpOptions = true)
+    public static class jobs_workspace implements Runnable {
+
+        @CommandLine.Option(names = {"-n", "--name"}, description="Name of the workspace", required=true)
+        String workspace_name;
+
+        @CommandLine.Option(names = {"-j", "--job"}, description="ID of the job", required=true)
+        long job_id;
+
+        @CommandLine.Option(names = {"-d", "--delete"}, description="Delete a specific job")
+        boolean del_job;
+
+        @CommandLine.Option(names = {"-r", "--results"}, description="View the results of a job")
+        boolean view_job;
+
+        @CommandLine.ParentCommand
+        WorkspaceCmd parent;
+
+        @Override
+        public void run() {
+            AccountWrapper accountWrapper = parent.accountWrapper;
+            WorkspaceRepository workspaceRepository = parent.workspaceRepository;
+            WorkspaceManagementService service = parent.wms;
+            WorkspaceWrapper workspace = service.getWorkspaceByName(accountWrapper, workspaceRepository, workspace_name);
+            IJob job = null;
+            List<IJob> all_jobs = workspace.getJobs();
+            for (IJob j : all_jobs) {
+                if (j.getPersistentId() == job_id) {
+                    job = j;
+                    break;
+                }
+            }
+
+            if (job == null) {
+                System.out.println(String.format("No job found with ID %s in workspace %s.", job_id, workspace.getName()));
+                return;
+            }
+
+            if (del_job) {
+                job.remove();
+                System.out.println("Job deleted successfully.");
+            }
+
+            if (view_job) {
+                System.out.println("Viewing job results (incomplete)");
+            }
+        }
     }
 
     @CommandLine.Command(name="results", description="View job results from a workspace", mixinStandardHelpOptions = true)
