@@ -70,7 +70,8 @@ dependencies {
             'com.h2database:h2',
             'com.mysql:mysql-connector-j',
             'org.json:json:20250517',
-            'org.seleniumhq.selenium:selenium-java:4.37.0'
+            'org.seleniumhq.selenium:selenium-java:4.37.0',
+            'info.picocli:picocli:4.7.7',
     )
 
     providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')

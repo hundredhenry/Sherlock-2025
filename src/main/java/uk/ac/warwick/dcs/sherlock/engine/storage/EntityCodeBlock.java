@@ -20,8 +20,6 @@ public class EntityCodeBlock implements ICodeBlock, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private EntityCodeBlockGroup group;
-
 	private EntityFile file;
 	private float score;
 
@@ -32,9 +30,8 @@ public class EntityCodeBlock implements ICodeBlock, Serializable {
 		super();
 	}
 
-	EntityCodeBlock(EntityCodeBlockGroup group, EntityFile file, float score, ITuple<Integer, Integer> lines) {
+	EntityCodeBlock(EntityFile file, float score, ITuple<Integer, Integer> lines) {
 		super();
-		this.group = group;
 		this.file = file;
 		this.score = score;
 
@@ -43,9 +40,8 @@ public class EntityCodeBlock implements ICodeBlock, Serializable {
 		this.addLineToList(lines);
 	}
 
-	EntityCodeBlock(EntityCodeBlockGroup group, EntityFile file, float score, List<ITuple<Integer, Integer>> lines) {
+	EntityCodeBlock(EntityFile file, float score, List<ITuple<Integer, Integer>> lines) {
 		super();
-		this.group = group;
 		this.file = file;
 		this.score = score;
 

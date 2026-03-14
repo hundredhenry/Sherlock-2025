@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.component.ISubmission;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.*;
-import uk.ac.warwick.dcs.sherlock.module.web.data.results.ResultsHelper;
-import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.AccountWrapper;
-import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.WorkspaceWrapper;
-import uk.ac.warwick.dcs.sherlock.module.web.data.repositories.WorkspaceRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.results.ResultsHelper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.WorkspaceWrapper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceRepository;
 
 /**
  * The controller that deals with the workspace submission pages

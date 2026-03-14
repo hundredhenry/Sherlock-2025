@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
-import uk.ac.warwick.dcs.sherlock.module.web.data.repositories.AccountRepository;
-import uk.ac.warwick.dcs.sherlock.module.web.data.wrappers.AccountWrapper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.AccountRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.*;
 
 import java.util.Arrays;

@@ -1,10 +1,7 @@
 package uk.ac.warwick.dcs.sherlock.api.model.preprocessing;
 
 import org.antlr.v4.runtime.Lexer;
-import uk.ac.warwick.dcs.sherlock.api.util.IndexedString;
 import uk.ac.warwick.dcs.sherlock.api.util.IPreprocessArtifact;
-
-import java.util.List;
 
 /**
  * Advanced preprocessor implementation, used to directly access and preprocess from a specific lexer
@@ -17,7 +14,7 @@ public interface IAdvancedPreProcessor<T extends Lexer> {
 	 *
 	 * @param lexer lexer instance
 	 *
-	 * @return list of processed strings, indexed by line number
+	 * @return preprocessed artifact
 	 */
 	IPreprocessArtifact process(T lexer);
 

@@ -3,11 +3,8 @@ package uk.ac.warwick.dcs.sherlock.module.model.base.detection;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.IDetector;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.ModelDataItem;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.PairwiseDetectorWorker;
-import uk.ac.warwick.dcs.sherlock.api.util.IndexedString;
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.ASTRawResult;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.ParseTreeArtifact;
-
-import java.util.List;
 
 /**
  * Worker for the AST-based plagiarism detector.

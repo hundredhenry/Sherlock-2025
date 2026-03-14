@@ -1,7 +1,6 @@
 package uk.ac.warwick.dcs.sherlock.module.model.base.lang;
 
 import org.antlr.v4.runtime.*;
-import java.io.Writer;
 import java.util.List;
 
 public abstract class JavaParserBase extends Parser {

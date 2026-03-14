@@ -2,7 +2,6 @@ package uk.ac.warwick.dcs.sherlock.engine;
 
 import org.antlr.v4.runtime.Lexer;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import uk.ac.warwick.dcs.sherlock.api.annotation.AdjustableParameterObj;
@@ -66,7 +65,6 @@ class RegistryTest {
         assertEquals(detectorName, displayName);
     }
 
-    // @Disabled("Temporarily disabled")
     @Test
     void getDetectorLanguages() {
         r.registerLanguage("Java", JavaLexer.class);
@@ -76,7 +74,6 @@ class RegistryTest {
         assertTrue(languages.contains("java"));
     }
 
-    // @Disabled("Temporarily disabled")
     @Test
     void getDetectors() {
         r.registerDetector(VariableNameDetector.class);
@@ -86,7 +83,6 @@ class RegistryTest {
         assertTrue(set.contains(NGramDetector.class));
     }
     
-    // @Disabled("Temporarily disabled")
     @Test
     void getDetectorsUsingLanguage() {
         r.registerLanguage("Java", JavaLexer.class);
@@ -138,7 +134,6 @@ class RegistryTest {
         assertTrue(r.registerDetector(NGramDetector.class));
     }
 
-    // @Disabled("Temporarily disabled")
     @Test
     void failRegisterDetector() {
         assertTrue(r.registerDetector(NGramDetector.class));

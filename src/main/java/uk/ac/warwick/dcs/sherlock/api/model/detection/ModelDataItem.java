@@ -1,11 +1,9 @@
 package uk.ac.warwick.dcs.sherlock.api.model.detection;
 
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
-import uk.ac.warwick.dcs.sherlock.api.util.IndexedString;
 import uk.ac.warwick.dcs.sherlock.api.util.IPreprocessArtifact;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**

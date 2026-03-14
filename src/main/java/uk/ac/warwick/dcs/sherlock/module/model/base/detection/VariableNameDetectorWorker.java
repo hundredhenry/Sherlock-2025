@@ -7,7 +7,6 @@ import uk.ac.warwick.dcs.sherlock.api.model.detection.PairwiseDetectorWorker;
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.SimpleObjectEqualityRawResult;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.LineListArtifact;
 
-import java.util.LinkedList;
 import java.util.List;
 
 public class VariableNameDetectorWorker extends PairwiseDetectorWorker<SimpleObjectEqualityRawResult<String>> {
@@ -25,8 +24,6 @@ public class VariableNameDetectorWorker extends PairwiseDetectorWorker<SimpleObj
 
 		List<IndexedString> linesF1 = artiF1.lines();
 		List<IndexedString> linesF2 = artiF2.lines();
-
-		List<Integer> usedIndexesF2 = new LinkedList<>();
 
 		SimpleObjectEqualityRawResult<String> res = new SimpleObjectEqualityRawResult<>(this.file1.getFile(), this.file2.getFile(), linesF1.size(), linesF2.size());
 

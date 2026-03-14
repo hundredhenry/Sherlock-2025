@@ -3,15 +3,20 @@ package uk.ac.warwick.dcs.sherlock.engine.executor.work;
 import org.antlr.v4.runtime.*;
 import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
-import uk.ac.warwick.dcs.sherlock.api.util.IndexedString;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.ModelDataItem;
-import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.*;
+import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.IAdvancedPreProcessor;
+import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.IAdvancedPreProcessorGroup;
+import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.IGeneralPreProcessor;
+import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.IPreProcessor;
+import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.ITokenStringifier;
+import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.LineListArtifact;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy.GenericGeneralPreProcessingStrategy;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 import uk.ac.warwick.dcs.sherlock.api.util.IPreprocessArtifact;
 import uk.ac.warwick.dcs.sherlock.engine.executor.common.ExecutorUtils;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.StandardStringifier;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.StandardTokeniser;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -19,7 +24,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.RecursiveAction;
-import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.LineListArtifact;
 
 /**
  * Recursive task to preprocess a list of files for a single task
@@ -85,7 +89,6 @@ public class WorkPreProcessFile extends RecursiveAction {
 
 					Lexer lexer = t.getValue().getDeclaredConstructor(CharStream.class).newInstance(CharStreams.fromStream(file.getFileContents()));
 					IAdvancedPreProcessor processor = t.getKey().getConstructor().newInstance();
-					@SuppressWarnings("unchecked")
 					IPreprocessArtifact artifact = (IPreprocessArtifact) processor.getClass().getMethod("process", t.getValue()).invoke(processor, lexer);
 					map.put(strategy.getName(), artifact);
 				}
