@@ -40,14 +40,14 @@ import java.util.zip.ZipInputStream;
  */
 @CommandLine.Command(name="workspace", description="Commands for workspace management", mixinStandardHelpOptions = true,
     subcommands = {
-        WorkspaceCmd.list_workspaces.class,
-        WorkspaceCmd.create_workspace.class,
-        WorkspaceCmd.files_workspace.class,
-        WorkspaceCmd.view_workspace.class,
-        WorkspaceCmd.delete_workspace.class,
-        WorkspaceCmd.update_workspace.class,
-        WorkspaceCmd.run_workspace.class,
-        WorkspaceCmd.jobs_workspace.class
+        WorkspaceCmd.listWorkspaces.class,
+        WorkspaceCmd.createWorkspace.class,
+        WorkspaceCmd.filesWorkspace.class,
+        WorkspaceCmd.viewWorkspace.class,
+        WorkspaceCmd.deleteWorkspace.class,
+        WorkspaceCmd.updateWorkspace.class,
+        WorkspaceCmd.runWorkspace.class,
+        WorkspaceCmd.jobsWorkspace.class
     }
 )
 public class WorkspaceCmd implements Runnable {
@@ -85,15 +85,15 @@ public class WorkspaceCmd implements Runnable {
      * @return the matched language in the registry if one is found,
      *  otherwise return null
      */
-    private static String validate_language(String lang) {
+    private static String validateLanguage(String lang) {
         Set<String> languages = SherlockRegistry.getLanguages();
-        Optional<String> real_lang = languages.stream().filter(l -> l.equalsIgnoreCase(lang)).findFirst();
-        if (real_lang.isEmpty()) {
+        Optional<String> realLang = languages.stream().filter(l -> l.equalsIgnoreCase(lang)).findFirst();
+        if (realLang.isEmpty()) {
             System.out.println("Language not supported.");
             System.out.println("Supported languages: " + String.join(", ", languages));
             return null;
         }
-        return real_lang.get();
+        return realLang.get();
     }
 
     /**
@@ -101,7 +101,7 @@ public class WorkspaceCmd implements Runnable {
      * Command: workspace list
      */
     @CommandLine.Command(name="list", description="List all existing workspaces", mixinStandardHelpOptions = true)
-    public static class list_workspaces implements Runnable {
+    public static class listWorkspaces implements Runnable {
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
 
@@ -114,9 +114,9 @@ public class WorkspaceCmd implements Runnable {
             AccountWrapper accountWrapper = parent.accountWrapper;
             WorkspaceRepository workspaceRepository = parent.workspaceRepository;
             WorkspaceManagementService service = parent.wms;
-            List<WorkspaceWrapper> user_workspaces = service.getWorkspaces(accountWrapper, workspaceRepository);
+            List<WorkspaceWrapper> userWorkspaces = service.getWorkspaces(accountWrapper, workspaceRepository);
             System.out.println("Your workspaces:");
-            for (WorkspaceWrapper w : user_workspaces) {
+            for (WorkspaceWrapper w : userWorkspaces) {
                 System.out.println(String.format("- %s", w.getName()));
             }
         }
@@ -127,13 +127,13 @@ public class WorkspaceCmd implements Runnable {
      * Command: workspace create -n=[name] -l=[language]
      */
     @CommandLine.Command(name="create", description="Create a new workspace", mixinStandardHelpOptions = true)
-    public static class create_workspace implements Runnable {
+    public static class createWorkspace implements Runnable {
 
         @CommandLine.Option(names = {"-n", "--name"}, description = "Name of the workspace", required = true)
-        String workspace_name;
+        String workspaceName;
 
         @CommandLine.Option(names = {"-l", "--language"}, description = "Programming language of the workspace", required = true)
-        String workspace_language;
+        String workspaceLanguage;
 
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
@@ -144,15 +144,15 @@ public class WorkspaceCmd implements Runnable {
          */
         @Override
         public void run() {
-            String match_lang = validate_language(workspace_language);
-            if (match_lang == null) return;
+            String matchLang = validateLanguage(workspaceLanguage);
+            if (matchLang == null) return;
 
             AccountWrapper accountWrapper = parent.accountWrapper;
             WorkspaceRepository workspaceRepository = parent.workspaceRepository;
             WorkspaceManagementService service = parent.wms;
             WorkspaceForm wForm = new WorkspaceForm();
-            wForm.setName(workspace_name);
-            wForm.setLanguage(match_lang);
+            wForm.setName(workspaceName);
+            wForm.setLanguage(matchLang);
             service.createWorkspace(accountWrapper, workspaceRepository, wForm);
         }
     }
@@ -162,19 +162,19 @@ public class WorkspaceCmd implements Runnable {
      * Command: workspace files -n=[name] [OPTIONS]
      */
     @CommandLine.Command(name="files", description="Manage the workspace files", mixinStandardHelpOptions = true)
-    public static class files_workspace implements Runnable {
+    public static class filesWorkspace implements Runnable {
 
         @CommandLine.Option(names = {"-n", "--name"}, description = "Name of the workspace", required = true)
-        String workspace_name;
+        String workspaceName;
 
         @CommandLine.Option(names = {"-a", "--add"}, description = "Path to file/zip/directory to add")
-        List<Path> input_paths;
+        List<Path> inputPaths;
 
         @CommandLine.Option(names = {"-c", "--clear"}, description = "Delete all submissions")
         boolean clear;
 
         @CommandLine.Option(names = {"-d", "--delete"}, description = "Delete a specific file")
-        String del_file;
+        String delFile;
 
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
@@ -191,7 +191,7 @@ public class WorkspaceCmd implements Runnable {
             AccountWrapper accountWrapper = parent.accountWrapper;
             WorkspaceRepository workspaceRepository = parent.workspaceRepository;
             WorkspaceManagementService service = parent.wms;
-            WorkspaceWrapper workspace = service.getWorkspaceByName(accountWrapper, workspaceRepository, workspace_name);
+            WorkspaceWrapper workspace = service.getWorkspaceByName(accountWrapper, workspaceRepository, workspaceName);
             
             if (clear) {
                 // Delete all files
@@ -199,13 +199,13 @@ public class WorkspaceCmd implements Runnable {
                 System.out.println("Deleted all submissions successfully.");
                 return;
 
-            } else if (del_file != null) {
+            } else if (delFile != null) {
                 // Delete a specific file
-                List<ISourceFile> all_files = workspace.getFiles();
+                List<ISourceFile> allFiles = workspace.getFiles();
                 ISourceFile file = null;
 
-                for (ISourceFile f : all_files) {
-                    if (f.getFileDisplayName().equals(del_file)) {
+                for (ISourceFile f : allFiles) {
+                    if (f.getFileDisplayName().equals(delFile)) {
                         file = f;
                         break;
                     }
@@ -219,12 +219,12 @@ public class WorkspaceCmd implements Runnable {
                 }
                 return;
 
-            } else if (input_paths.size() > 0) {
+            } else if (inputPaths.size() > 0) {
                 // Add files
                 SubmissionsForm submissionForm = new SubmissionsForm();
-                List<MultipartFile> all_files = new ArrayList<>();
+                List<MultipartFile> allFiles = new ArrayList<>();
 
-                for (Path p : input_paths) {
+                for (Path p : inputPaths) {
                     if (!Files.exists(p)) {
                         System.out.println("File path does not exist.");
                         continue;
@@ -238,7 +238,7 @@ public class WorkspaceCmd implements Runnable {
                                     byte[] bytes = zip.readAllBytes();
                                     String fname = Paths.get(entry.getName()).getFileName().toString();
                                     MultipartFile mf = new ZipMultipartFile(fname, fname, "application/octet-stream", bytes);
-                                    all_files.add(mf);
+                                    allFiles.add(mf);
                                 }
                                 zip.closeEntry();
                             }
@@ -253,7 +253,7 @@ public class WorkspaceCmd implements Runnable {
                                 try {
                                     byte[] bytes = Files.readAllBytes(fp);
                                     MultipartFile mf = new ZipMultipartFile(fp.getFileName().toString(), fp.getFileName().toString(), "application/octet-stream", bytes);
-                                    all_files.add(mf);
+                                    allFiles.add(mf);
                                 } catch (IOException e) {
                                     System.out.println(String.format("Failed to read directory %s.", fp));
                                 }
@@ -267,13 +267,13 @@ public class WorkspaceCmd implements Runnable {
                         try {
                             byte[] bytes = Files.readAllBytes(p);
                             MultipartFile mf = new ZipMultipartFile(p.getFileName().toString(), p.getFileName().toString(), "application/octet-stream", bytes);
-                            all_files.add(mf);
+                            allFiles.add(mf);
                         } catch (IOException e) {
                             System.out.println(String.format("Failed to read directory %s.", p));
                         }
                     }
                 }
-                submissionForm.setFiles(all_files.toArray(new MultipartFile[0]));
+                submissionForm.setFiles(allFiles.toArray(new MultipartFile[0]));
                 submissionForm.setSingle(true);
                 try {
                     workspace.addSubmissions(submissionForm);
@@ -293,16 +293,16 @@ public class WorkspaceCmd implements Runnable {
      * Command: workspace view -n=[name] [OPTIONS]
      */
     @CommandLine.Command(name="view", description="View workspace details", mixinStandardHelpOptions = true)
-    public static class view_workspace implements Runnable {
+    public static class viewWorkspace implements Runnable {
 
         @CommandLine.Option(names = {"-n", "--name"}, description = "Name of the workspace", required = true)
-        String workspace_name;
+        String workspaceName;
 
         @CommandLine.Option(names = {"-f", "--files"}, description = "List the workspace files")
-        boolean list_files = false;
+        boolean listFiles = false;
 
         @CommandLine.Option(names = {"-r", "--results"}, description = "List the workspace results")
-        boolean list_results = false;
+        boolean listResults = false;
 
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
@@ -316,7 +316,7 @@ public class WorkspaceCmd implements Runnable {
             AccountWrapper accountWrapper = parent.accountWrapper;
             WorkspaceRepository workspaceRepository = parent.workspaceRepository;
             WorkspaceManagementService service = parent.wms;
-            WorkspaceWrapper workspace = service.getWorkspaceByName(accountWrapper, workspaceRepository, workspace_name);
+            WorkspaceWrapper workspace = service.getWorkspaceByName(accountWrapper, workspaceRepository, workspaceName);
             if (workspace == null) {
                 System.out.println("Could not find a workspace with that name.");
                 return;
@@ -334,7 +334,7 @@ public class WorkspaceCmd implements Runnable {
             System.out.println(String.format("-- Name: %s", name));
             System.out.println(String.format("-- Language: %s", language));
 
-            if (list_files) {
+            if (listFiles) {
                 System.out.println(String.format("-- Files (%d):", fileCount));
 
                 if (fileCount == 0) {
@@ -346,7 +346,7 @@ public class WorkspaceCmd implements Runnable {
                 }
             }
 
-            if (list_results) {
+            if (listResults) {
                 System.out.println(String.format("-- Results (%d)", jobCount));
                 
                 if (jobCount == 0) {
@@ -365,10 +365,10 @@ public class WorkspaceCmd implements Runnable {
      * Command: workspace delete -n=[name]
      */
     @CommandLine.Command(name="delete", description="Delete a workspace", mixinStandardHelpOptions = true)
-    public static class delete_workspace implements Runnable {
+    public static class deleteWorkspace implements Runnable {
 
         @CommandLine.Option(names = {"-n", "--name"}, description = "Name of the workspace", required=true)
-        String workspace_name;
+        String workspaceName;
 
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
@@ -381,7 +381,7 @@ public class WorkspaceCmd implements Runnable {
             AccountWrapper accountWrapper = parent.accountWrapper;
             WorkspaceRepository workspaceRepository = parent.workspaceRepository;
             WorkspaceManagementService service = parent.wms;
-            service.deleteWorkspace(accountWrapper, workspaceRepository, workspace_name);
+            service.deleteWorkspace(accountWrapper, workspaceRepository, workspaceName);
         }
     }
 
@@ -390,16 +390,16 @@ public class WorkspaceCmd implements Runnable {
      * Command: workspace update -c=[current name] [OPTIONS]
      */
     @CommandLine.Command(name="update", description="Update a workspace", mixinStandardHelpOptions = true)
-    public static class update_workspace implements Runnable {
+    public static class updateWorkspace implements Runnable {
 
         @CommandLine.Option(names = {"-c", "--current"}, description = "Current name of the workspace", required=true)
-        String cur_name;
+        String curName;
 
         @CommandLine.Option(names = {"-n", "--new"}, description = "New name of the workspace", required=false)
-        String new_name;
+        String newName;
 
         @CommandLine.Option(names = {"-l", "--language"}, description = "New language for the workspace", required=false)
-        String new_lang;
+        String newLang;
 
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
@@ -414,29 +414,29 @@ public class WorkspaceCmd implements Runnable {
             AccountWrapper accountWrapper = parent.accountWrapper;
             WorkspaceRepository workspaceRepository = parent.workspaceRepository;
             WorkspaceManagementService service = parent.wms;
-            WorkspaceWrapper workspace = service.getWorkspaceByName(accountWrapper, workspaceRepository, cur_name);
+            WorkspaceWrapper workspace = service.getWorkspaceByName(accountWrapper, workspaceRepository, curName);
 
             if (workspace == null) {
                 System.out.println("Could not find a workspace with that name.");
                 return;
             }
 
-            if (new_name == null && new_lang == null) {
+            if (newName == null && newLang == null) {
                 System.out.println("No updates proposed.");
                 return;
             }
 
-            if (new_name != null) {
-                workspace.setName(new_name);
-                System.out.println(String.format("Updated workspace name from %s to %s.", cur_name, new_name));
+            if (newName != null) {
+                workspace.setName(newName);
+                System.out.println(String.format("Updated workspace name from %s to %s.", curName, newName));
             }
 
-            if (new_lang != null) {
-                String match_lang = validate_language(new_lang);
-                if (match_lang == null) return;
+            if (newLang != null) {
+                String matchLang = validateLanguage(newLang);
+                if (matchLang == null) return;
 
-                workspace.setLanguage(match_lang);
-                System.out.println(String.format("Successfully updated language to %s", match_lang));
+                workspace.setLanguage(matchLang);
+                System.out.println(String.format("Successfully updated language to %s", matchLang));
             }
             
         }
@@ -449,13 +449,13 @@ public class WorkspaceCmd implements Runnable {
      * Command: workspace run -n=[name] -t=[template name]
      */
     @CommandLine.Command(name="run", description="Run a new analysis job", mixinStandardHelpOptions=true)
-    public static class run_workspace implements Runnable {
+    public static class runWorkspace implements Runnable {
         
         @CommandLine.Option(names = {"-n", "--name"}, description = "Name of the workspace", required=true)
-        String workspace_name;
+        String workspaceName;
 
         @CommandLine.Option(names = {"-t", "--template"}, description = "Name of the template to use", required=true)
-        String template_name;
+        String templateName;
 
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
@@ -470,13 +470,13 @@ public class WorkspaceCmd implements Runnable {
             AccountWrapper accountWrapper = parent.accountWrapper;
             WorkspaceRepository workspaceRepository = parent.workspaceRepository;
             WorkspaceManagementService service = parent.wms;
-            WorkspaceWrapper workspace = service.getWorkspaceByName(accountWrapper, workspaceRepository, workspace_name);
+            WorkspaceWrapper workspace = service.getWorkspaceByName(accountWrapper, workspaceRepository, workspaceName);
             TemplateWrapper template = null;
             List<TemplateWrapper> templateList = TemplateWrapper.findByAccountAndPublic(accountWrapper.getAccount(), parent.templateRepository);
             for (TemplateWrapper t : templateList) {
                 
                 if (t.getTemplate().getName() == null) continue;
-                if (t.getTemplate().getName().equals(template_name)) {
+                if (t.getTemplate().getName().equals(templateName)) {
                     template = t;
                     break;
                 }
@@ -513,19 +513,19 @@ public class WorkspaceCmd implements Runnable {
      * Command: workspace jobs -n=[name] -j=[job id] [OPTIONS]
      */
     @CommandLine.Command(name="jobs", description="Manage workspace jobs", mixinStandardHelpOptions = true)
-    public static class jobs_workspace implements Runnable {
+    public static class jobsWorkspace implements Runnable {
 
         @CommandLine.Option(names = {"-n", "--name"}, description="Name of the workspace", required=true)
-        String workspace_name;
+        String workspaceName;
 
         @CommandLine.Option(names = {"-j", "--job"}, description="ID of the job", required=true)
-        long job_id;
+        long jobId;
 
         @CommandLine.Option(names = {"-d", "--delete"}, description="Delete a specific job")
-        boolean del_job;
+        boolean delJob;
 
         @CommandLine.Option(names = {"-r", "--results"}, description="View the results of a job")
-        boolean view_job;
+        boolean viewJob;
 
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
@@ -539,27 +539,27 @@ public class WorkspaceCmd implements Runnable {
             AccountWrapper accountWrapper = parent.accountWrapper;
             WorkspaceRepository workspaceRepository = parent.workspaceRepository;
             WorkspaceManagementService service = parent.wms;
-            WorkspaceWrapper workspace = service.getWorkspaceByName(accountWrapper, workspaceRepository, workspace_name);
+            WorkspaceWrapper workspace = service.getWorkspaceByName(accountWrapper, workspaceRepository, workspaceName);
             IJob job = null;
-            List<IJob> all_jobs = workspace.getJobs();
-            for (IJob j : all_jobs) {
-                if (j.getPersistentId() == job_id) {
+            List<IJob> allJobs = workspace.getJobs();
+            for (IJob j : allJobs) {
+                if (j.getPersistentId() == jobId) {
                     job = j;
                     break;
                 }
             }
 
             if (job == null) {
-                System.out.println(String.format("No job found with ID %s in workspace %s.", job_id, workspace.getName()));
+                System.out.println(String.format("No job found with ID %s in workspace %s.", jobId, workspace.getName()));
                 return;
             }
 
-            if (del_job) {
+            if (delJob) {
                 job.remove();
                 System.out.println("Job deleted successfully.");
             }
 
-            if (view_job) {
+            if (viewJob) {
                 System.out.println("Viewing job results (incomplete)");
                 // Not sure how to do this yet
                 // Download the report?

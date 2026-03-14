@@ -28,7 +28,7 @@ public class SherlockCli {
 	 * Accepts specific commands, including "exit" to stop execution.
      * Explicitly sets the workspace and template commands due to the need for arguments.
 	 */
-    public void launch_cli() {
+    public void launchCli() {
         AccountRepository accountRepository = context.getBean(AccountRepository.class);
         WorkspaceRepository workspaceRepository = context.getBean(WorkspaceRepository.class);
         AccountWrapper accountWrapper = new AccountWrapper(accountRepository.findByEmail(CoreSecurityConfig.getLocalEmail()));
