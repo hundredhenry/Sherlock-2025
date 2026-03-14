@@ -35,8 +35,6 @@ public class FileMapper {
             for (FileMatch match : group.getValue()) {
                 for (Map.Entry<ISourceFile, List<CodeBlock>> entry : match.getMap().entrySet()) {
                     ISourceFile entryFile = entry.getKey();
-                    List<CodeBlock> entryList = entry.getValue();
-
                     long entryFileId = entryFile.getPersistentId();
 
                     //Ensure that the map contains an entry for both files

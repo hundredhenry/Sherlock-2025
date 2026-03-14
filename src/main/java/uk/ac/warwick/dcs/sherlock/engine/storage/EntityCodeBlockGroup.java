@@ -42,7 +42,7 @@ public class EntityCodeBlockGroup implements ICodeBlockGroup, Serializable {
 		}
 		else {
 			if (file instanceof EntityFile) {
-				EntityCodeBlock block = new EntityCodeBlock(this, (EntityFile) file, score, line);
+				EntityCodeBlock block = new EntityCodeBlock((EntityFile) file, score, line);
 				this.blockMap.put(file.getPersistentId(), block);
 			}
 			else {
@@ -58,7 +58,7 @@ public class EntityCodeBlockGroup implements ICodeBlockGroup, Serializable {
 		}
 		else {
 			if (file instanceof EntityFile) {
-				EntityCodeBlock block = new EntityCodeBlock(this, (EntityFile) file, score, lines);
+				EntityCodeBlock block = new EntityCodeBlock((EntityFile) file, score, lines);
 				this.blockMap.put(file.getPersistentId(), block);
 			}
 			else {

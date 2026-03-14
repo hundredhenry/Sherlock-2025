@@ -1,44 +1,37 @@
 package uk.ac.warwick.dcs.sherlock.module.cli.commands;
 
-import org.hibernate.boot.registry.classloading.spi.ClassLoaderService.Work;
-import org.springframework.security.access.method.P;
-import org.springframework.web.multipart.MultipartFile;
-import org.stringtemplate.v4.compiler.CodeGenerator.primary_return;
-
-import groovyjarjarpicocli.CommandLine.ParentCommand;
-import org.springframework.web.multipart.MultipartFile;
 import picocli.CommandLine;
+import org.springframework.web.multipart.MultipartFile;
+
 import uk.ac.warwick.dcs.sherlock.api.component.IJob;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
+import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
 import uk.ac.warwick.dcs.sherlock.module.cli.services.WorkspaceManagementService;
-import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Account;
-import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.AccountRepository;
-import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.SubmissionsForm;
+import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.WorkspaceForm;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TemplateRepository;
-import uk.ac.warwick.dcs.sherlock.module.core.data.results.JobResultsData;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.TemplateWrapper;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.WorkspaceWrapper;
 import uk.ac.warwick.dcs.sherlock.module.core.util.ZipMultipartFile;
+import uk.ac.warwick.dcs.sherlock.module.web.exceptions.DetectorNotFound;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.FileUploadFailed;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.NoFilesUploaded;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.ParameterNotFound;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.TemplateContainsNoDetectors;
-import uk.ac.warwick.dcs.sherlock.module.web.exceptions.DetectorNotFound;
-import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.SubmissionsForm;
-import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.WorkspaceForm;
-import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
-import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
-import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.TemplateWrapper;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.List;
-import java.util.Optional;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.stream.Stream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 @CommandLine.Command(name="workspace", description="Commands for workspace management", mixinStandardHelpOptions = true,
     subcommands = {
@@ -54,14 +47,12 @@ import java.util.ArrayList;
 )
 public class WorkspaceCmd implements Runnable {
 
-    private final AccountRepository accountRepository;
     private final AccountWrapper accountWrapper;
     private final WorkspaceRepository workspaceRepository;
     private final TemplateRepository templateRepository;
     private final WorkspaceManagementService wms;
 
-    public WorkspaceCmd(AccountRepository accountRepository, WorkspaceRepository workspaceRepository, TemplateRepository templateRepository, AccountWrapper accountWrapper) {
-        this.accountRepository = accountRepository;
+    public WorkspaceCmd(WorkspaceRepository workspaceRepository, TemplateRepository templateRepository, AccountWrapper accountWrapper) {
         this.workspaceRepository = workspaceRepository;
         this.templateRepository = templateRepository;
         this.accountWrapper = accountWrapper;

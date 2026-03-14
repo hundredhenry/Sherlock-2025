@@ -1,46 +1,29 @@
 package uk.ac.warwick.dcs.sherlock.module.cli.commands;
 
-import org.h2.engine.Engine;
-import org.hibernate.sql.Template;
-
-import com.objectdb.o.CLN.p;
-
 import picocli.CommandLine;
-import uk.ac.warwick.dcs.sherlock.module.cli.services.WorkspaceManagementService;
-import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Account;
-import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.TParameter;
-import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.AccountRepository;
-import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TDetectorRepository;
-import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TemplateRepository;
-import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceRepository;
-import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TParameterRepository;
-import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.TemplateWrapper;
-import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.EngineDetectorWrapper;
-import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.ParameterWrapper;
-import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
-import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.DetectorWrapper;
-import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
-import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.ParameterForm;
-import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.TemplateForm;
-import uk.ac.warwick.dcs.sherlock.module.web.exceptions.TemplateNotFound;
-import uk.ac.warwick.dcs.sherlock.module.web.exceptions.NotTemplateOwner;
-import uk.ac.warwick.dcs.sherlock.module.web.exceptions.TemplateNameNotUnique;
-import uk.ac.warwick.dcs.sherlock.module.web.exceptions.DetectorNotFound;
-import uk.ac.warwick.dcs.sherlock.module.web.exceptions.ParameterNotFound;
-
-import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.TParameter;
-import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.TDetector;
 
 import uk.ac.warwick.dcs.sherlock.api.annotation.AdjustableParameterObj;
+import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
+import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.TDetector;
+import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.TParameter;
+import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.ParameterForm;
+import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.TemplateForm;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TDetectorRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TParameterRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TemplateRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.DetectorWrapper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.EngineDetectorWrapper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.TemplateWrapper;
+import uk.ac.warwick.dcs.sherlock.module.web.exceptions.DetectorNotFound;
+import uk.ac.warwick.dcs.sherlock.module.web.exceptions.NotTemplateOwner;
+import uk.ac.warwick.dcs.sherlock.module.web.exceptions.TemplateNameNotUnique;
 
-
-
-import java.util.Set; 
-import java.util.List;
-import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -58,16 +41,14 @@ subcommands = {
 })
 public class TemplateCmd implements Runnable {
     
-    private final AccountRepository accountRepository;
     private final AccountWrapper account;
     private final TemplateRepository templateRepository;
     private final TDetectorRepository tDetectorRepository;
     private final TParameterRepository tParameterRepository;
 
-    public TemplateCmd(AccountRepository accountRepository, TemplateRepository templateRepository, 
-        AccountWrapper account, TDetectorRepository tDetectorRepository, TParameterRepository tParameterRepository) 
+    public TemplateCmd(TemplateRepository templateRepository, AccountWrapper account, 
+        TDetectorRepository tDetectorRepository, TParameterRepository tParameterRepository) 
         {
-        this.accountRepository = accountRepository;
         this.templateRepository = templateRepository;
         this.account = account;
         this.tDetectorRepository = tDetectorRepository;
@@ -110,10 +91,9 @@ public class TemplateCmd implements Runnable {
             }
             TemplateForm templateForm = new TemplateForm(template_language);
             templateForm.setName(template_name);
-            List<EngineDetectorWrapper> detectors = EngineDetectorWrapper.getDetectors(template_language);
 
             try {
-                TemplateWrapper templateWrapper = new TemplateWrapper(templateForm, parent.account.getAccount(), parent.templateRepository, parent.tDetectorRepository);
+                new TemplateWrapper(templateForm, parent.account.getAccount(), parent.templateRepository, parent.tDetectorRepository);
             }catch (NotTemplateOwner e) {
                 System.out.println("Error making template.");
             }catch(TemplateNameNotUnique e) {

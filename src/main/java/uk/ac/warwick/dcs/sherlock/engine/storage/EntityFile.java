@@ -94,9 +94,10 @@ public class EntityFile implements ISourceFile, IStorable, Serializable {
 	@Override
 	public List<String> getFileContentsAsStringList() {
 		List<String> list = new ArrayList<>();
-		Scanner scanner = new Scanner(this.getFileContents());
-		while (scanner.hasNextLine()) {
-			list.add(scanner.nextLine());
+		try (Scanner scanner = new Scanner(this.getFileContents())) {
+			while (scanner.hasNextLine()) {
+				list.add(scanner.nextLine());
+			}
 		}
 		return list;
 	}

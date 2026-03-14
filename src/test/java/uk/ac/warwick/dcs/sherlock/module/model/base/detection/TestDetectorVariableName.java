@@ -1,10 +1,7 @@
 package uk.ac.warwick.dcs.sherlock.module.model.base.detection;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy;
-import uk.ac.warwick.dcs.sherlock.api.util.Side;
-import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;

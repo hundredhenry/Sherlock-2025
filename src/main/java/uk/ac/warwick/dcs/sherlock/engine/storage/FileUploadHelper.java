@@ -43,9 +43,8 @@ class FileUploadHelper {
 	}
 
 	private static byte[] handleGZip(byte[] fileContent) {
-		try {
+		try (GzipCompressorInputStream in = new GzipCompressorInputStream(new ByteArrayInputStream(fileContent))) {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			GzipCompressorInputStream in = new GzipCompressorInputStream(new ByteArrayInputStream(fileContent));
 			final byte[] buffer = new byte[64];
 			int n;
 			while (-1 != (n = in.read(buffer))) {
@@ -184,9 +183,7 @@ class FileUploadHelper {
 	private static void storeIndividualFile(EmbeddedDatabase database, BaseStorageFilesystem filesystem, EntityArchive archive, String filename, String extension, byte[] fileContent) {
 		int line = 0;
 		int contentLine = 0;
-		BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileContent)));
-
-		try {
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileContent)))) {
 			while (reader.ready()) {
 				line++;
 				if (!reader.readLine().equals("")) {

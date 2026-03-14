@@ -5,7 +5,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import uk.ac.warwick.dcs.sherlock.module.web.configuration.SecurityConfig;
 import uk.ac.warwick.dcs.sherlock.module.core.configuration.CoreSecurityConfig;
 import java.util.Arrays;
 

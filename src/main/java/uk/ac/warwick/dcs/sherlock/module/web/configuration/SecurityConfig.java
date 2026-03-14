@@ -1,26 +1,15 @@
 package uk.ac.warwick.dcs.sherlock.module.web.configuration;
 
-import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Account;
-import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Role;
 import uk.ac.warwick.dcs.sherlock.module.web.configuration.properties.SecurityProperties;
-import uk.ac.warwick.dcs.sherlock.module.web.configuration.properties.SetupProperties;
-import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.AccountRepository;
-import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.RoleRepository;
 
-import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Random;
 
 /**
  * Sets up both the web and http security to prevent unauthorised access to account/admin pages
@@ -30,19 +19,9 @@ import java.util.Random;
 public class SecurityConfig {
 	//All @Autowired variables are automatically loaded by Spring
 	@Autowired
-	private AccountRepository accountRepository;
-	@Autowired
-	private BCryptPasswordEncoder passwordEncoder;
-	@Autowired
 	private Environment environment;
 	@Autowired
-	private RoleRepository roleRepository;
-	@Autowired
 	private SecurityProperties securityProperties;
-	@Autowired
-	private SetupProperties setupProperties;
-	@Autowired
-	private UserDetailsService userDetailsService;
 
 	/**
 	 * Configures the http security to prevent unauthorised requests to the

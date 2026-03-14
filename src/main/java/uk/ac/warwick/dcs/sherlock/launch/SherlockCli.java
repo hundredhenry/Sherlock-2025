@@ -2,15 +2,11 @@ package uk.ac.warwick.dcs.sherlock.launch;
 
 import java.util.Scanner;
 
-import org.eclipse.persistence.sessions.coordination.Command;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import picocli.CommandLine;
 import uk.ac.warwick.dcs.sherlock.module.cli.commands.*;
-import uk.ac.warwick.dcs.sherlock.api.util.Side;
-import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
 import uk.ac.warwick.dcs.sherlock.module.core.configuration.CoreSecurityConfig;
-import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Account;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.AccountRepository;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceRepository;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
@@ -32,8 +28,6 @@ import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TemplateReposito
 public class SherlockCli {
     private final AnnotationConfigApplicationContext context;
 
-    private final CommandLine cmd = new CommandLine(this);
-
     public SherlockCli(AnnotationConfigApplicationContext context) {
         this.context = context;
     }
@@ -50,9 +44,9 @@ public class SherlockCli {
         
         System.out.println("Welcome to the Sherlock CLI Interface!");
 
-        WorkspaceCmd workspaceCmd = new WorkspaceCmd(accountRepository, workspaceRepository, templateRepository, accountWrapper);
+        WorkspaceCmd workspaceCmd = new WorkspaceCmd(workspaceRepository, templateRepository, accountWrapper);
         CommandLine workspaceCmdLine = new CommandLine(workspaceCmd);
-        TemplateCmd templateCmd = new TemplateCmd(accountRepository, templateRepository, accountWrapper, tDetectorRepository, tParameterRepository);
+        TemplateCmd templateCmd = new TemplateCmd(templateRepository, accountWrapper, tDetectorRepository, tParameterRepository);
         CommandLine templateCmdLine = new CommandLine(templateCmd);
 
         // cmd = new CommandLine(this);

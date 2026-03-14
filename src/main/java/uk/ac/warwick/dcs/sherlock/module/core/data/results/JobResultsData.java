@@ -5,7 +5,6 @@ import org.json.JSONObject;
 import uk.ac.warwick.dcs.sherlock.api.component.IJob;
 import uk.ac.warwick.dcs.sherlock.api.exception.ResultJobUnsupportedException;
 import uk.ac.warwick.dcs.sherlock.api.report.IReportManager;
-import uk.ac.warwick.dcs.sherlock.api.report.ISubmissionSummary;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.internal.SubmissionScore;
@@ -173,7 +172,6 @@ public class JobResultsData {
 		}
 
 		for (Map.Entry<SubmissionScore, List<SubmissionScore>> entry : this.getResultsMap().entrySet()) {
-			float score = entry.getKey().getScore();
 			int group = entry.getKey().getScoreGroup();
 			groupCounts.replace(group, groupCounts.get(group) + 1);
 		}

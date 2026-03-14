@@ -15,7 +15,6 @@ import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
 import uk.ac.warwick.dcs.sherlock.engine.executor.common.ExecutorUtils;
 
-import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
@@ -599,7 +598,6 @@ public class Registry implements IRegistry {
 	/**
 	 * Analyse the loaded detector types, and compute the supported languages
 	 * <p>
-	 * TODO: consider checking the detection type used
 	 */
 	void analyseDetectors() {
 		this.detectorRegistry.forEach((k, v) -> {

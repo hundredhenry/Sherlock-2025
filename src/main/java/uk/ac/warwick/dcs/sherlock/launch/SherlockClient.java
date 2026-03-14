@@ -22,7 +22,6 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import java.awt.Desktop;
 import java.net.URI;
-import java.text.Annotation;
 
 import picocli.CommandLine;
 import java.util.Arrays;

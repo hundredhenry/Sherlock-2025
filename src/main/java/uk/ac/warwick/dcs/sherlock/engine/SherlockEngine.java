@@ -27,6 +27,7 @@ import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
+import java.nio.file.StandardOpenOption;
 
 /**
  * Main engine class, creates a new instance of Sherlock
@@ -68,21 +69,20 @@ public class SherlockEngine {
 		SherlockEngine.setupConfigDir();
 
 		this.lockFile = new File(SherlockEngine.configDir.getAbsolutePath() + File.separator + "Sherlock.lock");
-		try {
-			RandomAccessFile f = new RandomAccessFile(lockFile, "rw");
-			this.lockChannel = f.getChannel();
-			try {
-				this.lock = this.lockChannel.tryLock();
+        try {
+            this.lockChannel = FileChannel.open(lockFile.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+            try {
+                this.lock = this.lockChannel.tryLock();
 
-				if (this.lock != null) {
-					this.valid = true;
-				}
-			}
-			catch (OverlappingFileLockException e) {
-				System.out.println("Overlap");
-				//this.valid = false;
-			}
-		}
+                if (this.lock != null) {
+                    this.valid = true;
+                }
+            }
+            catch (OverlappingFileLockException e) {
+                System.out.println("Overlap");
+                //this.valid = false;
+            }
+        }
 		catch (IOException e) {
 			e.printStackTrace();
 		}

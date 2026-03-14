@@ -23,11 +23,6 @@ import java.util.stream.*;
  */
 public class SubmissionResultsData {
     /**
-     * The job showing the results for
-     */
-    private IJob job;
-
-    /**
      * The summary (if it's a report)
      */
     private String summary = "";
@@ -77,7 +72,6 @@ public class SubmissionResultsData {
      * @throws MapperException thrown if the FileMapper isn't initialised correctly
      */
     public SubmissionResultsData(IJob job, ISubmission submission) throws MapperException {
-        this.job = job;
         this.submission1 = submission;
 
         this.matches = new HashMap<>();
@@ -150,7 +144,6 @@ public class SubmissionResultsData {
      * @throws MapperException thrown if the FileMapper isn't initialised correctly
      */
     public SubmissionResultsData(IJob job, ISubmission submission1, ISubmission submission2) throws MapperException {
-        this.job = job;
         this.submission1 = submission1;
         this.submission2 = submission2;
 

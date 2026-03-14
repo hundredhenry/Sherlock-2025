@@ -6,7 +6,6 @@ import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
 import uk.ac.warwick.dcs.sherlock.module.model.base.detection.NGramMatch;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  *

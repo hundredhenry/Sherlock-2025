@@ -13,7 +13,6 @@ import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Account;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.db.Role;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.AccountRepository;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.RoleRepository;
-import uk.ac.warwick.dcs.sherlock.module.web.configuration.properties.SecurityProperties;
 import uk.ac.warwick.dcs.sherlock.module.web.configuration.properties.SetupProperties;
 import java.util.Arrays;
 import java.security.SecureRandom;
@@ -30,8 +29,6 @@ public class CoreSecurityConfig {
 	private Environment environment;
 	@Autowired
 	private RoleRepository roleRepository;
-	@Autowired
-	private SecurityProperties securityProperties;
 	@Autowired
 	private SetupProperties setupProperties;
 	@Autowired
