@@ -26,6 +26,11 @@ import java.net.URI;
 import picocli.CommandLine;
 import java.util.Arrays;
 
+/**
+ * Entry point for the Sherlock client application.
+ * Launches the Sherlock client in CLI or Web mode.
+ * Registered as a Picocli command.
+ */
 @CommandLine.Command(name = "SherlockClient", description = "Launch the Sherlock client application", mixinStandardHelpOptions = true)
 @SherlockModule(side = Side.CLIENT)
 public class SherlockClient implements Runnable {
@@ -48,6 +53,11 @@ public class SherlockClient implements Runnable {
 	@CommandLine.Spec
 	private CommandLine.Model.CommandSpec spec;
 
+	/** 
+	 * Entry point for Sherlock execution.
+	 * Determines the launch mode (web/CLI) based on the command-line arguments.
+	 * If --cli is provided, Sherlock will start in CLI mode.
+	 */
 	@Override
 	public void run() {
 		String[] java_args = spec.commandLine().getParseResult().originalArgs().toArray(new String[0]);
@@ -65,6 +75,14 @@ public class SherlockClient implements Runnable {
 		new CommandLine(new SherlockClient()).execute(args);
 	}
 
+	/** 
+	 * Launches the Sherlock Command Line Interface.
+	 * Creates and validates a client-side Sherlock Engine instance.
+	 * Creates the application context.
+	 * Authenticates the local user.
+	 * 
+	 * @param args command-line arguments passed to Sherlock
+	 */
 	public void cli_launcher(String[] args) {
 		SherlockEngine engine = new SherlockEngine(Side.CLIENT);
 		if (!engine.isValidInstance()) {
@@ -83,7 +101,6 @@ public class SherlockClient implements Runnable {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         System.out.println("CLI configuration complete, authentication manager initialized with local user");
 
-		// SherlockEngine engine = context.getBean(SherlockEngine.class);
 		SherlockCli cli = new SherlockCli(context);
 		cli.launch_cli();
 
@@ -91,6 +108,14 @@ public class SherlockClient implements Runnable {
 		System.exit(0);
 	}
 
+	/** 
+	 * Launches the Sherlock Web Interface.
+	 * Creates and validates a client-side Sherlock Engine instance.
+	 * Creates the splash (loading screen).
+	 * Builds the web application.
+	 * 
+	 * @param args command-line arguments passed to Sherlock
+	 */
 	public void web_launcher(String[] args) {
 		System.setProperty("spring.devtools.restart.enabled", "false"); // fix stupid double instance bug
 
@@ -128,6 +153,13 @@ public class SherlockClient implements Runnable {
 
 	}
 
+	/** 
+	 * Handles the post-initialisation of Sherlock.
+	 * Closes the splash.
+	 * Opens the website.
+	 * 
+	 * @param event command-line arguments passed to Sherlock
+	 */
 	@EventHandler
 	public void postInitialisation(EventPostInitialisation event) {
 		if (SherlockClient.splash != null) {

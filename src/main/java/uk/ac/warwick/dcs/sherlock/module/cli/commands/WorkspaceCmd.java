@@ -33,6 +33,11 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+/**
+ * The Workspace command that centralises workspace managemet
+ * Commands include: list, create, view, files, delete, update, run, jobs
+ * Command structure: workspace [cmd]
+ */
 @CommandLine.Command(name="workspace", description="Commands for workspace management", mixinStandardHelpOptions = true,
     subcommands = {
         WorkspaceCmd.list_workspaces.class,
@@ -52,6 +57,14 @@ public class WorkspaceCmd implements Runnable {
     private final TemplateRepository templateRepository;
     private final WorkspaceManagementService wms;
 
+    /**
+     * Constructor for the Workspace command. Creates an object for the 
+     *  Workspace Management Service.
+     * 
+     * @param workspaceRepository the workspace repository
+     * @param templateRepository the template repository
+     * @param accountWrapper the wrapper for the active user account
+     */
     public WorkspaceCmd(WorkspaceRepository workspaceRepository, TemplateRepository templateRepository, AccountWrapper accountWrapper) {
         this.workspaceRepository = workspaceRepository;
         this.templateRepository = templateRepository;
@@ -65,6 +78,13 @@ public class WorkspaceCmd implements Runnable {
 
     }
 
+    /**
+     * Validates a language's existence in Sherlock's registry.
+     * Tries to match the string regardless of case
+     * @param lang the language to search for
+     * @return the matched language in the registry if one is found,
+     *  otherwise return null
+     */
     private static String validate_language(String lang) {
         Set<String> languages = SherlockRegistry.getLanguages();
         Optional<String> real_lang = languages.stream().filter(l -> l.equalsIgnoreCase(lang)).findFirst();
@@ -76,12 +96,19 @@ public class WorkspaceCmd implements Runnable {
         return real_lang.get();
     }
 
-    // List all of the existing workspaces
+    /**
+     * The List command that outputs the name of all existing workspace.
+     * Command: workspace list
+     */
     @CommandLine.Command(name="list", description="List all existing workspaces", mixinStandardHelpOptions = true)
     public static class list_workspaces implements Runnable {
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
 
+        /**
+         * Fetches all of the workspaces associated with the user 
+         *  and outputs their names.
+         */
         @Override
         public void run() {
             AccountWrapper accountWrapper = parent.accountWrapper;
@@ -95,7 +122,10 @@ public class WorkspaceCmd implements Runnable {
         }
     }
 
-    // Create a new workspace given a name and language
+    /**
+     * The Create command that allows for new workspaces to be created.
+     * Command: workspace create -n=[name] -l=[language]
+     */
     @CommandLine.Command(name="create", description="Create a new workspace", mixinStandardHelpOptions = true)
     public static class create_workspace implements Runnable {
 
@@ -108,6 +138,10 @@ public class WorkspaceCmd implements Runnable {
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
         
+        /**
+         * Takes the provided name and language and submits them to
+         *  the workspace repoistory as part of a workspace form.
+         */
         @Override
         public void run() {
             String match_lang = validate_language(workspace_language);
@@ -123,9 +157,10 @@ public class WorkspaceCmd implements Runnable {
         }
     }
 
-    // Manage a workspace's files given workspace name
-    // Actions: add files, clear all files
-    // Should try to add: delete individual file
+    /**
+     * The Files command that manages a workspace's files / submissions
+     * Command: workspace files -n=[name] [OPTIONS]
+     */
     @CommandLine.Command(name="files", description="Manage the workspace files", mixinStandardHelpOptions = true)
     public static class files_workspace implements Runnable {
 
@@ -144,6 +179,13 @@ public class WorkspaceCmd implements Runnable {
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
         
+        /**
+         * The entry point for the Files command.
+         * Determines whether to delete all files, a specific file, 
+         *  or add files.
+         * Can add either an individual file, a set of files under a directory,
+         *  or a zip file containing a directory or directories of files.
+         */
         @Override
         public void run() {
             AccountWrapper accountWrapper = parent.accountWrapper;
@@ -152,10 +194,13 @@ public class WorkspaceCmd implements Runnable {
             WorkspaceWrapper workspace = service.getWorkspaceByName(accountWrapper, workspaceRepository, workspace_name);
             
             if (clear) {
+                // Delete all files
                 workspace.deleteAll();
                 System.out.println("Deleted all submissions successfully.");
                 return;
+
             } else if (del_file != null) {
+                // Delete a specific file
                 List<ISourceFile> all_files = workspace.getFiles();
                 ISourceFile file = null;
 
@@ -172,8 +217,10 @@ public class WorkspaceCmd implements Runnable {
                 } else {
                     System.out.println("File not found.");
                 }
+                return;
 
             } else if (input_paths.size() > 0) {
+                // Add files
                 SubmissionsForm submissionForm = new SubmissionsForm();
                 List<MultipartFile> all_files = new ArrayList<>();
 
@@ -183,6 +230,7 @@ public class WorkspaceCmd implements Runnable {
                         continue;
                     }
                     if (p.toString().endsWith(".zip")) {
+                        // Add a zip file containing a directory of files
                         try (ZipInputStream zip = new ZipInputStream(Files.newInputStream(p))) {
                             ZipEntry entry;
                             while ((entry = zip.getNextEntry()) != null) {
@@ -197,7 +245,9 @@ public class WorkspaceCmd implements Runnable {
                         } catch (IOException e) {
                             System.out.println(String.format("Failed to read directory %s.", p));
                         }
+
                     } else if (Files.isDirectory(p)) {
+                        // Add a directory of files
                         try (Stream<Path> paths = Files.walk(p)) {
                             paths.filter(Files::isRegularFile).forEach(fp -> {
                                 try {
@@ -211,7 +261,9 @@ public class WorkspaceCmd implements Runnable {
                         } catch (IOException e) {
                             System.out.println(String.format("Failed to read directory %s.", p));
                         }
+
                     } else if (Files.isRegularFile(p)) {
+                        // Add a single file
                         try {
                             byte[] bytes = Files.readAllBytes(p);
                             MultipartFile mf = new ZipMultipartFile(p.getFileName().toString(), p.getFileName().toString(), "application/octet-stream", bytes);
@@ -234,11 +286,16 @@ public class WorkspaceCmd implements Runnable {
         }
     }
 
-    // View a workspace's details; name, language, files, jobs
+    /**
+     * The View command for the workspace.
+     * Outputs details regarding a specific workspace, including
+     *  the name, language, and, optionally, the files, and jobs.
+     * Command: workspace view -n=[name] [OPTIONS]
+     */
     @CommandLine.Command(name="view", description="View workspace details", mixinStandardHelpOptions = true)
     public static class view_workspace implements Runnable {
 
-        @CommandLine.Option(names = {"-n", "--name"}, description = "Name of the workspace")
+        @CommandLine.Option(names = {"-n", "--name"}, description = "Name of the workspace", required = true)
         String workspace_name;
 
         @CommandLine.Option(names = {"-f", "--files"}, description = "List the workspace files")
@@ -250,6 +307,10 @@ public class WorkspaceCmd implements Runnable {
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
 
+        /**
+         * Fetches all of the workspace's details (name, language, files, jobs)
+         *  and displays them accordingly.
+         */
         @Override
         public void run() {
             AccountWrapper accountWrapper = parent.accountWrapper;
@@ -272,6 +333,7 @@ public class WorkspaceCmd implements Runnable {
             System.out.println("Workspace details:");
             System.out.println(String.format("-- Name: %s", name));
             System.out.println(String.format("-- Language: %s", language));
+
             if (list_files) {
                 System.out.println(String.format("-- Files (%d):", fileCount));
 
@@ -283,6 +345,7 @@ public class WorkspaceCmd implements Runnable {
                     }
                 }
             }
+
             if (list_results) {
                 System.out.println(String.format("-- Results (%d)", jobCount));
                 
@@ -297,7 +360,10 @@ public class WorkspaceCmd implements Runnable {
         }
     }
 
-    // Delete a workspace given its name
+    /**
+     * The Delete command for workspaces.
+     * Command: workspace delete -n=[name]
+     */
     @CommandLine.Command(name="delete", description="Delete a workspace", mixinStandardHelpOptions = true)
     public static class delete_workspace implements Runnable {
 
@@ -307,6 +373,9 @@ public class WorkspaceCmd implements Runnable {
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
 
+        /**
+         * Deletes a workspace given its name.
+         */
         @Override
         public void run() {
             AccountWrapper accountWrapper = parent.accountWrapper;
@@ -316,7 +385,10 @@ public class WorkspaceCmd implements Runnable {
         }
     }
 
-    // Update a workspace's name and/or language
+    /**
+     * The Update command to update a workspace's name or language.
+     * Command: workspace update -c=[current name] [OPTIONS]
+     */
     @CommandLine.Command(name="update", description="Update a workspace", mixinStandardHelpOptions = true)
     public static class update_workspace implements Runnable {
 
@@ -332,6 +404,11 @@ public class WorkspaceCmd implements Runnable {
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
 
+        /**
+         * The entry point for the update command.
+         * Checks if a new name or (valid) language has been supplied.
+         * Updates the workspace name or language.
+         */
         @Override
         public void run() {
             AccountWrapper accountWrapper = parent.accountWrapper;
@@ -366,7 +443,11 @@ public class WorkspaceCmd implements Runnable {
 
     }
 
-    // Run a workspace given a template and provided there are files
+    /**
+     * The Run command for the workspace.
+     * Executes the analysis on the workspace files, given a template.
+     * Command: workspace run -n=[name] -t=[template name]
+     */
     @CommandLine.Command(name="run", description="Run a new analysis job", mixinStandardHelpOptions=true)
     public static class run_workspace implements Runnable {
         
@@ -379,6 +460,11 @@ public class WorkspaceCmd implements Runnable {
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
 
+        /**
+         * The entry point for the Run command.
+         * Matches the template if it exists and executes the job.
+         * Catches various potential exceptions.
+         */
         @Override
         public void run() {
             AccountWrapper accountWrapper = parent.accountWrapper;
@@ -420,7 +506,12 @@ public class WorkspaceCmd implements Runnable {
         }
     }
 
-    // Manage a workspace's jobs; delete, view results
+    /**
+     * The Jobs command for the workspace.
+     * Allows management of the workspace jobs; deleting and viewing.
+     * (Viewing is not yet implemented)
+     * Command: workspace jobs -n=[name] -j=[job id] [OPTIONS]
+     */
     @CommandLine.Command(name="jobs", description="Manage workspace jobs", mixinStandardHelpOptions = true)
     public static class jobs_workspace implements Runnable {
 
@@ -439,6 +530,10 @@ public class WorkspaceCmd implements Runnable {
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
 
+        /**
+         * Matches the workspace and job if they exist.
+         * Deletes the job, or provides the means to view it (not yet implemented).
+         */
         @Override
         public void run() {
             AccountWrapper accountWrapper = parent.accountWrapper;

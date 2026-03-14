@@ -7,40 +7,34 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import picocli.CommandLine;
 import uk.ac.warwick.dcs.sherlock.module.cli.commands.*;
 import uk.ac.warwick.dcs.sherlock.module.core.configuration.CoreSecurityConfig;
-import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.AccountRepository;
-import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceRepository;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
-import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TDetectorRepository;
-import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TParameterRepository;
-import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TemplateRepository;
+import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.*;
 
-
-
-@CommandLine.Command(
-    name = "sherlock",
-    description = "Sherlock Command Line Interface",
-    subcommands = {
-        DisplayCmd.class,
-        DashboardCmd.class,
-    },
-    mixinStandardHelpOptions = true
-)
+/** 
+ * The base Sherlock CLI command.
+ * Launches and manages the interactive shell structure.
+ */
+@CommandLine.Command(name = "sherlock", description = "Sherlock Command Line Interface", subcommands = {DashboardCmd.class}, mixinStandardHelpOptions = true)
 public class SherlockCli {
     private final AnnotationConfigApplicationContext context;
 
     public SherlockCli(AnnotationConfigApplicationContext context) {
         this.context = context;
     }
-
+    
+    /** 
+	 * The entry point for the interactive shell.
+     * Fetches repositories and the account wrapper via the application context.
+	 * Accepts specific commands, including "exit" to stop execution.
+     * Explicitly sets the workspace and template commands due to the need for arguments.
+	 */
     public void launch_cli() {
-        // SherlockEngine engine = context.getBean(SherlockEngine.class);
         AccountRepository accountRepository = context.getBean(AccountRepository.class);
         WorkspaceRepository workspaceRepository = context.getBean(WorkspaceRepository.class);
         AccountWrapper accountWrapper = new AccountWrapper(accountRepository.findByEmail(CoreSecurityConfig.getLocalEmail()));
         TemplateRepository templateRepository = context.getBean(TemplateRepository.class);
         TDetectorRepository tDetectorRepository = context.getBean(TDetectorRepository.class);
         TParameterRepository tParameterRepository = context.getBean(TParameterRepository.class);
-        System.out.println("Authenticated as: " + accountWrapper.getAccount().getEmail() + " (" + accountWrapper.getAccount().getUsername() + ")");
         
         System.out.println("Welcome to the Sherlock CLI Interface!");
 
@@ -49,9 +43,6 @@ public class SherlockCli {
         TemplateCmd templateCmd = new TemplateCmd(templateRepository, accountWrapper, tDetectorRepository, tParameterRepository);
         CommandLine templateCmdLine = new CommandLine(templateCmd);
 
-        // cmd = new CommandLine(this);
-
-        // cmd.addSubcommand(workspaceCmd);
         CommandLine cmd = new CommandLine(this);
         
         cmd.addSubcommand("workspace", workspaceCmdLine);

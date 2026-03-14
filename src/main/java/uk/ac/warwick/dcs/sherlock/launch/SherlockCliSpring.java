@@ -19,23 +19,22 @@ import org.springframework.orm.jpa.JpaVendorAdapter;
 import java.util.Properties;
 
 
+/**
+ * Spring configuration for Sherlock CLI. Activated when Spring is enabled.
+ * Sets up the components, repositories, and entities
+ *  needed to run the Sherlock client in CLI mode.
+ */
 @Configuration
 @ComponentScan("uk.ac.warwick.dcs.sherlock.module")
 @EnableJpaRepositories("uk.ac.warwick.dcs.sherlock.module.core")
 @EntityScan("uk.ac.warwick.dcs.sherlock.module.core")
 public class SherlockCliSpring {
 
-	// @Bean
-    // public SherlockEngine sherlockEngine() {
-    //     SherlockEngine engine = new SherlockEngine(Side.CLIENT);
-    //     if (!engine.isValidInstance()) {
-    //         System.err.println("Sherlock is already running, closing....");
-    //         System.exit(1);
-    //     }
-    //     engine.initialise();
-    //     return engine;
-    // }
-
+    /**
+     * Creates the database under the CLI profile.
+     * 
+     * @return the data source
+     */
 	@Bean
 	@Primary
 	@Profile("cli")
@@ -49,11 +48,25 @@ public class SherlockCliSpring {
 				.build();
 	}
 
+    /**
+     * Configures the transaction manager for the JPA database operations.
+     * 
+     * @param emf the entity manager factory needed to create entity managers
+     * @return the JPA transaction manager
+     */
     @Bean
     public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
         return new JpaTransactionManager(emf);
     }
 
+    /**
+     * Configures the JPA for the Sherlock CLI.
+     * Sets up the entity manager factory, scans packages, and configures hibernate
+     *  as the JPA provider.
+     * 
+     * @param dataSource the database acting as the data source
+     * @return the local container entity manager factory bean
+     */
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();

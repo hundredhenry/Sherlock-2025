@@ -379,6 +379,14 @@ public class WorkspaceWrapper {
         return wrappers;
     }
 
+    /**
+     * Gets a specific workspace owned by the current user
+     * 
+     * @param account the account of the current user
+     * @param workspaceRepository the database repository
+     * @param name the workspace name
+     * @return the workspace
+     */
     public static WorkspaceWrapper findByName(Account account, WorkspaceRepository workspaceRepository, String name) {
         List<WorkspaceWrapper> wrappers = findByAccount(account, workspaceRepository);
         for (WorkspaceWrapper wrapper : wrappers) {
