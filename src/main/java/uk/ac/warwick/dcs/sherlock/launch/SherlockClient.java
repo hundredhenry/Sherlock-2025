@@ -60,14 +60,14 @@ public class SherlockClient implements Runnable {
 	 */
 	@Override
 	public void run() {
-		String[] java_args = spec.commandLine().getParseResult().originalArgs().toArray(new String[0]);
-		launchMode = Arrays.asList(java_args).contains("--cli") ? LaunchMode.CLI : LaunchMode.WEB;
+		String[] javaArgs = spec.commandLine().getParseResult().originalArgs().toArray(new String[0]);
+		launchMode = Arrays.asList(javaArgs).contains("--cli") ? LaunchMode.CLI : LaunchMode.WEB;
 		if (cli_state) {
 			System.out.println("Starting Sherlock client in CLI mode...");
-			cli_launcher(java_args);
+			cliLauncher(javaArgs);
 		} else {
 			System.out.println("Starting Sherlock client in WEB mode...");
-			web_launcher(java_args);
+			webLauncher(javaArgs);
 		}
 	}
 
@@ -83,7 +83,7 @@ public class SherlockClient implements Runnable {
 	 * 
 	 * @param args command-line arguments passed to Sherlock
 	 */
-	public void cli_launcher(String[] args) {
+	public void cliLauncher(String[] args) {
 		SherlockEngine engine = new SherlockEngine(Side.CLIENT);
 		if (!engine.isValidInstance()) {
 			System.err.println("Sherlock is already running, closing...");
@@ -102,7 +102,7 @@ public class SherlockClient implements Runnable {
         System.out.println("CLI configuration complete, authentication manager initialized with local user");
 
 		SherlockCli cli = new SherlockCli(context);
-		cli.launch_cli();
+		cli.launchCli();
 
 		context.close();
 		System.exit(0);
@@ -116,7 +116,7 @@ public class SherlockClient implements Runnable {
 	 * 
 	 * @param args command-line arguments passed to Sherlock
 	 */
-	public void web_launcher(String[] args) {
+	public void webLauncher(String[] args) {
 		System.setProperty("spring.devtools.restart.enabled", "false"); // fix stupid double instance bug
 
 		SherlockClient.splash = new Splash();

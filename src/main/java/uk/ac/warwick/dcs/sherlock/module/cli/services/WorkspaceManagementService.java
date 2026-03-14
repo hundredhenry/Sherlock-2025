@@ -10,7 +10,7 @@ import uk.ac.warwick.dcs.sherlock.module.web.exceptions.WorkspaceNameNotUnique;
 
 /**
  * A class to separate the CLI front-end from the back-end.
- * Services as an interface between the two sides.
+ * Serves as an interface between the two sides.
  */
 public class WorkspaceManagementService {
 
@@ -49,8 +49,8 @@ public class WorkspaceManagementService {
      * @param workspace_name the workspace name to match
      * @return the matching workspace
      */
-    public WorkspaceWrapper getWorkspaceByName(AccountWrapper accountWrapper, WorkspaceRepository workspaceRepository, String workspace_name) {
-        return WorkspaceWrapper.findByName(accountWrapper.getAccount(), workspaceRepository, workspace_name);
+    public WorkspaceWrapper getWorkspaceByName(AccountWrapper accountWrapper, WorkspaceRepository workspaceRepository, String workspaceName) {
+        return WorkspaceWrapper.findByName(accountWrapper.getAccount(), workspaceRepository, workspaceName);
     }
 
     /**
@@ -60,12 +60,12 @@ public class WorkspaceManagementService {
      * @param workspaceRepository the workspace repository
      * @param workspace_name the workspace name
      */
-    public void deleteWorkspace(AccountWrapper accountWrapper, WorkspaceRepository workspaceRepository, String workspace_name) {
-        WorkspaceWrapper workspace_to_delete = WorkspaceWrapper.findByName(accountWrapper.getAccount(), workspaceRepository, workspace_name);
-        if (workspace_to_delete == null) {
-            System.out.println(String.format("No workspace found with name '%s.'", workspace_name));
+    public void deleteWorkspace(AccountWrapper accountWrapper, WorkspaceRepository workspaceRepository, String workspaceName) {
+        WorkspaceWrapper workspaceToDelete = WorkspaceWrapper.findByName(accountWrapper.getAccount(), workspaceRepository, workspaceName);
+        if (workspaceToDelete == null) {
+            System.out.println(String.format("No workspace found with name '%s.'", workspaceName));
         } else {
-            workspace_to_delete.delete(workspaceRepository);
+            workspaceToDelete.delete(workspaceRepository);
             System.out.println("Workspace deleted successfully.");
         }
     }
