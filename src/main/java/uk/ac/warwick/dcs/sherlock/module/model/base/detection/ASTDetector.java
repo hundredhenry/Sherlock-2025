@@ -36,18 +36,21 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
             defaultValue = 0.5f,
             minimumBound = 0f,
             maximumBound = 1f,
-            step = 0.1f,
+            step = 0.05f,
             description = "Minimum similarity value between two AST subtrees to be considered a relative match (based on Dice Coefficient)"
     )
     public float MIN_DICE;
 
 
-    // @AdjustableParameter(
-    //     name = "Abstract Matching?",
-    //     defaultValue = true,
-    //     description = "When true, ignores differences in variable/method names and literal values. When false, requires exact matches."
-    // )
-    public boolean ABSTRACT_MATCHING = true;
+    @AdjustableParameter(
+        name = "Abstract Matching?",
+        defaultValue = 1, // AdjustableParameter only supports float and int, so use 1 and 0 for boolean
+        minimumBound = 0,
+        maximumBound = 1,
+        step = 1,
+        description = "When true (1), ignores differences in variable/method names and literal values. When false (0), requires exact matches."
+    )
+    public int ABSTRACT_MATCHING;
 
 
     public ASTDetector() {
@@ -136,6 +139,8 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
     * The main processing method used in the detector
     */
     public class ASTDetectorWorker extends PairwiseDetectorWorker<ASTRawResult> {
+        
+        private final boolean useAbstraction;
 
         private Set<ASTNode> anchorMatched1;
         private Set<ASTNode> anchorMatched2;
@@ -145,6 +150,7 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
 
         public ASTDetectorWorker(IDetector parent, ModelDataItem file1Data, ModelDataItem file2Data) {
             super(parent, file1Data, file2Data);
+            this.useAbstraction = ABSTRACT_MATCHING == 1;
         }
 
         // Recursively add mappings for isomorphic descendants of descendant anchor-mappings
@@ -163,7 +169,8 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
         // helper function for adding to metadata output mappings
         private void addToRawResult(ASTRawResult res, ASTNode n1, ASTNode n2, float similarityScore){
             if (n1.getMetadata("startLine") == null || n2.getMetadata("startLine") == null) {
-                return; // skip unknown nodes
+                System.out.println("Invalid metadata: ref --> " + n1 + " and " + n2);
+                return; 
             }   
 
             int refStart = n1.getMetadata("startLine", Integer.class);
@@ -204,8 +211,9 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
             preprocessTree(tree2);
 
             // Debugging
-            tree1.printTree("", true);
-            tree2.printTree("", true);
+            System.out.println("FILE REPRESENTATIONS:");
+            tree1.printTree("   ", true);
+            tree2.printTree("   ", true);
 
 
             /* ### PLAGIARISM DETECTION ALGORITHM BASED ON GUM-TREE DIFFING ### */
@@ -235,7 +243,7 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
                         if (anchorMatched2.contains(n2)) continue;
 
                         // Anchor-mapping conditions depend on parametrised matching strictness
-                        if (n1.getFingerprint(ABSTRACT_MATCHING).equals(n2.getFingerprint(ABSTRACT_MATCHING))) { 
+                        if (n1.getFingerprint(useAbstraction).equals(n2.getFingerprint(useAbstraction))) { 
                             // Add mapping for this subtree
                             addToRawResult(res, n1, n2, 1.0f);
                             anchorMatched1.add(n1);

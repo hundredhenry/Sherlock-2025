@@ -108,9 +108,10 @@ public class ParameterForm {
                 result.reject("templates.parameters.max_warning");
             }
 
-            float step = entry.getValue() % map.get(entry.getKey()).getStep();
-            float threshold = 0.001f;
-            if (step > threshold) {
+            float step = map.get(entry.getKey()).getStep();
+            float rounded = Math.round(entry.getValue() / step) * step;
+            float threshold = 0.0001f;
+            if (Math.abs(rounded - entry.getValue()) > threshold) {
                 result.reject("templates.parameters.step_warning");
             }
         }
