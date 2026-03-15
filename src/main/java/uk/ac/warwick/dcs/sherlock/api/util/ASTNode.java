@@ -211,16 +211,23 @@ public class ASTNode {
      * Pretty print the AST structure
      */
     public void printTree(String prefix, boolean isLast) {
-        System.out.println(prefix + (isLast ? "└── " : "├── ") + this.toString());
-        
+
+        Integer startLine = getMetadata("startLine", Integer.class);
+        Integer startChar = getMetadata("startChar", Integer.class);
+        Integer endLine   = getMetadata("endLine",   Integer.class);
+        Integer endChar   = getMetadata("endChar",   Integer.class);
+    
+        String meta = (startLine != null)
+            ? "  @ " + startLine + ":" + startChar + " -> " + endLine + ":" + endChar
+            : "";
+        System.out.println(prefix + (isLast ? "+-- " : "|-- ") + this.toString() + meta);
         for (int i = 0; i < children.size(); i++) {
             children.get(i).printTree(
-                prefix + (isLast ? "    " : "│   "),
+                prefix + (isLast ? "    " : "|   "),
                 i == children.size() - 1
             );
         }
     }
-
 
 
     // Enum to encode the type of AST node, can be expanded with new languages added
