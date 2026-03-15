@@ -105,6 +105,7 @@ class JavaASTBuilder extends JavaParserBaseVisitor<ASTNode>{
 
             ASTNode wrapper = new ASTNode(ASTNode.NodeKind.UNKNOWN);
             for (ASTNode child : children) addChildWithParent(wrapper, child);
+            attachMetadata(wrapper, ctx);
             return wrapper;
         }
 
