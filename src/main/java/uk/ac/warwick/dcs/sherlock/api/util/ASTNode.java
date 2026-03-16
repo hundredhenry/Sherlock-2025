@@ -22,6 +22,7 @@ public class ASTNode {
     private String abstractFingerprint;  // (kind + value for literals), (kind otherwise)
     private int weight;                  // Number of nodes in subtree
     private int height;                  // Height of subtree
+    private Set<ASTNode> descendants = null;
 
     // lablels whose values should be abstracted away (ignored) for plagiarism detection
     private static final Set<NodeKind> ABSTRACT_VALUE_LABELS = Set.of(
@@ -163,12 +164,15 @@ public class ASTNode {
 
     //////////// GETTERS & SETTERS ////////////
     
-    // Get all descendant nodes (including this node) O(n^2) DFS traversal
+    // Get all descendant nodes (including this node)
+    // Typically O(n^2) DFS traversal but should be cached from preprocessing
+    
     public Set<ASTNode> getDescendants() {
+        if (descendants != null) return descendants;
         Set<ASTNode> descendants = new HashSet<>();
         descendants.add(this);
         for (ASTNode child : children) {
-            descendants.addAll(child.getDescendants());
+            descendants.addAll(child.getDescendants()); // recursive, children already cached in post-order
         }
         return descendants;
     }   
