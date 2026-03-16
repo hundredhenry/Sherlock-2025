@@ -4,7 +4,7 @@ import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.AbstractModelTaskRawResult;
 import uk.ac.warwick.dcs.sherlock.api.util.SherlockHelper;
 import uk.ac.warwick.dcs.sherlock.module.model.base.detection.ASTMatch;
-
+import uk.ac.warwick.dcs.sherlock.api.util.ASTNode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,15 +32,22 @@ public class ASTRawResult extends AbstractModelTaskRawResult {
     private final List<ASTMatch> matches;
 
     /**
+     * The AST trees for the two files, used for calculating node counts.
+     */
+    private transient ASTNode tree1; // Does not need to be serialised (surviving to disk)
+    private transient ASTNode tree2;
+    /**
      * Constructs a new empty result container for a file pair.
      *
      * @param file1 the first source file
      * @param file2 the second source file
      */
-    public ASTRawResult(ISourceFile file1, ISourceFile file2) {
+    public ASTRawResult(ISourceFile file1, ISourceFile file2, ASTNode tree1, ASTNode tree2) {
         this.file1id = file1.getPersistentId();
         this.file2id = file2.getPersistentId();
         this.matches = new ArrayList<>();
+        this.tree1 = tree1;
+        this.tree2 = tree2;
     }
 
     /**
@@ -94,6 +101,20 @@ public class ASTRawResult extends AbstractModelTaskRawResult {
     }
 
     /**
+     * @return the node count of the first file's AST
+     */
+    public int getFile1NodeCount() {
+        return tree1.getWeight();
+    }
+
+    /**
+     * @return the node count of the second file's AST
+     */ 
+    public int getFile2NodeCount() {
+        return tree2.getWeight();
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -108,6 +129,10 @@ public class ASTRawResult extends AbstractModelTaskRawResult {
     public synchronized boolean testType(AbstractModelTaskRawResult baseline) {
         return baseline instanceof ASTRawResult;
     }
+
+
+
+
 
     /**
      * Returns a string representation of all stored matches.
