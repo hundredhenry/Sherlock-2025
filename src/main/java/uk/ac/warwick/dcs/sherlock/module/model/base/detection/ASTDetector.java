@@ -5,7 +5,10 @@ import uk.ac.warwick.dcs.sherlock.api.model.detection.IDetector;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.ModelDataItem;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.PairwiseDetector;
 import uk.ac.warwick.dcs.sherlock.api.model.detection.PairwiseDetectorWorker;
+import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.ASTArtifact;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy;
+import uk.ac.warwick.dcs.sherlock.api.util.ASTNode;
+import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.ASTRawResult;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ParseTreeGenerator;
 
 import java.util.*;
