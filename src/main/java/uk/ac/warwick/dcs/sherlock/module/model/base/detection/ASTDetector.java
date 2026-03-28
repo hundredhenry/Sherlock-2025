@@ -10,6 +10,10 @@ import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy;
 import uk.ac.warwick.dcs.sherlock.api.util.ASTNode;
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.ASTRawResult;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ParseTreeGenerator;
+import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ASTGenerator;
+import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.ASTRawResult;
+import uk.ac.warwick.dcs.sherlock.api.util.ASTNode;
+import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.ASTArtifact;
 
 import java.util.*;
 
@@ -52,7 +56,7 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
 
     public ASTDetector() {
         super("AST Detector", "Detects plagiarism by comparing the abstract syntax tree structures of source files",
-                ASTDetectorWorker.class, PreProcessingStrategy.of("parseTree", ParseTreeGenerator.class));
+                ASTDetectorWorker.class, PreProcessingStrategy.of("ast", ASTGenerator.class));
     }
 
     // Preprocess tree: compute fingerprints, weights, and heights
