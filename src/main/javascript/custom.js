@@ -33,8 +33,8 @@ function submissionResultsPage() {
         var submissionId = 0;
         if ($("#report-data").length) {
             workspaceId = getWorkspaceId();
-            submissionId = getSubmissionId();
         }
+        submissionId = getSubmissionId();
 
         var active = -1; // which match is active
         var loaded = 0; // how many files have loaded
