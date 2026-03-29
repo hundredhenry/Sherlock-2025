@@ -72,6 +72,7 @@ dependencies {
             'org.json:json:20250517',
             'org.seleniumhq.selenium:selenium-java:4.37.0',
             'info.picocli:picocli:4.7.7',
+            'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10',
     )
 
     providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')

@@ -2,9 +2,13 @@ package uk.ac.warwick.dcs.sherlock.module.cli.commands;
 
 import picocli.CommandLine;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 
 import uk.ac.warwick.dcs.sherlock.api.component.IJob;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
+import uk.ac.warwick.dcs.sherlock.api.component.ISubmission;
 import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
 import uk.ac.warwick.dcs.sherlock.module.cli.services.WorkspaceManagementService;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.SubmissionsForm;
@@ -19,9 +23,17 @@ import uk.ac.warwick.dcs.sherlock.module.web.exceptions.DetectorNotFound;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.FileUploadFailed;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.NoFilesUploaded;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.ParameterNotFound;
+import uk.ac.warwick.dcs.sherlock.module.web.exceptions.SubmissionNotFound;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.TemplateContainsNoDetectors;
+import uk.ac.warwick.dcs.sherlock.module.web.exceptions.MapperException;
+import uk.ac.warwick.dcs.sherlock.module.core.data.results.JobResultsData;
+import uk.ac.warwick.dcs.sherlock.module.core.data.results.ResultsHelper;
+import uk.ac.warwick.dcs.sherlock.module.core.data.results.SubmissionResultsData;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -56,6 +68,7 @@ public class WorkspaceCmd implements Runnable {
     private final WorkspaceRepository workspaceRepository;
     private final TemplateRepository templateRepository;
     private final WorkspaceManagementService wms;
+    private final TemplateEngine templateEngine;
 
     /**
      * Constructor for the Workspace command. Creates an object for the 
@@ -65,10 +78,11 @@ public class WorkspaceCmd implements Runnable {
      * @param templateRepository the template repository
      * @param accountWrapper the wrapper for the active user account
      */
-    public WorkspaceCmd(WorkspaceRepository workspaceRepository, TemplateRepository templateRepository, AccountWrapper accountWrapper) {
+    public WorkspaceCmd(WorkspaceRepository workspaceRepository, TemplateRepository templateRepository, AccountWrapper accountWrapper, TemplateEngine templateEngine) {
         this.workspaceRepository = workspaceRepository;
         this.templateRepository = templateRepository;
         this.accountWrapper = accountWrapper;
+        this.templateEngine = templateEngine;
         this.wms = new WorkspaceManagementService();
     }
 
@@ -140,7 +154,7 @@ public class WorkspaceCmd implements Runnable {
         
         /**
          * Takes the provided name and language and submits them to
-         *  the workspace repoistory as part of a workspace form.
+         *  the workspace repository as part of a workspace form.
          */
         @Override
         public void run() {
@@ -524,8 +538,11 @@ public class WorkspaceCmd implements Runnable {
         @CommandLine.Option(names = {"-d", "--delete"}, description="Delete a specific job")
         boolean delJob;
 
-        @CommandLine.Option(names = {"-r", "--results"}, description="View the results of a job")
-        boolean viewJob;
+        @CommandLine.Option(names = {"-s", "--scores"}, description="View all submission overall match scores")
+        boolean matchScores;
+
+        @CommandLine.Option(names = {"-r", "--report"}, description="ID of a submission to view")
+        String viewReport;
 
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
@@ -559,10 +576,60 @@ public class WorkspaceCmd implements Runnable {
                 System.out.println("Job deleted successfully.");
             }
 
-            if (viewJob) {
-                System.out.println("Viewing job results (incomplete)");
-                // Not sure how to do this yet
-                // Download the report?
+            if (matchScores) {
+                System.out.println("Submission match scores:");
+
+                for (ISubmission submission : workspace.getSubmissions()) {
+                    try {
+                        SubmissionResultsData resultsWrapper = new SubmissionResultsData(job, submission);
+                        System.out.println(String.format("(ID: %s) %s: %s", submission.getId(), submission.getName(), resultsWrapper.getScore()));
+                    } catch (MapperException me) {
+                        System.out.println("Error with initialising the FileMapper.");
+                    }
+                }
+            }
+
+            if (viewReport != null) {
+                TemplateEngine templateEngine = parent.templateEngine;
+                try {
+                    ISubmission submission = ResultsHelper.getSubmission(workspace, Long.parseLong(viewReport));
+                    SubmissionResultsData resultsWrapper = new SubmissionResultsData(job, submission);
+                    if (resultsWrapper == null) return;
+    
+                    JobResultsData jobData = new JobResultsData(job);
+                    String mapJSON = resultsWrapper.getMapJSON();
+                    String matchesJSON = resultsWrapper.getMatchesJSON();
+                    System.out.println(mapJSON);
+                    System.out.println("\n\n\n");
+                    System.out.println(matchesJSON);
+    
+                    Context context = new Context();
+                    context.setVariable("workspace", workspace);
+                    context.setVariable("results", jobData);
+                    context.setVariable("submission", submission);
+                    context.setVariable("wrapper", resultsWrapper);
+                    context.setVariable("printing", true);
+                    
+                    String htmlStr = templateEngine.process("dashboard/workspaces/results/reportPDF", context);
+    
+                    try (OutputStream os = new FileOutputStream("ROROBEAR.pdf")) {
+                        PdfRendererBuilder builder = new PdfRendererBuilder();
+                        builder.withHtmlContent(htmlStr, null);
+                        builder.toStream(os);
+                        builder.run();
+                        System.out.println("PDF generated and saved successfully.");
+                    } catch (FileNotFoundException fnfe) {
+                        System.out.println("File not found.");
+                    } catch (IOException ioe) {
+                        System.out.println("Failed to generate PDF.");
+                    }
+                } catch (SubmissionNotFound snf) {
+                    System.out.println("Submission not found.");
+                } catch (MapperException me) {
+                    System.out.println("FileMapper was not initialised correctly.");
+                }
+                
+
             }
         }
     }

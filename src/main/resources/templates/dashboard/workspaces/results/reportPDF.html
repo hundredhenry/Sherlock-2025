@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layouts/default}" th:with="page='workspaces'">
+<head>
+    <title th:text="#{results.report.title}"></title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1, h2, h3, h4, h5 { margin: 5px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #aaa; padding: 5px; }
+        .match-colour { display: inline-block; width: 15px; height: 15px; margin-right: 5px; }
+        pre { background-color: #f8f8f8; padding: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+<div style="text-align: center;">
+    <h1>
+        <span th:text="${submission.getName()}">Submission Name</span>
+        <span th:text="#{results.report.subtitle}">Report Subtitle</span>
+    </h1>
+
+    <h4 th:text="#{results.report.score}">Score</h4>
+    <p>
+        <span th:text="${wrapper.getScore()}">Score Value</span>
+    </p>
+
+    <!-- <h4 th:text="#{results.report.matches}">Matches</h4>
+    <div th:each="sub : ${wrapper.getSubmissions()}">
+        <p>
+            <span th:text="${sub.getName()}">Submission Name</span> 
+            (<span th:text="${sub.getScore()}">Score</span>)
+        </p>
+    </div> -->
+    <div style="text-align: center; width: 100%;">
+        <h4 th:text="#{results.report.matches}">Matches</h4>
+        <div th:each="sub : ${wrapper.getSubmissions()}" 
+            style="display: inline-block; margin: 5px; padding: 5px 10px; font-size: 0.9em; text-align: center;">
+            <span th:text="${sub.getName()}">Submission Name</span><br/>
+            (<span th:text="${sub.getScore()}">Score</span>)
+        </div>
+    </div>
+</div>
+
+<h4 th:text="#{results.report.matches}">Match Details</h4>
+<table>
+    <tbody>
+    <th:block th:each="group : ${wrapper.getMatches()}">
+        <tr>
+            <td colspan="2">
+                <strong><span th:text="${group.key}">Group Name</span></strong>
+            </td>
+        </tr>
+        <th:block th:each="match : ${group.value}">
+            <tr>
+                <td>
+                    <div class="match-colour" th:style="${'background-color:'+match.getColour()}"></div>
+                    <span th:text="${match.getReason()}">Reason</span>
+                    (<span th:text="${match.getScore()}">Score</span>)
+                </td>
+                <td>
+                </td>
+            </tr>
+        </th:block>
+    </th:block>
+    <tr th:if="${wrapper.getMatches().empty}">
+        <td colspan="2">
+            <span th:text="#{results.report.no_matches}">No matches</span>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<h4>Files</h4>
+<div th:each="file : ${submission.getAllFiles()}">
+    <h5 th:text="${file.getFileDisplayPath()}">File Path</h5>
+    <pre th:text="${wrapper.getHighlightedLines(file.getPersistentId())}">File content highlights</pre>
+</div>
+
+</body>
+</html>
