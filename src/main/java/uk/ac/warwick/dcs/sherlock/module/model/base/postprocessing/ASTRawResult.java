@@ -130,10 +130,6 @@ public class ASTRawResult extends AbstractModelTaskRawResult {
         return baseline instanceof ASTRawResult;
     }
 
-
-
-
-
     /**
      * Returns a string representation of all stored matches.
      *
