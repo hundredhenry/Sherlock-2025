@@ -41,7 +41,28 @@ public class ASTNode {
             NodeKind.STRING_LITERAL,
         NodeKind.NUMBER_LITERAL,
         NodeKind.BOOL_LITERAL,
-        NodeKind.NULL_LITERAL
+        NodeKind.NULL_LITERAL,
+
+            // Haskell — declarations whose names should be abstracted
+            NodeKind.HASKELL_FUNCTION_DECL,
+            NodeKind.HASKELL_TYPE_DECL,
+            NodeKind.HASKELL_NEWTYPE_DECL,
+            NodeKind.HASKELL_DATA_DECL,
+            NodeKind.HASKELL_CLASS_DECL,
+            NodeKind.HASKELL_INSTANCE_DECL,
+            NodeKind.HASKELL_TYPE_SIG,
+            NodeKind.HASKELL_PATTERN_BIND,
+
+            // Haskell — name/identifier nodes
+            NodeKind.HASKELL_VARID,
+            NodeKind.HASKELL_CONID,
+            NodeKind.HASKELL_MODID,
+
+            // Haskell — literals (values abstracted, structure retained)
+            NodeKind.HASKELL_CHAR_LITERAL,
+            NodeKind.HASKELL_INTEGER_LITERAL,
+            NodeKind.HASKELL_FLOAT_LITERAL,
+            NodeKind.HASKELL_STRING_LITERAL
     );
 
 
@@ -293,6 +314,84 @@ public class ASTNode {
         TYPE,
         PATTERN,
 
-        UNKNOWN
+        UNKNOWN,
+
+        HASKELL_MODULE,
+        HASKELL_IMPORT,
+        HASKELL_EXPORT,
+
+        HASKELL_FUNCTION_DECL,
+        HASKELL_PATTERN_BIND,
+        HASKELL_TYPE_SIG,
+        HASKELL_TYPE_DECL,
+        HASKELL_DATA_DECL,
+        HASKELL_NEWTYPE_DECL,
+        HASKELL_CLASS_DECL,
+        HASKELL_INSTANCE_DECL,
+        HASKELL_DERIVING,
+        HASKELL_FIXITY_DECL,
+
+        // -- Data constructors
+        HASKELL_CONSTRUCTOR,
+        HASKELL_RECORD_FIELD,
+
+        // -- Function equations & guards
+        HASKELL_EQUATION,
+        HASKELL_GUARD_EXPR,
+        HASKELL_WHERE_BLOCK,
+
+        // -- Patterns (left-hand side of equations, case alternatives, let bindings)
+        HASKELL_PAT_WILDCARD,
+        HASKELL_PAT_CONSTRUCTOR,
+        HASKELL_PAT_TUPLE,
+        HASKELL_PAT_LIST,
+        HASKELL_PAT_AS,
+        HASKELL_PAT_IRREFUTABLE,
+
+        // -- Expressions
+        HASKELL_APP_EXPR,
+        HASKELL_INFIX_EXPR,
+        HASKELL_NEGATE_EXPR,
+        HASKELL_LAMBDA_EXPR,
+        HASKELL_LET_EXPR,
+        HASKELL_IF_EXPR,
+        HASKELL_CASE_EXPR,
+        HASKELL_DO_EXPR,
+        HASKELL_TUPLE_EXPR,
+        HASKELL_LIST_EXPR,
+        HASKELL_ARITHMETIC_SEQ,
+        HASKELL_LIST_COMPREHENSION,
+        HASKELL_SECTION_LEFT,
+        HASKELL_SECTION_RIGHT,
+        HASKELL_TYPE_ANNOTATION,
+
+        // -- Do-notation statements
+        HASKELL_DO_BIND,
+        HASKELL_DO_LET,
+        HASKELL_DO_STMT,
+
+        // -- List comprehension qualifiers
+        HASKELL_COMP_BIND,
+        HASKELL_COMP_GUARD,
+        HASKELL_COMP_LET,
+
+        // -- Types (used in type signatures and annotations)
+        HASKELL_TYPE_APP,
+        HASKELL_TYPE_FUN,
+        HASKELL_TYPE_TUPLE,
+        HASKELL_TYPE_LIST,
+        HASKELL_TYPE_FORALL,
+        HASKELL_TYPE_CONSTRAINT,
+        HASKELL_KIND_SIG,
+
+        // -- Terminals / leaves (Haskell-specific)
+        HASKELL_VARID,
+        HASKELL_CONID,
+        HASKELL_MODID,
+        HASKELL_OPERATOR,
+        HASKELL_INTEGER_LITERAL,
+        HASKELL_FLOAT_LITERAL,
+        HASKELL_CHAR_LITERAL,
+        HASKELL_STRING_LITERAL,
     }
 }
