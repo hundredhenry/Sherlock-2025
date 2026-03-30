@@ -43,15 +43,6 @@ public class ASTPostProcessor implements IPostProcessor<ASTRawResult> {
 
     /**
      * Processes raw AST comparison results into scored code block groups.
-     * <p>
-     * TODO: Implement the following steps:
-     * <ol>
-     *   <li>Aggregate matches from all file pairs</li>
-     *   <li>Group matches that refer to the same code structures</li>
-     *   <li>Filter out groups that appear in too many files (common code)</li>
-     *   <li>Score remaining groups and add them to the results</li>
-     * </ol>
-     * </p>
      *
      * @param files      the list of all source files being compared
      * @param rawResults the raw results from all AST detector workers
