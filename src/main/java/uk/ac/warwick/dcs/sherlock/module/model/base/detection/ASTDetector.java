@@ -11,9 +11,6 @@ import uk.ac.warwick.dcs.sherlock.api.util.ASTNode;
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.ASTRawResult;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ParseTreeGenerator;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ASTGenerator;
-import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.ASTRawResult;
-import uk.ac.warwick.dcs.sherlock.api.util.ASTNode;
-import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.ASTArtifact;
 
 import java.util.*;
 
