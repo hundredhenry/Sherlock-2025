@@ -9,7 +9,6 @@ import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.ASTArtifact;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.PreProcessingStrategy;
 import uk.ac.warwick.dcs.sherlock.api.util.ASTNode;
 import uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing.ASTRawResult;
-import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ParseTreeGenerator;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ASTGenerator;
 
 import java.util.*;
@@ -23,7 +22,7 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
 
     @AdjustableParameter(
             name = "Minimum Height",
-            defaultValue = 2f,
+            defaultValue = 5f,
             minimumBound = 1f,
             maximumBound = 10f,
             step = 1f,
@@ -42,7 +41,7 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
     public float MIN_DICE;
 
     @AdjustableParameter(
-        name = "Abstract Matching?",
+        name = "Abstract Matching",
         defaultValue = 1, // AdjustableParameter only supports float and int, so use 1 and 0 for boolean
         minimumBound = 0,
         maximumBound = 1,
@@ -149,7 +148,7 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
         // helper function for adding to metadata output mappings
         private void addToRawResult(ASTRawResult res, ASTNode n1, ASTNode n2, float similarityScore) {
             if (n1.getMetadata("startLine") == null || n2.getMetadata("startLine") == null) {
-                System.out.println("Invalid metadata: ref --> " + n1 + " and " + n2);
+                // Missing line metadata, skip this match
                 return;
             }
 
@@ -219,10 +218,8 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
             preprocessTree(tree1);
             preprocessTree(tree2);
 
-            // make raw result output container of "node mappings"
+            // Make raw result output container of "node mappings"
             ASTRawResult res = new ASTRawResult(this.file1.getFile(), this.file2.getFile(), tree1, tree2);
-
-            /* ### PLAGIARISM DETECTION ALGORITHM BASED ON GUM-TREE DIFFING ### */
 
             // PHASE 1: Top-down greedy search for isomorphic subtrees (anchors)
             Map<Integer, List<ASTNode>> heightMap1 = groupByHeight(tree1);
@@ -279,52 +276,32 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
                 List<ASTNode> candidates = findCandidates(n1, tree2);
 
                 // Find the BEST container match for a node (for tree1 from tree2)
-                Object[] bestMatchAndDice = null;
-                System.out.println("\n");
-                System.out.println("CANDIDATES: " + candidates + " for node " + n1 + " empty?: " + candidates.isEmpty());
+                ASTNode bestMatch = null;
+                float bestDice = 0;
 
-                if (!candidates.isEmpty()) {
-                    // Select candidate with highest dice coefficient
-                    ASTNode bestMatch = null;
-                    float bestDice = 0;
-                    for (ASTNode candidate : candidates) { // Compute Dice coefficient between n1 and candidate node from tree2
-                        // dice(t1, t2) = 2 * |common_descendants| / (|desc(t1)| + |desc(t2)|)
-                        Set<ASTNode> desc1 = n1.getDescendants(); // O(d1)
-                        int commonCount = 0;
-                        for (ASTNode d1 : desc1) { // O(d1)
-                            ASTNode partner = anchorMap.get(d1); // O(1)
-                            if (partner != null && d1.getFingerprint(useAbstraction).equals(partner.getFingerprint(useAbstraction))) { // Gumtree paper specifies "anchor-mapped node equality" but for our detector, we can choose if isomorphism (abstract fingerprints) suffices
-                                commonCount++;
-                            }
-                        }
-                        float dice = (2f * commonCount) / (n1.getWeight() + candidate.getWeight());
-
-                        System.out.println("Candidate: " + candidate + " with commonCount: " + commonCount + " and dice: " + dice);
-                        if (dice > bestDice) {
-                            bestDice = dice;
-                            bestMatch = candidate;
+                for (ASTNode candidate : candidates) { // Compute Dice coefficient between n1 and candidate node from tree2
+                    // dice(t1, t2) = 2 * |common_descendants| / (|desc(t1)| + |desc(t2)|)
+                    Set<ASTNode> desc1 = n1.getDescendants();
+                    Set<ASTNode> descCandidate = candidate.getDescendants();
+                    int commonCount = 0;
+                    for (ASTNode d1 : desc1) {
+                        ASTNode partner = anchorMap.get(d1);
+                        if (partner != null && descCandidate.contains(partner)) {
+                            commonCount++;
                         }
                     }
-                    if (bestMatch != null) {
-                        bestMatchAndDice = new Object[]{bestMatch, bestDice};
+                    float dice = (2f * commonCount) / (n1.getWeight() + candidate.getWeight());
+
+                    if (dice > bestDice) {
+                        bestDice = dice;
+                        bestMatch = candidate;
                     }
                 }
 
-                if (bestMatchAndDice != null) {
-                    ASTNode bestMatch = (ASTNode) bestMatchAndDice[0]; // Retrieve the best ASTNode match
-                    float dice = (float) bestMatchAndDice[1]; // Retrieve Dice coefficient score
-                    if (dice >= MIN_DICE) {
-                        addToRawResult(res, n1, bestMatch, dice); // Add container mapping as a match
-                    }
+                if (bestMatch != null && bestDice >= MIN_DICE) {
+                    addToRawResult(res, n1, bestMatch, bestDice); // Add container mapping as a match
                 }
             }
-
-            // Debugging
-            System.out.println("FILE REPRESENTATIONS:");
-            tree1.printTree("", false);
-            tree2.printTree("", false);
-            System.out.println("\nDETECTED MATCHES:");
-            System.out.println(res.toString());
 
             this.result = res;
         }

@@ -187,11 +187,12 @@ public class ASTNode {
     
     public Set<ASTNode> getDescendants() {
         if (this.descendants != null) return this.descendants;
-        this.descendants = new HashSet<>();
-        this.descendants.add(this);
+        Set<ASTNode> result = new HashSet<>();
+        result.add(this);
         for (ASTNode child : children) {
-            this.descendants.addAll(child.getDescendants()); // recursive, children already cached in post-order
+            result.addAll(child.getDescendants()); // recursive, children already cached in post-order
         }
+        this.descendants = result;
         return this.descendants;
     }   
     public String getFingerprint(boolean useAbstraction) {
