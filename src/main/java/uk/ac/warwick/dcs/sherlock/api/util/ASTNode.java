@@ -181,21 +181,18 @@ public class ASTNode {
             child.setParent(this);
         }
     }
-
-
-    //////////// GETTERS & SETTERS ////////////
     
     // Get all descendant nodes (including this node)
     // Typically O(n^2) DFS traversal but should be cached from preprocessing
     
     public Set<ASTNode> getDescendants() {
-        if (descendants != null) return descendants;
-        Set<ASTNode> descendants = new HashSet<>();
-        descendants.add(this);
+        if (this.descendants != null) return this.descendants;
+        this.descendants = new HashSet<>();
+        this.descendants.add(this);
         for (ASTNode child : children) {
-            descendants.addAll(child.getDescendants()); // recursive, children already cached in post-order
+            this.descendants.addAll(child.getDescendants()); // recursive, children already cached in post-order
         }
-        return descendants;
+        return this.descendants;
     }   
     public String getFingerprint(boolean useAbstraction) {
         if (useAbstraction) {
