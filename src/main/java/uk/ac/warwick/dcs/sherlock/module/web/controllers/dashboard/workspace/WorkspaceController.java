@@ -148,12 +148,13 @@ public class WorkspaceController {
             try {
                 // For conflicting (duplicate) submissions
                 List<ITuple<ISubmission, ISubmission>> collisions;
-                // True or false depending on whether single file upload or zip upload
+                // True when doing a single file uploads
                 boolean isSingleFileUpload = submissionsForm.getSingle();
 
-                if (isSingleFileUpload){
+                if (isSingleFileUpload && submissionsForm.isZipped()){
+                    //then need to unzip it
                     List<MultipartFile> processedFiles = new ArrayList<>();
-                    // For loop technically unneeded since upload only permits ONE zip file but keeping for robustness
+                    // For loop technically unneeded since upload only permits ONE zip root file but keeping for robustness
                     for (MultipartFile file : submissionsForm.getFiles()){
                         String filename = file.getOriginalFilename();
 
@@ -184,24 +185,59 @@ public class WorkspaceController {
                     // The browser sends files with paths like "selectedFolder/student1/Main.java".
                     // Strip the common top-level prefix so paths become "student1/Main.java",
                     // then pack into a synthetic ZIP for storeArchive(archiveHasManySubmissions=true).
+
+                    //first check if the files are zipped
+                    if (submissionsForm.isZipped()){
+                        //then need to unzip them
+                        List<MultipartFile> processedFiles = new ArrayList<>();
+                        for (MultipartFile file : submissionsForm.getFiles()) {
+                            //get the zipped file stream
+                            try (ZipInputStream zip = new ZipInputStream(file.getInputStream())) {
+                                ZipEntry entry;
+                                //for each entry in the zipped file
+                                while ((entry = zip.getNextEntry()) != null) {
+                                    //skip any directories
+                                    if (!entry.isDirectory()) {
+                                        //read the file and make it a zipped multipart file
+                                        byte[] fileBytes = zip.readAllBytes();
+                                        MultipartFile zipFile = new ZipMultipartFile(entry.getName(), entry.getName(), "application/octet-stream", fileBytes);
+                                        processedFiles.add(zipFile);
+                                    }
+                                    //then close the processed entry
+                                    zip.closeEntry();
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                result.reject("error.file.failed");
+                            }
+                        }
+                        //finally update the files to have all of the extracted files instead of just the zipped file
+                        submissionsForm.setFiles(processedFiles.toArray(new MultipartFile[0]));
+                    }
+                    //now process the files, removing the top level directories.
                     try {
                         String commonPrefix = null;
-                        for (MultipartFile file : submissionsForm.getFiles()) {
-                            String path = file.getOriginalFilename();
-                            if (path != null && path.contains("/")) {
-                                String prefix = path.substring(0, path.indexOf('/'));
-                                if (commonPrefix == null) {
-                                    commonPrefix = prefix;
+                        if (!submissionsForm.isZipped()){
+                            for (MultipartFile file : submissionsForm.getFiles()) {
+                                String path = file.getOriginalFilename();
+                                if (path != null && path.contains("/")) {
+                                    String prefix = path.substring(0, path.indexOf('/'));
+                                    if (commonPrefix == null) {
+                                        commonPrefix = prefix;
+                                    }
                                 }
                             }
                         }
+
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
                             for (MultipartFile file : submissionsForm.getFiles()) {
                                 if (file.getSize() > 0) {
                                     String path = file.getOriginalFilename();
-                                    if (path != null && commonPrefix != null && path.startsWith(commonPrefix + "/")) {
-                                        path = path.substring(commonPrefix.length() + 1);
+                                    if (!submissionsForm.isZipped()) {
+                                        if (path != null && commonPrefix != null && path.startsWith(commonPrefix + "/")) {
+                                            path = path.substring(commonPrefix.length() + 1);
+                                        }
                                     }
                                     zos.putNextEntry(new ZipEntry(path));
                                     zos.write(file.getBytes());
@@ -209,13 +245,47 @@ public class WorkspaceController {
                                 }
                             }
                         }
+                        String filename;
+                        //slightl edgecase for skeleton code - we are essentially just doing this earlier than usual
+                        if (submissionsForm.isSkeleton()){
+                            filename = "SKELETON.zip";
+                        }else{
+                            filename = "submissions.zip";
+                        }
                         MultipartFile syntheticZip = new ZipMultipartFile(
-                                "files", "submissions.zip", "application/zip", baos.toByteArray());
+                                "files", filename, "application/zip", baos.toByteArray());
                         submissionsForm.setFiles(new MultipartFile[]{syntheticZip});
                     } catch (IOException e) {
                         e.printStackTrace();
                         result.reject("error.file.failed");
                     }
+                }
+
+                if(submissionsForm.isSkeleton() && !submissionsForm.isMultiFolder()){
+                    //if skeleton code, we want to create a new parent zip called SKELETON, and add all files to it
+                    // the only edge case is if previously handled when sorting multi folder submissions.
+
+                    //first process the files, to convert them back into a zipped file
+                    //initialise our data streams
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+                        for (MultipartFile file : submissionsForm.getFiles()) {
+                            //if file actually has data
+                            if (file.getSize() > 0) {
+                                //create a new entry for it, and write its data to the output stream
+                                zos.putNextEntry(new ZipEntry(file.getOriginalFilename()));
+                                zos.write(file.getBytes());
+                                zos.closeEntry();
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        result.reject("error.file.failed");
+                    }
+                    //then create our synthetic zip file with the name being SKELETON, so it can be accessed again later
+                    MultipartFile syntheticZip = new ZipMultipartFile(
+                            "files", "SKELETON.zip", "application/zip", baos.toByteArray());
+                    submissionsForm.setFiles(new MultipartFile[]{syntheticZip});
                 }
 
                 collisions = workspaceWrapper.addSubmissions(submissionsForm);
