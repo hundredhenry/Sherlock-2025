@@ -48,6 +48,24 @@
                                     </select>
                                 </div>
                                 <div class="form-group col-md-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                            type="checkbox"
+                                            name="skeleton"
+                                            id="skeletonCheckboxFile"
+                                            value="true">
+
+                                        <label class="form-check-label" for="skeletonCheckboxFile">
+                                            <span th:text="#{workspaces.submissions.upload.skeleton}"></span>
+                                        </label>
+                                    </div>
+
+                                    <small class="form-text text-light">
+                                        <span th:text="#{workspaces.submissions.upload.skeleton_note}"></span>
+                                    </small>
+                                </div>
+
+                                <div class="form-group col-md-12">
                                     <button type="submit" class="btn btn-primary float-right" th:text="#{link.upload}"></button>
                                 </div>
                             </div>
@@ -79,7 +97,7 @@
                                     <div class="form-group col-md-12">
                                         <!-- folder upload using webkitdirectory NOTE: does not work with internet explorer/only partially with safari -->
                                         <input type="file" name="files" webkitdirectory multiple>
-                                        <input type="hidden" name="single" value="false">
+                                        <input type="hidden" name="single" value="true">
                                     </div>
                                     <div class="form-group col-md-12">
                                         <label for="duplicate4" th:text="#{variable.duplicate}"></label>
@@ -94,6 +112,23 @@
                                                     th:text="#{variable.duplicate.two}">
                                             </option>
                                         </select>
+                                    </div>
+                                    <div class="form-group col-md-12">
+                                        <div class="form-check">
+                                            <input class="form-check-input"
+                                                type="checkbox"
+                                                name="skeleton"
+                                                id="skeletonCheckboxSingleNonzip"
+                                                value="true">
+
+                                            <label class="form-check-label" for="skeletonCheckboxSingleNonzip">
+                                                <span th:text="#{workspaces.submissions.upload.skeleton}"></span>
+                                            </label>
+                                        </div>
+
+                                        <small class="form-text text-light">
+                                            <span th:text="#{workspaces.submissions.upload.skeleton_note}"></span>
+                                        </small>
                                     </div>
                                     <div class="form-group col-md-12">
                                         <button type="submit" class="btn btn-primary float-right" th:text="#{link.upload}"></button>
@@ -115,6 +150,7 @@
                                     <div class="form-group col-md-12">
                                         <input type="file" name="files" accept=".zip,.tar,.tar.gz,.tgz">
                                         <input type="hidden" name="single" value="true">
+                                        <input type="hidden" name="zipped" value="true">
                                     </div>
                                     <div class="form-group col-md-12">
                                         <label for="duplicate5" th:text="#{variable.duplicate}"></label>
@@ -129,6 +165,23 @@
                                                     th:text="#{variable.duplicate.two}">
                                             </option>
                                         </select>
+                                    </div>
+                                    <div class="form-group col-md-12">
+                                        <div class="form-check">
+                                            <input class="form-check-input"
+                                                type="checkbox"
+                                                name="skeleton"
+                                                id="skeletonCheckboxSingleZip"
+                                                value="true">
+
+                                            <label class="form-check-label" for="skeletonCheckboxSingleZip">
+                                                <span th:text="#{workspaces.submissions.upload.skeleton}"></span>
+                                            </label>
+                                        </div>
+
+                                        <small class="form-text text-light">
+                                            <span th:text="#{workspaces.submissions.upload.skeleton_note}"></span>
+                                        </small>
                                     </div>
                                     <div class="form-group col-md-12">
                                         <button type="submit" class="btn btn-primary float-right" th:text="#{link.upload}"></button>
@@ -181,6 +234,23 @@
                                         </select>
                                     </div>
                                     <div class="form-group col-md-12">
+                                        <div class="form-check">
+                                            <input class="form-check-input"
+                                                type="checkbox"
+                                                name="skeleton"
+                                                id="skeletonCheckboxMultiNonzip"
+                                                value="true">
+
+                                            <label class="form-check-label" for="skeletonCheckboxMultiNonzip">
+                                                <span th:text="#{workspaces.submissions.upload.skeleton}"></span>
+                                            </label>
+                                        </div>
+
+                                        <small class="form-text text-light">
+                                            <span th:text="#{workspaces.submissions.upload.skeleton_note}"></span>
+                                        </small>
+                                    </div>
+                                    <div class="form-group col-md-12">
                                         <button type="submit" class="btn btn-primary float-right" th:text="#{link.upload}"></button>
                                     </div>
                                 </div>
@@ -200,7 +270,8 @@
                                     <div class="form-group col-md-12">
                                         <input type="file" name="files" accept=".zip,.tar,.tar.gz,.tgz">
                                         <input type="hidden" name="single" value="false">
-                                        <input type="hidden" name="multiFolder" value="false">
+                                        <input type="hidden" name="multiFolder" value="true">
+                                        <input type="hidden" name="zipped" value="true">
                                     </div>
                                     <div class="form-group col-md-12">
                                         <label for="duplicate7" th:text="#{variable.duplicate}"></label>
@@ -215,6 +286,23 @@
                                                     th:text="#{variable.duplicate.two}">
                                             </option>
                                         </select>
+                                    </div>
+                                    <div class="form-group col-md-12">
+                                        <div class="form-check">
+                                            <input class="form-check-input"
+                                                type="checkbox"
+                                                name="skeleton"
+                                                id="skeletonCheckboxMultizip"
+                                                value="true">
+
+                                            <label class="form-check-label" for="skeletonCheckboxMultizip">
+                                                <span th:text="#{workspaces.submissions.upload.skeleton}"></span>
+                                            </label>
+                                        </div>
+
+                                        <small class="form-text text-light">
+                                            <span th:text="#{workspaces.submissions.upload.skeleton_note}"></span>
+                                        </small>
                                     </div>
                                     <div class="form-group col-md-12">
                                         <button type="submit" class="btn btn-primary float-right" th:text="#{link.upload}"></button>
