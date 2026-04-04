@@ -34,15 +34,15 @@ public class ASTRawResult extends AbstractModelTaskRawResult {
     /**
      * The AST trees for the two files, used for calculating node counts.
      */
-    private transient ASTNode tree1; // Does not need to be serialised (surviving to disk)
-    private transient ASTNode tree2;
+    private transient ASTNode<?> tree1; // Does not need to be serialised (surviving to disk)
+    private transient ASTNode<?> tree2;
     /**
      * Constructs a new empty result container for a file pair.
      *
      * @param file1 the first source file
      * @param file2 the second source file
      */
-    public ASTRawResult(ISourceFile file1, ISourceFile file2, ASTNode tree1, ASTNode tree2) {
+    public ASTRawResult(ISourceFile file1, ISourceFile file2, ASTNode<?> tree1, ASTNode<?> tree2) {
         this.file1id = file1.getPersistentId();
         this.file2id = file2.getPersistentId();
         this.matches = new ArrayList<>();

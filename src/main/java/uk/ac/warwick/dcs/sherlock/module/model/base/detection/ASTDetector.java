@@ -56,16 +56,16 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
     }
 
     // Preprocess tree: compute fingerprints, weights, and heights
-    private void preprocessTree(ASTNode root) {
+    private void preprocessTree(ASTNode<?> root) {
         // Post-order traversal to compute bottom-up
-        Stack<ASTNode> stack = new Stack<>();
-        Set<ASTNode> visited = new HashSet<>();
+        Stack<ASTNode<?>> stack = new Stack<>();
+        Set<ASTNode<?>> visited = new HashSet<>();
         stack.push(root);
         while (!stack.isEmpty()) {
-            ASTNode node = stack.peek();
+            ASTNode<?> node = stack.peek();
             // Check if all children have been processed
             boolean childrenReady = true;
-            for (ASTNode child : node.getChildren()) {
+            for (ASTNode<?> child : node.getChildren()) {
                 if (!visited.contains(child)) {
                     stack.push(child);
                     childrenReady = false;
@@ -85,12 +85,12 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
     }
 
     // Group nodes in a subtree by height (computed BFS)
-    private Map<Integer, List<ASTNode>> groupByHeight(ASTNode root) {
-        Map<Integer, List<ASTNode>> heightMap = new HashMap<>();
-        Queue<ASTNode> queue = new LinkedList<>();
+    private Map<Integer, List<ASTNode<?>>> groupByHeight(ASTNode<?> root) {
+        Map<Integer, List<ASTNode<?>>> heightMap = new HashMap<>();
+        Queue<ASTNode<?>> queue = new LinkedList<>();
         queue.add(root);
         while (!queue.isEmpty()) {
-            ASTNode node = queue.poll();
+            ASTNode<?> node = queue.poll();
             int height = node.getHeight();
             heightMap.putIfAbsent(height, new ArrayList<>());
             heightMap.get(height).add(node);
@@ -100,14 +100,14 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
     }
 
     // Get nodes in post-order (children before parents)
-    private List<ASTNode> postOrder(ASTNode root) {
-        List<ASTNode> result = new ArrayList<>();
+    private List<ASTNode<?>> postOrder(ASTNode<?> root) {
+        List<ASTNode<?>> result = new ArrayList<>();
         postOrderHelper(root, result);
         return result;
     }
 
-    private void postOrderHelper(ASTNode node, List<ASTNode> result) {
-        for (ASTNode child : node.getChildren()) {
+    private void postOrderHelper(ASTNode<?> node, List<ASTNode<?>> result) {
+        for (ASTNode<?> child : node.getChildren()) {
             postOrderHelper(child, result);
         }
         result.add(node);
@@ -120,11 +120,11 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
 
         private final boolean useAbstraction;
 
-        private Set<ASTNode> anchorMatched1;
-        private Set<ASTNode> anchorMatched2;
-        private Set<ASTNode> containerMatched1;
-        private Set<ASTNode> containerMatched2;
-        private Map<ASTNode, ASTNode> anchorMap;
+        private Set<ASTNode<?>> anchorMatched1;
+        private Set<ASTNode<?>> anchorMatched2;
+        private Set<ASTNode<?>> containerMatched1;
+        private Set<ASTNode<?>> containerMatched2;
+        private Map<ASTNode<?>, ASTNode<?>> anchorMap;
 
         public ASTDetectorWorker(IDetector parent, ModelDataItem file1Data, ModelDataItem file2Data) {
             super(parent, file1Data, file2Data);
@@ -132,12 +132,12 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
         }
 
         // Recursively add mappings for isomorphic descendants of descendant anchor-mappings
-        private void addAnchorDescendantMappings(Map<ASTNode, ASTNode> anchorMap, ASTNode n1, ASTNode n2) {
-            List<ASTNode> children1 = n1.getChildren();
-            List<ASTNode> children2 = n2.getChildren();
+        private void addAnchorDescendantMappings(Map<ASTNode<?>, ASTNode<?>> anchorMap, ASTNode<?> n1, ASTNode<?> n2) {
+            List<ASTNode<?>> children1 = n1.getChildren();
+            List<ASTNode<?>> children2 = n2.getChildren();
             for (int i = 0; i < children1.size(); i++) {
-                ASTNode c1 = children1.get(i);
-                ASTNode c2 = children2.get(i);
+                ASTNode<?> c1 = children1.get(i);
+                ASTNode<?> c2 = children2.get(i);
                 anchorMatched1.add(c1);
                 anchorMatched2.add(c2);
                 anchorMap.put(c1, c2);
@@ -146,7 +146,7 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
         }
 
         // helper function for adding to metadata output mappings
-        private void addToRawResult(ASTRawResult res, ASTNode n1, ASTNode n2, float similarityScore) {
+        private void addToRawResult(ASTRawResult res, ASTNode<?> n1, ASTNode<?> n2, float similarityScore) {
             if (n1.getMetadata("startLine") == null || n2.getMetadata("startLine") == null) {
                 // Missing line metadata, skip this match
                 return;
@@ -161,22 +161,22 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
         }
 
         // Find candidate nodes from tree2 that could match n1 (BFS)
-        private List<ASTNode> findCandidates(ASTNode n1, ASTNode root2) {
-            List<ASTNode> candidates = new ArrayList<>();
-            Queue<ASTNode> queue = new LinkedList<>();
+        private List<ASTNode<?>> findCandidates(ASTNode<?> n1, ASTNode<?> root2) {
+            List<ASTNode<?>> candidates = new ArrayList<>();
+            Queue<ASTNode<?>> queue = new LinkedList<>();
             queue.add(root2); // BFS process root2 level by level
 
             while (!queue.isEmpty()) {
-                ASTNode n2 = queue.poll();
+                ASTNode<?> n2 = queue.poll();
                 
                 // Must have same kind (node type) and be unmatched (NOT NECESSARILY FINGERPRINT MATCHED)
                 if (n2.getKind().equals(n1.getKind()) && !anchorMatched2.contains(n2)) {
                     // Must have some matching anchor-mapped descendants
                     boolean hasCommonAnchorMappedDescendants = false;
-                    Set<ASTNode> desc1 = n1.getDescendants(); // Now O(1) from cache
-                    Set<ASTNode> desc2 = n2.getDescendants();
+                    Set<ASTNode<?>> desc1 = n1.getDescendants(); // Now O(1) from cache
+                    Set<ASTNode<?>> desc2 = n2.getDescendants();
 
-                    for (ASTNode d1 : desc1) {
+                    for (ASTNode<?> d1 : desc1) {
                         if (anchorMatched1.contains(d1)) { // check every anchor-mapped descendant of n1 for a direct mapping to a descendant of n2
                             if (anchorMap.containsKey(d1) && desc2.contains(anchorMap.get(d1))) {
                                 hasCommonAnchorMappedDescendants = true;
@@ -211,8 +211,8 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
             ASTArtifact artiF1 = (ASTArtifact) this.file1.getPreProcessedArtifact("ast");
             ASTArtifact artiF2 = (ASTArtifact) this.file2.getPreProcessedArtifact("ast");
             // Get the root node of each AST
-            ASTNode tree1 = artiF1.ast();
-            ASTNode tree2 = artiF2.ast();
+            ASTNode<?> tree1 = artiF1.ast();
+            ASTNode<?> tree2 = artiF2.ast();
             
             // Preprocess: compute fingerprints, weights, and heights
             preprocessTree(tree1);
@@ -222,8 +222,8 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
             ASTRawResult res = new ASTRawResult(this.file1.getFile(), this.file2.getFile(), tree1, tree2);
 
             // PHASE 1: Top-down greedy search for isomorphic subtrees (anchors)
-            Map<Integer, List<ASTNode>> heightMap1 = groupByHeight(tree1);
-            Map<Integer, List<ASTNode>> heightMap2 = groupByHeight(tree2);
+            Map<Integer, List<ASTNode<?>>> heightMap1 = groupByHeight(tree1);
+            Map<Integer, List<ASTNode<?>>> heightMap2 = groupByHeight(tree2);
 
             // Get all heights in descending order
             Set<Integer> allHeights = new TreeSet<>(Collections.reverseOrder()); // O(logn) search, order-aware
@@ -233,14 +233,14 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
             for (int height : allHeights) { // Top-down traversal to maximise subtree coverage and prevent redundant matches
                 if (height < MIN_HEIGHT) break; // skip if subtree height too small to be meaningful
 
-                List<ASTNode> nodes1 = heightMap1.getOrDefault(height, Collections.emptyList());
-                List<ASTNode> nodes2 = heightMap2.getOrDefault(height, Collections.emptyList());
+                List<ASTNode<?>> nodes1 = heightMap1.getOrDefault(height, Collections.emptyList());
+                List<ASTNode<?>> nodes2 = heightMap2.getOrDefault(height, Collections.emptyList());
 
                 // find fingerprint matches --> optimised by comparing only nodes with same height
-                for (ASTNode n1 : nodes1) {
+                for (ASTNode<?> n1 : nodes1) {
                     if (anchorMatched1.contains(n1)) continue;
                     
-                    for (ASTNode n2 : nodes2) {
+                    for (ASTNode<?> n2 : nodes2) {
                         if (anchorMatched2.contains(n2)) continue;
 
                         // Anchor-mapping conditions depend on parametrised matching strictness
@@ -260,32 +260,32 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
             }
 
             // PHASE 2: Bottom-up search for similar subtrees (containers) based on Dice similarity of their children
-            List<ASTNode> postOrder1 = postOrder(tree1);
-            for (ASTNode n1 : postOrder1) {
+            List<ASTNode<?>> postOrder1 = postOrder(tree1);
+            for (ASTNode<?> n1 : postOrder1) {
                 if (anchorMatched1.contains(n1)) continue; // If already anchor-mapped, skip
                 if (n1.getChildren().isEmpty()) continue; // container-type mappings cannot be leaves
 
                 // Check if this node has any anchor-mapped descendants
                 boolean hasAnchorMatchedDescendants = false;
-                for (ASTNode desc : n1.getDescendants()) {
+                for (ASTNode<?> desc : n1.getDescendants()) {
                     if (anchorMatched1.contains(desc)) hasAnchorMatchedDescendants = true;
                 }
                 if (!hasAnchorMatchedDescendants) continue;
 
                 // Find the candidate matches in tree2
-                List<ASTNode> candidates = findCandidates(n1, tree2);
+                List<ASTNode<?>> candidates = findCandidates(n1, tree2);
 
                 // Find the BEST container match for a node (for tree1 from tree2)
-                ASTNode bestMatch = null;
+                ASTNode<?> bestMatch = null;
                 float bestDice = 0;
 
-                for (ASTNode candidate : candidates) { // Compute Dice coefficient between n1 and candidate node from tree2
+                for (ASTNode<?> candidate : candidates) { // Compute Dice coefficient between n1 and candidate node from tree2
                     // dice(t1, t2) = 2 * |common_descendants| / (|desc(t1)| + |desc(t2)|)
-                    Set<ASTNode> desc1 = n1.getDescendants();
-                    Set<ASTNode> descCandidate = candidate.getDescendants();
+                    Set<ASTNode<?>> desc1 = n1.getDescendants();
+                    Set<ASTNode<?>> descCandidate = candidate.getDescendants();
                     int commonCount = 0;
-                    for (ASTNode d1 : desc1) {
-                        ASTNode partner = anchorMap.get(d1);
+                    for (ASTNode<?> d1 : desc1) {
+                        ASTNode<?> partner = anchorMap.get(d1);
                         if (partner != null && descCandidate.contains(partner)) {
                             commonCount++;
                         }

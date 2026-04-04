@@ -13,7 +13,7 @@ import uk.ac.warwick.dcs.sherlock.module.model.base.lang.JavaParser;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.JavaParserBaseListener;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.JavaParserBaseVisitor;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.ASTArtifact;
-import uk.ac.warwick.dcs.sherlock.api.util.ASTNode;
+import uk.ac.warwick.dcs.sherlock.api.util.JavaASTNode;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -30,70 +30,70 @@ public class ASTGeneratorJava implements IAdvancedPreProcessor<JavaLexer> {
 
         ParseTree tree = parser.compilationUnit();
 
-        ASTNode ast = new ASTNode(ASTNode.NodeKind.FUNCTION_DECL);
+        JavaASTNode ast = new JavaASTNode(JavaASTNode.Kind.FUNCTION_DECL);
 
         JavaASTBuilder astBuilder = new JavaASTBuilder();
 
-        ASTNode astRoot = astBuilder.visit(tree);
+        JavaASTNode astRoot = astBuilder.visit(tree);
 
         return new ASTArtifact(astRoot);
     }
 }
 
-class JavaASTBuilder extends JavaParserBaseVisitor<ASTNode>{
-    private static final Map<String, ASTNode.NodeKind> RULE_MAP = Map.ofEntries(
-            Map.entry("compilationUnit", ASTNode.NodeKind.PROGRAM),
-            Map.entry("classDeclaration", ASTNode.NodeKind.CLASS_DECL),
-            Map.entry("interfaceDeclaration", ASTNode.NodeKind.INTERFACE_DECL),
-            Map.entry("enumDeclaration", ASTNode.NodeKind.ENUM_DECL),
-            Map.entry("recordDeclaration", ASTNode.NodeKind.RECORD_DECL),
-            Map.entry("methodDeclaration", ASTNode.NodeKind.FUNCTION_DECL),
-            Map.entry("constructorDeclaration", ASTNode.NodeKind.CONSTRUCTOR_DECL),
-            Map.entry("variableDeclarator", ASTNode.NodeKind.VARIABLE_DECL),
-            Map.entry("formalParameter", ASTNode.NodeKind.PARAMETER),
-            Map.entry("block", ASTNode.NodeKind.BLOCK),
-            Map.entry("typeType", ASTNode.NodeKind.TYPE),
-            Map.entry("ifStatement", ASTNode.NodeKind.IF_STATEMENT),
-            Map.entry("forStatement", ASTNode.NodeKind.FOR_LOOP),
-            Map.entry("whileStatement", ASTNode.NodeKind.WHILE_LOOP),
-            Map.entry("doWhileStatement", ASTNode.NodeKind.DO_WHILE_LOOP),
-            Map.entry("tryStatement", ASTNode.NodeKind.TRY_STATEMENT),
-            Map.entry("catchClause", ASTNode.NodeKind.CATCH),
-            Map.entry("finallyBlock", ASTNode.NodeKind.FINALLY),
-            Map.entry("switchStatement", ASTNode.NodeKind.SWITCH_EXPR),
-            Map.entry("switchExpression", ASTNode.NodeKind.SWITCH_EXPR),
-            Map.entry("switchLabeledRule", ASTNode.NodeKind.CASE_GROUP),
-            Map.entry("switchLabel", ASTNode.NodeKind.CASE_LABEL),
-            Map.entry("returnStatement", ASTNode.NodeKind.RETURN),
-            Map.entry("breakStatement", ASTNode.NodeKind.BREAK),
-            Map.entry("continueStatement", ASTNode.NodeKind.CONTINUE),
-            Map.entry("throwStatement", ASTNode.NodeKind.THROW),
-            Map.entry("assertStatement", ASTNode.NodeKind.ASSERT),
-            Map.entry("classBody", ASTNode.NodeKind.BLOCK)
+class JavaASTBuilder extends JavaParserBaseVisitor<JavaASTNode>{
+    private static final Map<String, JavaASTNode.Kind> RULE_MAP = Map.ofEntries(
+            Map.entry("compilationUnit", JavaASTNode.Kind.PROGRAM),
+            Map.entry("classDeclaration", JavaASTNode.Kind.CLASS_DECL),
+            Map.entry("interfaceDeclaration", JavaASTNode.Kind.INTERFACE_DECL),
+            Map.entry("enumDeclaration", JavaASTNode.Kind.ENUM_DECL),
+            Map.entry("recordDeclaration", JavaASTNode.Kind.RECORD_DECL),
+            Map.entry("methodDeclaration", JavaASTNode.Kind.FUNCTION_DECL),
+            Map.entry("constructorDeclaration", JavaASTNode.Kind.CONSTRUCTOR_DECL),
+            Map.entry("variableDeclarator", JavaASTNode.Kind.VARIABLE_DECL),
+            Map.entry("formalParameter", JavaASTNode.Kind.PARAMETER),
+            Map.entry("block", JavaASTNode.Kind.BLOCK),
+            Map.entry("typeType", JavaASTNode.Kind.TYPE),
+            Map.entry("ifStatement", JavaASTNode.Kind.IF_STATEMENT),
+            Map.entry("forStatement", JavaASTNode.Kind.FOR_LOOP),
+            Map.entry("whileStatement", JavaASTNode.Kind.WHILE_LOOP),
+            Map.entry("doWhileStatement", JavaASTNode.Kind.DO_WHILE_LOOP),
+            Map.entry("tryStatement", JavaASTNode.Kind.TRY_STATEMENT),
+            Map.entry("catchClause", JavaASTNode.Kind.CATCH),
+            Map.entry("finallyBlock", JavaASTNode.Kind.FINALLY),
+            Map.entry("switchStatement", JavaASTNode.Kind.SWITCH_EXPR),
+            Map.entry("switchExpression", JavaASTNode.Kind.SWITCH_EXPR),
+            Map.entry("switchLabeledRule", JavaASTNode.Kind.CASE_GROUP),
+            Map.entry("switchLabel", JavaASTNode.Kind.CASE_LABEL),
+            Map.entry("returnStatement", JavaASTNode.Kind.RETURN),
+            Map.entry("breakStatement", JavaASTNode.Kind.BREAK),
+            Map.entry("continueStatement", JavaASTNode.Kind.CONTINUE),
+            Map.entry("throwStatement", JavaASTNode.Kind.THROW),
+            Map.entry("assertStatement", JavaASTNode.Kind.ASSERT),
+            Map.entry("classBody", JavaASTNode.Kind.BLOCK)
     );
 
-    private static final Map<Integer, ASTNode.NodeKind> TOKEN_MAP = Map.of(
-            JavaLexer.IDENTIFIER, ASTNode.NodeKind.IDENTIFIER,
-            JavaLexer.STRING_LITERAL, ASTNode.NodeKind.STRING_LITERAL,
-            JavaLexer.CHAR_LITERAL, ASTNode.NodeKind.STRING_LITERAL,
-            JavaLexer.DECIMAL_LITERAL, ASTNode.NodeKind.NUMBER_LITERAL,
-            JavaLexer.FLOAT_LITERAL, ASTNode.NodeKind.NUMBER_LITERAL,
-            JavaLexer.BOOL_LITERAL, ASTNode.NodeKind.BOOL_LITERAL,
-            JavaLexer.NULL_LITERAL, ASTNode.NodeKind.NULL_LITERAL
+    private static final Map<Integer, JavaASTNode.Kind> TOKEN_MAP = Map.of(
+            JavaLexer.IDENTIFIER, JavaASTNode.Kind.IDENTIFIER,
+            JavaLexer.STRING_LITERAL, JavaASTNode.Kind.STRING_LITERAL,
+            JavaLexer.CHAR_LITERAL, JavaASTNode.Kind.STRING_LITERAL,
+            JavaLexer.DECIMAL_LITERAL, JavaASTNode.Kind.NUMBER_LITERAL,
+            JavaLexer.FLOAT_LITERAL, JavaASTNode.Kind.NUMBER_LITERAL,
+            JavaLexer.BOOL_LITERAL, JavaASTNode.Kind.BOOL_LITERAL,
+            JavaLexer.NULL_LITERAL, JavaASTNode.Kind.NULL_LITERAL
     );
 
     @Override
-    public ASTNode visitChildren(RuleNode node) {
+    public JavaASTNode visitChildren(RuleNode node) {
 
         ParserRuleContext ctx = (ParserRuleContext) node;
         String ruleName = JavaParser.ruleNames[ctx.getRuleIndex()];
-        ASTNode.NodeKind kind = RULE_MAP.get(ruleName);
+        JavaASTNode.Kind kind = RULE_MAP.get(ruleName);
 
-        List<ASTNode> children = new ArrayList<>();
+        List<JavaASTNode> children = new ArrayList<>();
 
         for (int i = 0; i < ctx.getChildCount(); i++) {
             ParseTree child = ctx.getChild(i);
-            ASTNode childAST = child.accept(this);
+            JavaASTNode childAST = child.accept(this);
             if (childAST != null) {
                 children.add(childAST);
             }
@@ -103,26 +103,26 @@ class JavaASTBuilder extends JavaParserBaseVisitor<ASTNode>{
             if (children.isEmpty()) return null;
             if (children.size() == 1) return children.get(0);
 
-            ASTNode wrapper = new ASTNode(ASTNode.NodeKind.UNKNOWN);
-            for (ASTNode child : children) addChildWithParent(wrapper, child);
+            JavaASTNode wrapper = new JavaASTNode(JavaASTNode.Kind.UNKNOWN);
+            for (JavaASTNode child : children) addChildWithParent(wrapper, child);
             attachMetadata(wrapper, ctx);
             return wrapper;
         }
 
-        ASTNode nodeAST = new ASTNode(kind);
-        for (ASTNode child : children) addChildWithParent(nodeAST, child);
+        JavaASTNode nodeAST = new JavaASTNode(kind);
+        for (JavaASTNode child : children) addChildWithParent(nodeAST, child);
         attachMetadata(nodeAST, ctx);
 
         return nodeAST;
     }
 
     @Override
-    public ASTNode visitTerminal(TerminalNode node) {
+    public JavaASTNode visitTerminal(TerminalNode node) {
         int type = node.getSymbol().getType();
-        ASTNode.NodeKind kind = TOKEN_MAP.get(type);
+        JavaASTNode.Kind kind = TOKEN_MAP.get(type);
         if (kind == null) return null;
 
-        ASTNode ast = new ASTNode(kind, node.getText());
+        JavaASTNode ast = new JavaASTNode(kind, node.getText());
 
         // Setup metadata for terminal nodes
         Token token = node.getSymbol();
@@ -136,8 +136,8 @@ class JavaASTBuilder extends JavaParserBaseVisitor<ASTNode>{
     }
 
     @Override
-    public ASTNode visitBinaryOperatorExpression(JavaParser.BinaryOperatorExpressionContext ctx) {
-        ASTNode expr = new ASTNode(ASTNode.NodeKind.BINARY_EXPR, ctx.bop.getText());
+    public JavaASTNode visitBinaryOperatorExpression(JavaParser.BinaryOperatorExpressionContext ctx) {
+        JavaASTNode expr = new JavaASTNode(JavaASTNode.Kind.BINARY_EXPR, ctx.bop.getText());
         addChildWithParent(expr, visit(ctx.expression(0)));
         addChildWithParent(expr, visit(ctx.expression(1)));
         attachMetadata(expr, ctx);
@@ -145,16 +145,16 @@ class JavaASTBuilder extends JavaParserBaseVisitor<ASTNode>{
     }
 
     @Override
-    public ASTNode visitUnaryOperatorExpression(JavaParser.UnaryOperatorExpressionContext ctx) {
-        ASTNode expr = new ASTNode(ASTNode.NodeKind.UNARY_EXPR, ctx.prefix.getText());
+    public JavaASTNode visitUnaryOperatorExpression(JavaParser.UnaryOperatorExpressionContext ctx) {
+        JavaASTNode expr = new JavaASTNode(JavaASTNode.Kind.UNARY_EXPR, ctx.prefix.getText());
         addChildWithParent(expr, visit(ctx.expression()));
         attachMetadata(expr, ctx);
         return expr;
     }
 
     @Override
-    public ASTNode visitMethodCallExpression(JavaParser.MethodCallExpressionContext ctx) {
-        ASTNode call = new ASTNode(ASTNode.NodeKind.CALL_EXPR);
+    public JavaASTNode visitMethodCallExpression(JavaParser.MethodCallExpressionContext ctx) {
+        JavaASTNode call = new JavaASTNode(JavaASTNode.Kind.CALL_EXPR);
         call.setValue(ctx.methodCall().getText());
 
         JavaParser.ExpressionListContext exprList = ctx.methodCall().arguments().expressionList();
@@ -169,20 +169,20 @@ class JavaASTBuilder extends JavaParserBaseVisitor<ASTNode>{
     }
 
     @Override
-    public ASTNode visitStatement(JavaParser.StatementContext ctx) {
+    public JavaASTNode visitStatement(JavaParser.StatementContext ctx) {
         if (ctx == null || ctx.getChildCount() == 0) return null;
 
         ParseTree first = ctx.getChild(0);
-        ASTNode node = null;
+        JavaASTNode node = null;
 
         if (first.getText().equals("if")) {  // first token is 'if'
-            node = new ASTNode(ASTNode.NodeKind.IF_STATEMENT);
+            node = new JavaASTNode(JavaASTNode.Kind.IF_STATEMENT);
         } else if (first.getText().equals("while")) {
-            node = new ASTNode(ASTNode.NodeKind.WHILE_LOOP);
+            node = new JavaASTNode(JavaASTNode.Kind.WHILE_LOOP);
         } else if (first.getText().equals("for")) {
-            node = new ASTNode(ASTNode.NodeKind.FOR_LOOP);
+            node = new JavaASTNode(JavaASTNode.Kind.FOR_LOOP);
         } else if (first.getText().equals("try")) {
-            node = new ASTNode(ASTNode.NodeKind.TRY_STATEMENT);
+            node = new JavaASTNode(JavaASTNode.Kind.TRY_STATEMENT);
         }
 
         // If this isn't a control flow statement, just unwrap it
@@ -196,7 +196,7 @@ class JavaASTBuilder extends JavaParserBaseVisitor<ASTNode>{
             ParseTree child = ctx.getChild(i);
 
             if (child instanceof ParserRuleContext) {
-                ASTNode childNode = visit(child);
+                JavaASTNode childNode = visit(child);
                 addChildWithParent(node, childNode);
             }
         }
@@ -206,14 +206,14 @@ class JavaASTBuilder extends JavaParserBaseVisitor<ASTNode>{
     }
 
     @Override
-    public ASTNode visitLambdaExpression(JavaParser.LambdaExpressionContext ctx) {
-        ASTNode lambda = new ASTNode(ASTNode.NodeKind.LAMBDA_EXPR);
+    public JavaASTNode visitLambdaExpression(JavaParser.LambdaExpressionContext ctx) {
+        JavaASTNode lambda = new JavaASTNode(JavaASTNode.Kind.LAMBDA_EXPR);
         addChildWithParent(lambda, visit(ctx.lambdaBody()));
         attachMetadata(lambda, ctx);
         return lambda;
     }
 
-    private void attachMetadata(ASTNode node, ParserRuleContext ctx) {
+    private void attachMetadata(JavaASTNode node, ParserRuleContext ctx) {
 
         Token start = ctx.getStart();
         Token stop = ctx.getStop();
@@ -225,7 +225,7 @@ class JavaASTBuilder extends JavaParserBaseVisitor<ASTNode>{
         node.setMetadata("endChar", stop.getCharPositionInLine());
     }
 
-    private void addChildWithParent(ASTNode parent, ASTNode child) {
+    private void addChildWithParent(JavaASTNode parent, JavaASTNode child) {
         if (child != null) {
             parent.addChild(child);
             child.setParent(parent);

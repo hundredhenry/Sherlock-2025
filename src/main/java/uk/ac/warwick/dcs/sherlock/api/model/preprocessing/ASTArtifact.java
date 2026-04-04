@@ -4,5 +4,5 @@ import uk.ac.warwick.dcs.sherlock.api.util.ASTNode;
 import uk.ac.warwick.dcs.sherlock.api.util.IPreprocessArtifact;
 
 public record ASTArtifact(
-        ASTNode ast
+        ASTNode<?> ast
 ) implements IPreprocessArtifact {}

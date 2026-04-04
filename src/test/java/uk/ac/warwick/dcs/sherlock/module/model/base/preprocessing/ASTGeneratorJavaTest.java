@@ -4,7 +4,7 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.junit.jupiter.api.Test;
 
-import uk.ac.warwick.dcs.sherlock.api.util.ASTNode;
+import uk.ac.warwick.dcs.sherlock.api.util.JavaASTNode;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.JavaLexer;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.JavaParser;
 
@@ -35,13 +35,13 @@ class JavaASTBuilderTest {
         ParseTree tree = parser.compilationUnit();
 
         JavaASTBuilder builder = new JavaASTBuilder();
-        ASTNode ast = builder.visit(tree);
+        JavaASTNode ast = builder.visit(tree);
 
         assertNotNull(ast);
-        assertEquals(ASTNode.NodeKind.PROGRAM, ast.getKind());
+        assertEquals(JavaASTNode.Kind.PROGRAM, ast.getKind());
 
-        ASTNode classNode = ast.getChildren().get(0);
-        assertEquals(ASTNode.NodeKind.CLASS_DECL, classNode.getKind());
+        JavaASTNode classNode = (JavaASTNode) ast.getChildren().get(0);
+        assertEquals(JavaASTNode.Kind.CLASS_DECL, classNode.getKind());
 
         assertEquals(ast, classNode.getParent());
     }
@@ -68,15 +68,15 @@ class JavaASTBuilderTest {
         ParseTree tree = parser.compilationUnit();
 
         JavaASTBuilder builder = new JavaASTBuilder();
-        ASTNode ast = builder.visit(tree);
+        JavaASTNode ast = builder.visit(tree);
 
         assertNotNull(ast);
 
-        ASTNode classNode = ast.getChildren().get(0);
-        /*assertEquals(ASTNode.NodeKind.PROGRAM, ast.getKind());
+        JavaASTNode classNode = (JavaASTNode) ast.getChildren().get(0);
+        /*assertEquals(JavaASTNode.Kind.PROGRAM, ast.getKind());
 
-        ASTNode classNode = ast.getChildren().get(0);
-        assertEquals(ASTNode.NodeKind.CLASS_DECL, classNode.getKind());
+        JavaASTNode classNode = ast.getChildren().get(0);
+        assertEquals(JavaASTNode.Kind.CLASS_DECL, classNode.getKind());
 
         assertEquals(ast, classNode.getParent());*/
     }
