@@ -36,6 +36,8 @@ configurations {
     jsMinifier
 }
 
+
+
 dependencies {
     antlr('org.antlr:antlr4:4.13.2')
 
@@ -127,6 +129,7 @@ tasks.named('javadoc') {
 
 tasks.named('generateGrammarSource') {
     outputDirectory = layout.buildDirectory.dir("tmp/src/main/antlr/uk/ac/warwick/dcs/sherlock/module/model/base/lang").get().asFile
+    arguments += ['-visitor']
 }
 
 tasks.register('generateSources', Copy) {
