@@ -120,12 +120,6 @@ Command: `template updateDetectors -t=<template name> <detector name>=TRUE/FALSE
 
 This template enables/disables a detector in a template. Set to false to disable it, or true to enable.
 
-### View Parameters
-
-Command: `template viewParameters -t=<templateName>`
-
-This commmand displays information about a template's detectors i.e. its parameters.
-
 ### Set Pre-Processing Parameters
 
 Command: `template setPreProcessingParameters -d=<detector name> -t=<template name> <parameter>=<value>
