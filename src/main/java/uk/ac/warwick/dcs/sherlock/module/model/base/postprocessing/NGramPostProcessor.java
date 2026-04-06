@@ -165,7 +165,6 @@ public class NGramPostProcessor implements IPostProcessor<NGramRawResult> {
 			results.removeGroup(out_group);
 		}
 
-//		System.out.println("processResults");
 		return results;
 	}
 }

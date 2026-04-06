@@ -5,8 +5,7 @@ import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.AbstractModelTaskRawR
 import uk.ac.warwick.dcs.sherlock.api.util.SherlockHelper;
 import uk.ac.warwick.dcs.sherlock.api.util.PairedTuple;
 import uk.ac.warwick.dcs.sherlock.module.model.base.detection.ASTMatch;
-
-
+import uk.ac.warwick.dcs.sherlock.api.util.ASTNode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,14 +20,11 @@ import java.io.Serializable;
  */
 public class ASTRawResult extends AbstractModelTaskRawResult<ASTMatch> {
 
-
-
     /**
-     * The list of AST matches found between the two files.
+     * The AST trees for the two files, used for calculating node counts.
      */
-    private final List<ASTMatch> matches;
-
-
+    private transient ASTNode<?> tree1; // Does not need to be serialised (surviving to disk)
+    private transient ASTNode<?> tree2;
 
     /**
      * Constructs a new empty result container for a file pair.
@@ -36,9 +32,10 @@ public class ASTRawResult extends AbstractModelTaskRawResult<ASTMatch> {
      * @param file1 the first source file
      * @param file2 the second source file
      */
-    public ASTRawResult(ISourceFile file1, ISourceFile file2) {
+    public ASTRawResult(ISourceFile file1, ISourceFile file2, ASTNode<?> tree1, ASTNode<?> tree2) {
         super(file1,file2);
-        this.matches = new ArrayList<>();
+        this.tree1 = tree1;
+        this.tree2 = tree2;
     }
 
     /**
@@ -47,11 +44,11 @@ public class ASTRawResult extends AbstractModelTaskRawResult<ASTMatch> {
      * @param match the AST match to store
      */
     public synchronized void addMatch(ASTMatch match) {
-        this.matches.add(match);
-        //adding locations of the matches using info from ASTMatch
-        this.locations.add(new PairedTuple<>(match.lines.get(0).getKey(), 
-            match.lines.get(0).getValue(), match.lines.get(1).getKey(), 
-            match.lines.get(1).getValue()));
+        super.put(
+                match,
+                match.lines.get(0).getKey(), match.lines.get(0).getValue(),
+                match.lines.get(1).getKey(), match.lines.get(1).getValue()
+        );
     }
 
     /**
@@ -66,13 +63,11 @@ public class ASTRawResult extends AbstractModelTaskRawResult<ASTMatch> {
     public synchronized void put(int file1Start, int file1End,
                                  int file2Start, int file2End,
                                  float similarity) {
-        this.matches.add(new ASTMatch(
+        super.put(
+                new ASTMatch(file1Start, file1End, file2Start, file2End, similarity, getFile1(), getFile2()),
                 file1Start, file1End,
-                file2Start, file2End,
-                similarity,
-                getFile1(), getFile2()
-        ));
-        this.locations.add(new PairedTuple<>(file1Start, file1End, file2Start, file2End));
+                file2Start, file2End
+        );
     }
 
 
@@ -80,24 +75,23 @@ public class ASTRawResult extends AbstractModelTaskRawResult<ASTMatch> {
      * @return a copy of the list of matches
      */
     public synchronized List<ASTMatch> getMatches() {
-        return new ArrayList<>(matches);
+        return super.getObjects();
     }
 
     /**
-     * {@inheritDoc}
+     * @return the node count of the first file's AST
      */
-    @Override
-    public synchronized boolean isEmpty() {
-        return matches.isEmpty();
+    public int getFile1NodeCount() {
+        return tree1.getWeight();
     }
 
     /**
-     * {@inheritDoc}
+     * @return the node count of the second file's AST
      */
-    @Override
-    public synchronized boolean testType(AbstractModelTaskRawResult baseline) {
-        return baseline instanceof ASTRawResult;
+    public int getFile2NodeCount() {
+        return tree2.getWeight();
     }
+
 
     /**
      * Returns a string representation of all stored matches.
@@ -107,7 +101,7 @@ public class ASTRawResult extends AbstractModelTaskRawResult<ASTMatch> {
     @Override
     public synchronized String toString() {
         StringBuilder str = new StringBuilder();
-        for (ASTMatch match : matches) {
+        for (ASTMatch match : super.getObjects()) {
             str.append("AST Match: similarity=").append(match.similarity)
                     .append(" lines=").append(match.lines).append("\n");
         }

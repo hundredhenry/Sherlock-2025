@@ -44,8 +44,11 @@ screenshots
 *.swp
 *.bak
 
-#Minified CSS/JS
+# Minified CSS/JS
 src/main/resources/static/css
 src/main/resources/static/js
 
 gradle.properties
+
+# Claude
+CLAUDE.md
