@@ -35,6 +35,8 @@ import java.nio.file.StandardOpenOption;
 public class SherlockEngine {
 
 	public static final String version = "@VERSION@";
+	public static final String skeletonCodeName = "SKELETON CODE";
+
 	private static final Logger logger = LoggerFactory.getLogger(SherlockEngine.class);
 
 	public static Side side = Side.UNKNOWN;
