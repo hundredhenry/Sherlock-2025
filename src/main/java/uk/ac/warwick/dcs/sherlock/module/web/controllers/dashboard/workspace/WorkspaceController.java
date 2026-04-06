@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
 import uk.ac.warwick.dcs.sherlock.api.component.ISubmission;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
+import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
 import uk.ac.warwick.dcs.sherlock.api.component.IJob;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.SubmissionsForm;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.WorkspaceForm;
@@ -248,7 +249,7 @@ public class WorkspaceController {
                         String filename;
                         //slightl edgecase for skeleton code - we are essentially just doing this earlier than usual
                         if (submissionsForm.isSkeleton()){
-                            filename = "SKELETON.zip";
+                            filename = SherlockEngine.skeletonCodeName + ".zip";
                         }else{
                             filename = "submissions.zip";
                         }
@@ -262,7 +263,7 @@ public class WorkspaceController {
                 }
 
                 if(submissionsForm.isSkeleton() && !submissionsForm.isMultiFolder()){
-                    //if skeleton code, we want to create a new parent zip called SKELETON, and add all files to it
+                    //if skeleton code, we want to create a new parent zip called the skeleton code name, and add all files to it
                     // the only edge case is if previously handled when sorting multi folder submissions.
 
                     //first process the files, to convert them back into a zipped file
@@ -282,9 +283,9 @@ public class WorkspaceController {
                         e.printStackTrace();
                         result.reject("error.file.failed");
                     }
-                    //then create our synthetic zip file with the name being SKELETON, so it can be accessed again later
+                    //then create our synthetic zip file with the name being the skeleton code name, so it can be accessed again later
                     MultipartFile syntheticZip = new ZipMultipartFile(
-                            "files", "SKELETON.zip", "application/zip", baos.toByteArray());
+                            "files", SherlockEngine.skeletonCodeName + ".zip", "application/zip", baos.toByteArray());
                     submissionsForm.setFiles(new MultipartFile[]{syntheticZip});
                 }
 

@@ -3,10 +3,14 @@ package uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.AbstractModelTaskRawResult;
 import uk.ac.warwick.dcs.sherlock.api.util.SherlockHelper;
+import uk.ac.warwick.dcs.sherlock.api.util.PairedTuple;
 import uk.ac.warwick.dcs.sherlock.module.model.base.detection.ASTMatch;
 import uk.ac.warwick.dcs.sherlock.api.util.ASTNode;
 import java.util.ArrayList;
 import java.util.List;
+
+import java.io.Serial;
+import java.io.Serializable;
 
 /**
  * Stores the raw match results from an AST-based comparison of two files.
@@ -14,17 +18,9 @@ import java.util.List;
  * Thread-safe: all mutating and reading operations are synchronised.
  * </p>
  */
-public class ASTRawResult extends AbstractModelTaskRawResult {
+public class ASTRawResult extends AbstractModelTaskRawResult<ASTMatch> {
 
-    /**
-     * The persistent ID of the first file in the comparison pair.
-     */
-    private final long file1id;
 
-    /**
-     * The persistent ID of the second file in the comparison pair.
-     */
-    private final long file2id;
 
     /**
      * The list of AST matches found between the two files.
@@ -43,8 +39,7 @@ public class ASTRawResult extends AbstractModelTaskRawResult {
      * @param file2 the second source file
      */
     public ASTRawResult(ISourceFile file1, ISourceFile file2, ASTNode<?> tree1, ASTNode<?> tree2) {
-        this.file1id = file1.getPersistentId();
-        this.file2id = file2.getPersistentId();
+        super(file1,file2);
         this.matches = new ArrayList<>();
         this.tree1 = tree1;
         this.tree2 = tree2;
@@ -57,6 +52,10 @@ public class ASTRawResult extends AbstractModelTaskRawResult {
      */
     public synchronized void addMatch(ASTMatch match) {
         this.matches.add(match);
+        //adding locations of the matches using info from ASTMatch
+        this.locations.add(new PairedTuple<>(match.lines.get(0).getKey(),
+            match.lines.get(0).getValue(), match.lines.get(1).getKey(),
+            match.lines.get(1).getValue()));
     }
 
     /**
@@ -77,21 +76,9 @@ public class ASTRawResult extends AbstractModelTaskRawResult {
                 similarity,
                 getFile1(), getFile2()
         ));
+        this.locations.add(new PairedTuple<>(file1Start, file1End, file2Start, file2End));
     }
 
-    /**
-     * @return the first file in the comparison pair
-     */
-    public ISourceFile getFile1() {
-        return SherlockHelper.getSourceFile(file1id);
-    }
-
-    /**
-     * @return the second file in the comparison pair
-     */
-    public ISourceFile getFile2() {
-        return SherlockHelper.getSourceFile(file2id);
-    }
 
     /**
      * @return a copy of the list of matches
@@ -109,7 +96,7 @@ public class ASTRawResult extends AbstractModelTaskRawResult {
 
     /**
      * @return the node count of the second file's AST
-     */ 
+     */
     public int getFile2NodeCount() {
         return tree2.getWeight();
     }
