@@ -4,6 +4,7 @@ import uk.ac.warwick.dcs.sherlock.api.component.ICodeBlockGroup;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.IPostProcessor;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.ModelTaskProcessedResults;
+import uk.ac.warwick.dcs.sherlock.module.model.base.detection.StringMatch;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,13 +21,14 @@ public class SimpleObjectEqualityPostProcessor implements IPostProcessor<SimpleO
 		Map<ISourceFile, Integer> totals = new HashMap<>();
 		results.setFileTotals(totals);
 
-		Map<Object, ICodeBlockGroup> map = new HashMap<>();
+		Map<String, ICodeBlockGroup> map = new HashMap<>();
 		for (SimpleObjectEqualityRawResult res : rawResults) {
 			totals.putIfAbsent(res.getFile1(), res.getFile1NumObjects());
 			totals.putIfAbsent(res.getFile2(), res.getFile2NumObjects());
 
 			for (int i = 0; i < res.getSize(); i++) {
-				Object o = res.getObject(i);
+				StringMatch match = (StringMatch) res.getObject(i);
+				String o = match.getString();
 				ICodeBlockGroup group;
 
 				if (!map.containsKey(o)) {
