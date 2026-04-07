@@ -19,7 +19,7 @@ import java.util.Objects;
  *     A pointer to the checked file (File2).
  * </p>
  */
-public class NGramMatch extends AbstractMatch {
+public class NGramMatch extends AbstractMatch<NGramMatch> {
 
     /**
      * Constructor, stores all inputted data in the container object.
@@ -33,5 +33,12 @@ public class NGramMatch extends AbstractMatch {
      */
     NGramMatch(int refStart, int refEnd, int checkStart, int checkEnd, float similarity, ISourceFile file1, ISourceFile file2) {
         super(refStart, refEnd, checkStart, checkEnd, similarity, file1, file2);
+    }
+
+    @Override
+    public NGramMatch copy() {
+        return new NGramMatch(this.lines.get(0).getKey(), this.lines.get(0).getValue(),
+         this.lines.get(1).getKey(), this.lines.get(1).getValue(), 
+         this.similarity, this.files[0], this.files[1]);
     }
 }

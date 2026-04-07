@@ -3,10 +3,14 @@ package uk.ac.warwick.dcs.sherlock.api.model.postprocessing;
 import uk.ac.warwick.dcs.sherlock.api.util.SherlockHelper;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.util.PairedTuple;
+import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
+import uk.ac.warwick.dcs.sherlock.module.model.base.detection.AbstractMatch;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
+
+
 import java.util.ArrayList;
 
 /**
@@ -14,7 +18,7 @@ import java.util.ArrayList;
  * <p>
  * Must be serializable!!!
  */
-public abstract class AbstractModelTaskRawResult<T extends Serializable> implements Serializable {
+public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> implements Serializable {
 
 	@Serial
 	private static final long serialVersionUID = 24L;
@@ -144,6 +148,84 @@ public abstract class AbstractModelTaskRawResult<T extends Serializable> impleme
 	 */
 	public synchronized int getSize() {
 		return this.objects.size();
+	}
+
+	public synchronized void removeLine(PairedTuple<Integer, Integer, Integer, Integer> line) {
+		for (int i=this.locations.size()-1; i>=0; i--) {//O(m)
+			PairedTuple<Integer, Integer, Integer, Integer> location = this.locations.get(i);
+			List<Tuple<Integer, Integer>> newRanges1 = removePairFrom(location.getPoint1(), line.getPoint1());
+			if (newRanges1.size()==1){
+				if (newRanges1.get(0).getKey()==-1){
+					this.locations.remove(i);
+					this.objects.remove(i);
+					continue;
+				}
+			}
+
+			List<Tuple<Integer, Integer>> newRanges2 = removePairFrom(location.getPoint2(), line.getPoint2());
+			if (newRanges2.size()==1){
+				if (newRanges2.get(0).getKey()==-1){
+					this.locations.remove(i);
+					this.objects.remove(i);
+					continue;
+				}
+			}
+		
+			//otherwise, we have legitimate ranges. 
+			for (Tuple<Integer, Integer> range1 : newRanges1) {//O(1)
+				for (Tuple<Integer, Integer> range2 : newRanges2) {
+					this.locations.add(new PairedTuple<>(range1,range2));
+					T match = this.objects.get(i).copy();
+					match.setLines(new PairedTuple<>(range1,range2));
+					this.objects.add(match);
+				}
+			}
+
+			this.locations.remove(i);
+			this.objects.remove(i);
+		}
+	}
+
+	private List<Tuple<Integer, Integer>> removePairFrom(Tuple<Integer, Integer> original, Tuple<Integer, Integer> toRemove) {
+		Integer a1 = original.getKey();
+		Integer b1 = original.getValue();
+		Integer a2 = toRemove.getKey();
+		Integer b2 = toRemove.getValue();
+
+
+		List<Tuple<Integer, Integer>> list = new ArrayList<>();
+
+
+		if (a1 > b2 || a2 > b1) {
+			list.add(original);
+			return list;
+		}
+		if (a2 <=a1 && b2>=b1){
+			list.add(new Tuple<>(-1,-1));
+			return list;
+		}
+		if (a2>=a1 && b2<=b1){
+			if (a2-1>=a1){
+				list.add(new Tuple<>(a1,a2-1));
+			}
+			if (b2+1<=b1){
+				list.add(new Tuple<>(b2+1,b1));
+			}
+			if (list.size()==0){
+				list.add(new Tuple<>(-1,-1));
+			}
+			return list;
+		}
+		if (a2-1>=a1){
+			list.add(new Tuple<>(a1,a2-1));
+			return list;
+		}
+		if (b2+1<=b1){
+			list.add(new Tuple<>(b2+1,b1));
+			return list;
+		}
+		list.add(new Tuple<>(-1,-1));
+		return list;
 	}
 
 	/**

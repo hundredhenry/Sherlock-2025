@@ -15,7 +15,7 @@ import java.util.Objects;
  * indicating how structurally similar the two AST subtrees are.
  * </p>
  */
-public class ASTMatch extends AbstractMatch {
+public class ASTMatch extends AbstractMatch<ASTMatch> {
     
 
     /**
@@ -32,5 +32,13 @@ public class ASTMatch extends AbstractMatch {
     public ASTMatch(int file1Start, int file1End, int file2Start, int file2End,
                     float similarity, ISourceFile file1, ISourceFile file2) {
         super(file1Start, file1End, file2Start, file2End, similarity, file1, file2);
+    }
+
+
+    @Override
+    public ASTMatch copy() {
+        return new ASTMatch(this.lines.get(0).getKey(), this.lines.get(0).getValue(),
+         this.lines.get(1).getKey(), this.lines.get(1).getValue(), 
+         this.similarity, this.files[0], this.files[1]);
     }
 }

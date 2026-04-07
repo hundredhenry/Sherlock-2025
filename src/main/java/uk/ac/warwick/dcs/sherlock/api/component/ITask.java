@@ -86,4 +86,11 @@ public interface ITask {
 	 * @return true if successfully set
 	 */
 	boolean setParameter(AdjustableParameterObj paramObj, float value);
+
+
+	/**
+	 * Clears the raw results for this task, allowing it to be re-run from scratch.
+	 * This removes stored raw results and resets the task status to PREPARED.
+	 */
+	void clearResults();
 }
