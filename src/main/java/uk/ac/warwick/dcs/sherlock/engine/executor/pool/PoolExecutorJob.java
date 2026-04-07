@@ -217,8 +217,10 @@ public class PoolExecutorJob implements Runnable {
 							}
 						}
 
+
 						//now we have one paired tuple, we can call the removeLine method to remove it from the raw result
 						result.removeLine(new PairedTuple<>(file1Match, file2Match));//O(M)
+
 					}
 				}
 			}
@@ -226,14 +228,22 @@ public class PoolExecutorJob implements Runnable {
 			//first remake the full list of rawresults
 			List<AbstractModelTaskRawResult> fullResults = new ArrayList<>();
 			for (AbstractModelTaskRawResult result : normalSubmissionResults){//O(L)
+				//and just check that there are actually lines left in the result
 				if (result.getLocations().size()>0){
 					fullResults.add(result);
 				}
 			}
 			//now here we *can* add skeleton code matches back in, if we want to. I imagine that users probably
 			// dont care about how much someone has used the skeleton code though so will just leave it out.
+			//If you want to add skeleton code back, you can just uncomment this:
+			// for (AbstractModelTaskRawResult subResult : skeletonCodeResults.values()){
+			// 	fullResults.add(subResult);
+			// }
+
+			//then clear the results, and set the new results,
 			entityTask.clearResults();
 			entityTask.setRawResults(fullResults);
+			//then reset the job as complete
 			entityTask.setComplete();
 		}
 
