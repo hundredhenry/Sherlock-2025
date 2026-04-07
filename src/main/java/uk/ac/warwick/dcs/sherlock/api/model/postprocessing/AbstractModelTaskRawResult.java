@@ -150,18 +150,30 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 		return this.objects.size();
 	}
 
+	/**
+	 * Removed two ranges of lines from the list of lines in the result
+	 * @param line A paired tuple of <<file1start, file1end>, <file2start, file2end>> to remove from
+	 *             the list of lines in the result
+	 */
 	public synchronized void removeLine(PairedTuple<Integer, Integer, Integer, Integer> line) {
+		//for each current pair of lines in the result, going backwards so we can remove as we go
 		for (int i=this.locations.size()-1; i>=0; i--) {//O(m)
+			//get the lines
 			PairedTuple<Integer, Integer, Integer, Integer> location = this.locations.get(i);
+			//and remove the first files lines
 			List<Tuple<Integer, Integer>> newRanges1 = removePairFrom(location.getPoint1(), line.getPoint1());
+			//this will either return one or two tuples. If its two, its guaranteed to be proper ranges.
 			if (newRanges1.size()==1){
+				//if its only one, then need to check if its a flag to remove the whole line
 				if (newRanges1.get(0).getKey()==-1){
+					//if it is, then remove the match
 					this.locations.remove(i);
 					this.objects.remove(i);
 					continue;
 				}
 			}
 
+			//then do the same for the second file
 			List<Tuple<Integer, Integer>> newRanges2 = removePairFrom(location.getPoint2(), line.getPoint2());
 			if (newRanges2.size()==1){
 				if (newRanges2.get(0).getKey()==-1){
@@ -171,59 +183,92 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 				}
 			}
 		
-			//otherwise, we have legitimate ranges. 
-			for (Tuple<Integer, Integer> range1 : newRanges1) {//O(1)
+			//if here, then we have legitimate ranges. 
+			//so for each combination of ranges
+			for (Tuple<Integer, Integer> range1 : newRanges1) {//O(1) as max 2x2
 				for (Tuple<Integer, Integer> range2 : newRanges2) {
+					//add the pair to the list of locations
 					this.locations.add(new PairedTuple<>(range1,range2));
+					//and create a new match with updated locations
 					T match = this.objects.get(i).copy();
 					match.setLines(new PairedTuple<>(range1,range2));
+					//and add the match to the list of matches
 					this.objects.add(match);
 				}
 			}
 
+			//then finally remove the original pair of lines
 			this.locations.remove(i);
 			this.objects.remove(i);
 		}
 	}
 
+	/**
+	 * Takes two ranges as two tuples, the first being the current range, and the second being the range of values to remove
+	 * @param original The current range, in the form of a tuple <start, end>
+	 * @param toRemove The range to remove, in the form of a tuple <start, end>
+	 * @return A list of ranges, which contain the ranges present in the original range, but not the range to remove. Returns
+	 * 		<-1,-1> if there are no values in the original range left
+	 */
 	private List<Tuple<Integer, Integer>> removePairFrom(Tuple<Integer, Integer> original, Tuple<Integer, Integer> toRemove) {
-		Integer a1 = original.getKey();
-		Integer b1 = original.getValue();
-		Integer a2 = toRemove.getKey();
-		Integer b2 = toRemove.getValue();
+		//define our start and ending points to be more readable
+		Integer a1 = original.getKey(); //original start
+		Integer b1 = original.getValue(); //original end
+		Integer a2 = toRemove.getKey(); //to remove start
+		Integer b2 = toRemove.getValue(); //to remove end
 
-
+		//and initialise our return list
 		List<Tuple<Integer, Integer>> list = new ArrayList<>();
 
-
+		//if the start of the original range is greater than the end of the range to remove,
+		// or if the start of the range to remove is greater than the end of the original range
 		if (a1 > b2 || a2 > b1) {
+			//then no values in toRemove exist in original, so just return the original
 			list.add(original);
 			return list;
 		}
+		//if the start of the range to remove is less than or equal to the start of the original range
+		// and the end of the range to remove is greater than or equal to the end of the original range
 		if (a2 <=a1 && b2>=b1){
+			//then the values in toRemove fully encompass the original range, so just return a flag to remove the whole line
 			list.add(new Tuple<>(-1,-1));
 			return list;
 		}
+
+		//if the start of the range to remove is greater than or equal to the start of the original range
+		// and the end of the range to remove is less than or equal to the end of the original range
 		if (a2>=a1 && b2<=b1){
+			//then we have a change to create two new ranges
+			//if the start of the range to remove is greater than the start of the original range
 			if (a2-1>=a1){
+				//then add a new range from the start of the original range to the start of the range to remove
 				list.add(new Tuple<>(a1,a2-1));
 			}
+			//if the end of the range to remove is less than the end of the original range
 			if (b2+1<=b1){
+				//then add a new range from the end of the range to remove to the end of the original range
 				list.add(new Tuple<>(b2+1,b1));
 			}
+			//if the list is empty, then its because a1=a2, and b1=b2, (which cant happen as we check for this just above
+			// but will keep regardless), so add a flag to remove the whole line
 			if (list.size()==0){
 				list.add(new Tuple<>(-1,-1));
 			}
 			return list;
 		}
+		//at this point, the toRemove range exists across a boundary either below or above the original range
+		//if the start of the range to remove is greater than the start of the original range
 		if (a2-1>=a1){
+			//then we know anything above a2 will be removed, so add a range from the start of original to a2
 			list.add(new Tuple<>(a1,a2-1));
 			return list;
 		}
+		//and the opposite if the end of the range to remove is less than the end of the original range
 		if (b2+1<=b1){
 			list.add(new Tuple<>(b2+1,b1));
 			return list;
 		}
+		//if we get here, then something has gone wrong, so just remove the line.
 		list.add(new Tuple<>(-1,-1));
 		return list;
 	}
