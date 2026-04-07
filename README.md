@@ -1,5 +1,7 @@
 # Sherlock
 
+Wiki: https://github.com/hundredhenry/Sherlock-2025/wiki
+
 ## Requirements
   - JDK 25
 
