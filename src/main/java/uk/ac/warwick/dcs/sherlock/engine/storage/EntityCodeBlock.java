@@ -26,6 +26,8 @@ public class EntityCodeBlock implements ICodeBlock, Serializable {
 	private int size;
 	private List<Integer> lines;
 
+	private Integer subtreeWeight;  
+
 	EntityCodeBlock() {
 		super();
 	}
@@ -34,6 +36,18 @@ public class EntityCodeBlock implements ICodeBlock, Serializable {
 		super();
 		this.file = file;
 		this.score = score;
+
+		this.size = 0;
+		this.lines = new ArrayList<>();
+		this.addLineToList(lines);
+	}
+
+	// Overloaded constructor for AST-based code blocks 
+	EntityCodeBlock(EntityFile file, float score, ITuple<Integer, Integer> lines, Integer subtreeWeight) {
+		super();
+		this.file = file;
+		this.score = score;
+		this.subtreeWeight = subtreeWeight;
 
 		this.size = 0;
 		this.lines = new ArrayList<>();
@@ -94,5 +108,10 @@ public class EntityCodeBlock implements ICodeBlock, Serializable {
 
 	private ITuple<Integer, Integer> getLineFromList(int index) {
 		return new Tuple<>(this.lines.get(index * 2), this.lines.get((index * 2) + 1));
+	}
+
+	@Override
+	public Integer getSubtreeWeight() {
+		return this.subtreeWeight; // if null, then weight is not set, so this block is not from an AST-based algorithm 
 	}
 }

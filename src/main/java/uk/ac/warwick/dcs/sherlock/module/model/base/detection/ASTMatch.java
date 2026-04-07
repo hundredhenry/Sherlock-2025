@@ -32,6 +32,12 @@ public class ASTMatch implements Serializable {
     public float similarity;
 
     /**
+     * The  weight of AST nodes in matched subtree from file 1 and 2
+    */
+    public int subtreeWeight1;
+    public int subtreeWeight2;
+
+    /**
      * Constructs a new AST match.
      *
      * @param file1Start start line in file 1
@@ -41,9 +47,11 @@ public class ASTMatch implements Serializable {
      * @param similarity structural similarity score (0 to 1)
      * @param file1      the first source file
      * @param file2      the second source file
+     * @param subtreeWeight1 the weight of AST nodes in the subtree from file 1
+     * @param subtreeWeight2 the weight of AST nodes in the subtree from file 2
      */
     public ASTMatch(int file1Start, int file1End, int file2Start, int file2End,
-                    float similarity, ISourceFile file1, ISourceFile file2) {
+                    float similarity, ISourceFile file1, int subtreeWeight1, ISourceFile file2, int subtreeWeight2) {
         this.lines = new ArrayList<>();
         this.lines.add(new Tuple<>(file1Start, file1End));
         this.lines.add(new Tuple<>(file2Start, file2End));
@@ -52,7 +60,10 @@ public class ASTMatch implements Serializable {
 
         this.files = new ISourceFile[2];
         this.files[0] = file1;
+        this.subtreeWeight1 = subtreeWeight1;
         this.files[1] = file2;
+        this.subtreeWeight2 = subtreeWeight2;
+
     }
 
     /**
