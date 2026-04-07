@@ -51,6 +51,25 @@ public class EntityCodeBlockGroup implements ICodeBlockGroup, Serializable {
 		}
 	}
 
+
+	@Override
+	public void addCodeBlock(ISourceFile file, float score, ITuple<Integer, Integer> line, Integer subtreeWeight) {
+		if (this.blockMap.containsKey(file.getPersistentId())) {
+			this.blockMap.get(file.getPersistentId()).append(score, line);
+		}
+		else {
+			if (file instanceof EntityFile) {
+				EntityCodeBlock block = new EntityCodeBlock((EntityFile) file, score, line, subtreeWeight);
+				this.blockMap.put(file.getPersistentId(), block);
+			}
+			else {
+				BaseStorage.logger.error("Could not add file {}, it is not from the database", file.getFileDisplayName());
+			}
+		}
+	}
+
+
+
 	@Override
 	public void addCodeBlock(ISourceFile file, float score, List<ITuple<Integer, Integer>> lines) {
 		if (this.blockMap.containsKey(file.getPersistentId())) {
@@ -66,6 +85,10 @@ public class EntityCodeBlockGroup implements ICodeBlockGroup, Serializable {
 			}
 		}
 	}
+	
+
+
+
 
 	@Override
 	public boolean filePresent(ISourceFile file) {

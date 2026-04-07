@@ -26,4 +26,9 @@ public interface ICodeBlock {
 	 * file, all instances of the block will be output here.
 	 */
 	List<ITuple<Integer, Integer>> getLineNumbers();
+
+	/**
+	 * @return The subtree weight of the block
+	 */
+	Integer getSubtreeWeight();
 }
