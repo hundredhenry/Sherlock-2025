@@ -13,7 +13,7 @@ import java.util.Objects;
  * two files.
  * </p>
  */
-public class StringMatch extends AbstractMatch {
+public class StringMatch extends AbstractMatch<StringMatch> {
     
     /**
      * The string shared between both files
@@ -46,6 +46,14 @@ public class StringMatch extends AbstractMatch {
         return this.string;
     }
     
+
+    @Override
+    public StringMatch copy() {
+        return new StringMatch(this.lines.get(0).getKey(), this.lines.get(0).getValue(),
+         this.lines.get(1).getKey(), this.lines.get(1).getValue(), 
+         this.string, this.files[0], this.files[1]);
+    }
+
     /**
      * String output of the match
      * @return the string shared between both files

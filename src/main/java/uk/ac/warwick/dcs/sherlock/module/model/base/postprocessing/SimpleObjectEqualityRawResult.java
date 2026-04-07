@@ -1,6 +1,7 @@
 package uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing;
 
 import uk.ac.warwick.dcs.sherlock.api.util.SherlockHelper;
+import uk.ac.warwick.dcs.sherlock.module.model.base.detection.AbstractMatch;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.AbstractModelTaskRawResult;
 import uk.ac.warwick.dcs.sherlock.api.util.PairedTuple;
@@ -9,7 +10,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SimpleObjectEqualityRawResult<T extends Serializable> extends AbstractModelTaskRawResult<T> {
+public class SimpleObjectEqualityRawResult<T extends AbstractMatch<T>> extends AbstractModelTaskRawResult<T> {
 
 
 	private final int file1NumObjs;

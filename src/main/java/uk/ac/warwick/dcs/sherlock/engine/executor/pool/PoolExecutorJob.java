@@ -1,8 +1,10 @@
 package uk.ac.warwick.dcs.sherlock.engine.executor.pool;
 
 import uk.ac.warwick.dcs.sherlock.api.component.*;
+import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.AbstractModelTaskRawResult;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.ModelTaskProcessedResults;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
+import uk.ac.warwick.dcs.sherlock.api.util.PairedTuple;
 import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
 import uk.ac.warwick.dcs.sherlock.engine.SherlockEngine;
 import uk.ac.warwick.dcs.sherlock.engine.executor.JobStatus;
@@ -16,6 +18,8 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
+record FileIdPair(long file1Id, long file2Id) {}
 
 /**
  * Executor which handles job wide tasks, uses 1 task executor per task
@@ -110,85 +114,133 @@ public class PoolExecutorJob implements Runnable {
 
 		job.setStatus(WorkStatus.REGEN_RESULTS);
 
-		// //currently all EntityTasks have their AbstractModelTaskRawResult's set to the results of the detectors
-		// //we essentially want to go through and do the following:
-		// //Code in Skeleton Submission S = [sf1,sf2,sf3,..]
-		// //All legitimate submissions LS = [ls1,ls2,..]
-		// // such that ls1 = [lf1,lf2,...], ie a submission made up of files
-		// //we want to go through all results, which is an arbitrary combination of (lsn.lfm, lsk.lfj), and do the following:
-		// //for each combination of (lsn.lfm, lsk.lfj):
-		// // Find the Result containing MAXLINES((lsn.lfm, S.*)) = S.lfm and Result containing MAXLINES((lsk.lfj, S.*)) = S.lfj
-		// // then remove from Result((lsn.lfm, lsk.lfj)):
-		// //	Any locations that exist in S.lfm and Result((lsn.lfm, lsk.lfj)), and Any locations in S.lfj and Result((lsn.lfm, lsk.lfj)).
+		//currently all EntityTasks have their AbstractModelTaskRawResult's set to the results of the detectors
+		//we essentially want to go through and do the following:
+		//Code in Skeleton Submission S = [sf1,sf2,sf3,..]
+		//All legitimate submissions LS = [ls1,ls2,..]
+		// such that ls1 = [lf1,lf2,...], ie a submission made up of files
+		//we want to go through all results, which is an arbitrary combination of (lsn.lfm, lsk.lfj), and do the following:
+		//for each combination of (lsn.lfm, lsk.lfj):
+		//  remove from Result((lsn.lfm, lsk.lfj)):
+		//	Any locations that exist in S.lfm and Result((lsn.lfm, lsk.lfj)), and Any locations in S.lfj and Result((lsn.lfm, lsk.lfj)).
 
-		// //relavant fields in AbstractModelTaskRawResult:
-		// 	// long file1id;
-		// 	// long file2id;
-		// 	// private final List<T> objects; 
-		// 	// private final List<PairedTuple<Integer, Integer, Integer, Integer>> locations;
+		// TODO: add threading to this 
+		//for each task in the job (ie for each detector being ran)
+		for (PoolExecutorTask poolTask : detTasks){//O(D)
+			//get the EntityTask which contains all the results for the Detector's task
+			ITask entityTask = poolTask.getTask();
+			//hashmap for skeleton code results, for easy lookup, keys are <skeleton code file id, legitimate file id>
+			HashMap<FileIdPair, AbstractModelTaskRawResult> skeletonCodeResults = new HashMap();
+			List<AbstractModelTaskRawResult> normalSubmissionResults = new ArrayList();
+			Set<Long> skeletonCodeFileIDs = new HashSet();
 
-		// // TODO: add threading to this 
-		// //for each task in the job (ie for each detector being ran)
-		// for (PoolExecutorTask poolTask : detTasks){
-		// 	//get the EntityTask which contains all the results for the Detector's task
-		// 	ITask entityTask = poolTask.getTask();
-		// 	//hashmap for skeleton code results, for easy lookup, keys are <skeleton code file id, legitimate file id>
-		// 	HashMap<Pair<Integer,Integer>, AbstractModelTaskRawResult> skeletonCodeResults = new HashMap();
-		// 	List<AbstractModelTaskRawResult> normalSubmissionResults = new ArrayList();
-		// 	Set<Integer> skeletonCodeFileIDs = new HashSet();
 
-		// 	for (AbstractModelTaskRawResult result : entityTask.getRawResults()){
-		// 		//we know that results for code from same submissions are filtered out before this, so can assume that if first file 
-		// 		// comes from skeleton code, then the second file is legitimate.
-		// 		if (result.getFile1().getFileDisplayName().equals(SherlockEngine.skeletonCodeName)){
-		// 			skeletonCodeResults.put(new Pair<>(result.getFile1().getPersistentId(), result.getFile2().getPersistentId()), result);
-		// 			skeletonCodeFileIDs.add(result.getFile1().getPersistentId());
-		// 		} else if(result.getFile2().getFileDisplayName().equals(SherlockEngine.skeletonCodeName)){
-		// 			skeletonCodeResults.put(new Pair<>(result.getFile2().getPersistentId(), result.getFile1().getPersistentId()), result);
-		// 			skeletonCodeFileIDs.add(result.getFile2().getPersistentId());
-		// 		} else {
-		// 			normalSubmissionResults.add(result);
-		// 		}
-		// 	}
-		// 	//now we have a bunch of results, with skeleton code submissions in the hashmap, and normal submissions in the list
-		// 	// as well as a list of skeleton code file ids
+			for (AbstractModelTaskRawResult result : entityTask.getRawResults()){//O(L+S)
+				//we know that results for code from same submissions are filtered out before this, so can assume that if first file 
+				// comes from skeleton code, then the second file is legitimate.
+				if (result.getFile1().getSubmission().getName().equals(SherlockEngine.skeletonCodeName)){
+					skeletonCodeResults.put(new FileIdPair(result.getFile1().getPersistentId(), result.getFile2().getPersistentId()), result);
+					skeletonCodeFileIDs.add(result.getFile1().getPersistentId());
+				} else if(result.getFile2().getSubmission().getName().equals(SherlockEngine.skeletonCodeName)){
+					skeletonCodeResults.put(new FileIdPair(result.getFile2().getPersistentId(), result.getFile1().getPersistentId()), result);
+					skeletonCodeFileIDs.add(result.getFile2().getPersistentId());
+				} else {
+					normalSubmissionResults.add(result);
+				}
+			}
 
-		// 	//first check if there actually are any skeleton code submissions
-		// 	if (skeletonCodeFileIDs.size() == 0){
-		// 		break; //can just break since whether or not there is a skeleton code submission will be consistent across all tasks
-		// 	}
+			//now we have a bunch of results, with skeleton code submissions in the hashmap, and normal submissions in the list
+			// as well as a list of skeleton code file ids
 
-		// 	//now go through each result
-		// 	for (AbstractModelTaskRawResult result : normalSubmissionResults){
-		// 		//and for each result, get the skeleton code result for each file
-		// 		for (int fileID : skeletonCodeFileIDs){
-		// 			//get the skeleton code result for the first file
-		// 			AbstractModelTaskRawResult skeletonCodeResult1 = skeletonCodeResults.get(new Pair<>(fileID, result.getFile1().getPersistentId()));
-		// 			//and the second file
-		// 			AbstractModelTaskRawResult skeletonCodeResult2 = skeletonCodeResults.get(new Pair<>(fileID, result.getFile2().getPersistentId()));
+			//first check if there actually are any skeleton code submissions
+			if (skeletonCodeFileIDs.size() == 0){
+				break; //can just break since whether or not there is a skeleton code submission will be consistent across all tasks
+			}
 
-		// 			//if there is no skeleton code result, then we can just continue
-		// 			if (skeletonCodeResult1 == null || skeletonCodeResult2 == null){
-		// 				continue;
-		// 			}
+			//now go through each result
+			for (AbstractModelTaskRawResult result : normalSubmissionResults){ //O(L)
+				//and for each result, get the skeleton code result for each file
+				for (Long fileID : skeletonCodeFileIDs){ //O(S), which is effectively constant (unless someones uploading 100s of skeleton files...)
+					//get the skeleton code result for the first file
+					AbstractModelTaskRawResult skeletonCodeResult1 = skeletonCodeResults.get(new FileIdPair(fileID, result.getFile1().getPersistentId()));
+					//and the second file
+					AbstractModelTaskRawResult skeletonCodeResult2 = skeletonCodeResults.get(new FileIdPair(fileID, result.getFile2().getPersistentId()));
 
-		// 			//then remove locations of skeleton code matches from first file:
-		// 			for (PairedTuple<Integer, Integer, Integer, Integer> location : skeletonCodeResult1.getLocations()){
-		// 				//if the location is in the second file, then remove it
-		// 				if (results.getLocations().contains(location)){
-		// 					results.removeLocation(location);
-		// 				}
-		// 			}
+					//if there is no skeleton code result, then we can just continue
+					if (skeletonCodeResult1 == null || skeletonCodeResult2 == null){
+						continue;
+					}
 
-		// 			//then remove locations of skeleton code matches from second file:
-		// 			for (PairedTuple<Integer, Integer, Integer, Integer> location : skeletonCodeResult2.getLocations()){
-		// 				//if the location is in the first file, then remove it
-		// 				if (results.getLocations().contains(location)){
-		// 					results.removeLocation(location);
-		// 				}
-		// 			}
+					//otherwise, get all the locations of all the matches between the two files and the skeleton code file
+					List<PairedTuple<Integer, Integer, Integer, Integer>> skeletonCodeFile1Matches = skeletonCodeResult1.getLocations();
+					List<PairedTuple<Integer, Integer, Integer, Integer>> skeletonCodeFile2Matches = skeletonCodeResult2.getLocations();
 
-		// }
+					//now the intention with the following code is to get the code in a state which miniises the number of 
+					// loops spent removing lines from the raw results. The idea is to go through both lists of matches
+					// and combine them, stripping the skeleton code matches but combining the legitimate matches into
+					// one paired tuple. ie going from:
+					//	skeletonCodeResult1: <<skeleCodeMatchStartLine1, skeleCodeMatchEndLine1>,<legitMatchStartLine1, legitMatchEndLine1>>
+					//  skeletonCodeResult2: <<skeleCodeMatchStartLine2, skeleCodeMatchEndLine2>,<legitMatchStartLine2, legitMatchEndLine2>>
+					//to:
+					//  results: <<legitMatchStartLine1, legitMatchEndLine1>,<legitMatchStartLine2, legitMatchEndLine2>>
+					//so do one loop over both lists (rather than two)
+					for (int i = 0; i < skeletonCodeFile1Matches.size() || i < skeletonCodeFile2Matches.size(); i++){ //O(M)
+						Tuple<Integer, Integer> file1Match;
+						//and check if there are matches left in the first file
+						if (i >= skeletonCodeFile1Matches.size()){
+							//if not, then just use a dummy match, which will never affect results
+							file1Match = new Tuple<>(-1,-1);
+						} else {
+							//otherwise, get the match
+							PairedTuple<Integer, Integer, Integer, Integer> skeletonCodeFile1Match = skeletonCodeFile1Matches.get(i);
+							//and if the first file is from the skeleton code submission, then use the second pair of locations
+							// which represent the start and end of the code block in the legitimate file
+							if (skeletonCodeResult1.getFile1().getFileDisplayName().equals(SherlockEngine.skeletonCodeName)){
+								file1Match = skeletonCodeFile1Match.getPoint2();
+							}else{
+								//otherwise, use the first pair of locations
+								file1Match = skeletonCodeFile1Match.getPoint1();
+							}
+						}
+						//then do the same for the second file
+						Tuple<Integer, Integer> file2Match;
+						if (i >= skeletonCodeFile2Matches.size()){
+							file2Match = new Tuple<>(-1,-1);
+						} else {
+							PairedTuple<Integer, Integer, Integer, Integer> skeletonCodeFile2Match = skeletonCodeFile2Matches.get(i);
+							if (skeletonCodeResult2.getFile1().getFileDisplayName().equals(SherlockEngine.skeletonCodeName)){
+								file2Match = skeletonCodeFile2Match.getPoint2();
+							}else{
+								file2Match = skeletonCodeFile2Match.getPoint1();
+							}
+						}
+
+						//now we have one paired tuple, we can call the removeLine method to remove it from the raw result
+						result.removeLine(new PairedTuple<>(file1Match, file2Match));//O(M)
+					}
+				}
+			}
+
+			//finally, do a cleanup to remove any matches that now have no lines in them
+			//first remake the full list of rawresults
+			List<AbstractModelTaskRawResult> fullResults = new ArrayList<>();
+			for (AbstractModelTaskRawResult result : normalSubmissionResults){//O(L)
+				if (result.getLocations().size()>0){
+					fullResults.add(result);
+				}
+			}
+			//now here we *can* add skeleton code matches back in, if we want to. I imagine that users probably
+			// dont care about how much someone has used the skeleton code though so will just leave it out.
+			entityTask.clearResults();
+			entityTask.setRawResults(fullResults);
+			entityTask.setComplete();
+		}
+
+		//so overall, the time complexity of this is O(D) * [O(L+S) + O(L)*O(S)*O(M)*O(M) + O(L)]
+		// Which is equal to O(D) * O(L+S + L*S*M^2 + L)
+		// Where D is the number of detectors, L is the number of legitimate files to be analysed,
+		// S is the number of skeleton code files, and M is the number of matches per file
+		// Since D and S are small, this brings us to worst case O(L*M^2). Feel free to optimise further!
 
 		// Run postprocessing
 		this.status.setStep(5);

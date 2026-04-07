@@ -20,7 +20,7 @@ import java.util.Objects;
  * <p>
  * Must be serializable!!!
  */
-public abstract class AbstractMatch implements Serializable {
+public abstract class AbstractMatch<S extends AbstractMatch<S>> implements Serializable {
 
 	// @Serial
 	// private static final long serialVersionUID = 24L;
@@ -69,6 +69,23 @@ public abstract class AbstractMatch implements Serializable {
         this.files[1] = file2;
     }
 
+
+    /**
+     * Creates a copy of the match, with the same ranges and similarity score
+     * @return the copy of the match
+     */
+    public abstract S copy();
+
+    /**
+     * Sets the lines of the match
+     * @param lines the new lines, where first point is the range of file 1, and the 
+     * second point is the range of file 2
+     */
+    public void setLines(PairedTuple<Integer, Integer, Integer, Integer> lines) {
+        this.lines = new ArrayList<>();
+        this.lines.add(lines.getPoint1());
+        this.lines.add(lines.getPoint2());
+    }
     /**
      * Checks if two matches reference the same line ranges.
      * Two matches are equal if they span the same lines in both files,
@@ -82,7 +99,7 @@ public abstract class AbstractMatch implements Serializable {
         if (this == obj) return true;
         if (!obj.getClass().equals(this.getClass())) return false;
         
-        AbstractMatch other = (AbstractMatch) obj;
+        S other = (S) obj;
 
         return this.lines.get(0).equals(other.lines.get(0))
             && this.lines.get(1).equals(other.lines.get(1));

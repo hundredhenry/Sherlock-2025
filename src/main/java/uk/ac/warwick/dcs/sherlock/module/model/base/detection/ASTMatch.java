@@ -15,8 +15,8 @@ import java.util.Objects;
  * indicating how structurally similar the two AST subtrees are.
  * </p>
  */
-public class ASTMatch extends AbstractMatch {
-
+public class ASTMatch extends AbstractMatch<ASTMatch> {
+    
 
     /**
      * The  weight of AST nodes in matched subtree from file 1 and 2
@@ -42,5 +42,13 @@ public class ASTMatch extends AbstractMatch {
         super(file1Start, file1End, file2Start, file2End, similarity, file1, file2);
         this.subtreeWeight1 = subtreeWeight1;
         this.subtreeWeight2 = subtreeWeight2;
+    }
+
+
+    @Override
+    public ASTMatch copy() {
+        return new ASTMatch(this.lines.get(0).getKey(), this.lines.get(0).getValue(),
+         this.lines.get(1).getKey(), this.lines.get(1).getValue(),
+         this.similarity, this.files[0], this.files[1]);
     }
 }

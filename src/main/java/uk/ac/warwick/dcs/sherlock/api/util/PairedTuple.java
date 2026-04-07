@@ -2,6 +2,8 @@ package uk.ac.warwick.dcs.sherlock.api.util;
 
 import java.io.Serializable;
 
+import org.springframework.security.access.method.P;
+
 /**
  * Implementation of a pair of tuples in a single object
  *
@@ -18,6 +20,11 @@ public class PairedTuple<W, X, Y, Z> implements Serializable {
 	public PairedTuple(W key1, X value1, Y key2, Z value2) {
 		this.point1 = new Tuple<>(key1, value1);
 		this.point2 = new Tuple<>(key2, value2);
+	}
+
+	public PairedTuple(Tuple<W, X> point1, Tuple<Y, Z> point2) {
+		this.point1 = point1;
+		this.point2 = point2;
 	}
 
 	public Tuple<W, X> getPoint1() {
