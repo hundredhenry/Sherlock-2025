@@ -134,8 +134,11 @@ public class PoolExecutorJob implements Runnable {
 			List<AbstractModelTaskRawResult> normalSubmissionResults = new ArrayList();
 			Set<Long> skeletonCodeFileIDs = new HashSet();
 
-
-			for (AbstractModelTaskRawResult result : entityTask.getRawResults()){//O(L+S)
+			List<AbstractModelTaskRawResult> results = entityTask.getRawResults();
+			if (results == null) {
+				continue;
+			}
+			for (AbstractModelTaskRawResult result : results){//O(L+S)
 				//we know that results for code from same submissions are filtered out before this, so can assume that if first file 
 				// comes from skeleton code, then the second file is legitimate.
 				if (result.getFile1().getSubmission().getName().equals(SherlockEngine.skeletonCodeName)){
@@ -156,7 +159,6 @@ public class PoolExecutorJob implements Runnable {
 			if (skeletonCodeFileIDs.size() == 0){
 				break; //can just break since whether or not there is a skeleton code submission will be consistent across all tasks
 			}
-
 			//now go through each result
 			for (AbstractModelTaskRawResult result : normalSubmissionResults){ //O(L)
 				//and for each result, get the skeleton code result for each file
@@ -220,7 +222,6 @@ public class PoolExecutorJob implements Runnable {
 					}
 				}
 			}
-
 			//finally, do a cleanup to remove any matches that now have no lines in them
 			//first remake the full list of rawresults
 			List<AbstractModelTaskRawResult> fullResults = new ArrayList<>();
