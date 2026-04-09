@@ -88,35 +88,5 @@ public class ASTPostProcessor implements IPostProcessor<ASTRawResult> {
 
         return results;
     }
-
-
-    /* Find a group that already covers an overlapping line range for the given file. */
-    private ICodeBlockGroup findOverlappingGroup(Map<Long, List<RangeEntry>> rangesByFile, long fileId, int start, int end) {
-        List<RangeEntry> entries = rangesByFile.get(fileId);
-        if (entries == null) return null;
-        for (RangeEntry entry : entries) {
-            if (start <= entry.end && entry.start <= end) {
-                return entry.group;
-            }
-        }
-        return null;
-    }
-
-    /* Record a line range and its associated group for a file. */
-    private void addRange(Map<Long, List<RangeEntry>> rangesByFile, long fileId, int start, int end, ICodeBlockGroup group) {
-        rangesByFile.computeIfAbsent(fileId, k -> new ArrayList<>()).add(new RangeEntry(start, end, group));
-    }
-
-    private static class RangeEntry {
-        final int start;
-        final int end;
-        final ICodeBlockGroup group;
-
-        RangeEntry(int start, int end, ICodeBlockGroup group) {
-            this.start = start;
-            this.end = end;
-            this.group = group;
-        }
-    }
-
 }
+    

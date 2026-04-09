@@ -40,6 +40,8 @@ options {
     superClass = HaskellBaseLexer;
 }
 
+channels { WHITESPACE, LONG_WHITESPACE, COMMENT }
+
 NEWLINE:
     ('\r'? '\n' | '\r') {
     this.processNEWLINEToken();
@@ -235,8 +237,8 @@ ClosePragmaBracket : '#-}';
 // MultiLineMacro : '#' (~ [\n]*? '\\' '\r'? '\n')+ ~ [\n]+ -> skip;
 // Directive : '#' ~ [\n]* -> skip;
 
-COMMENT  : '--' (~[\r\n])*    -> skip;
-NCOMMENT : '{-' ~[#] .*? '-}' -> skip;
+LINE_COMMENT  : '--' (~[\r\n])*    -> skip;
+BLOCK_COMMENT : '{-' ~[#] .*? '-}' -> skip;
 
 OCURLY  : '{';
 CCURLY  : '}';

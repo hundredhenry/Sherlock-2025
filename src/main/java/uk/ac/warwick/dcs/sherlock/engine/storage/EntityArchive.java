@@ -93,13 +93,21 @@ public class EntityArchive implements ISubmission, Serializable {
 	@Override
 	public List<ISubmission> getContainedDirectories() {
 		BaseStorage.instance.database.refreshObject(this);
-		return new LinkedList<>(this.getChildren());
+		List<ISubmission> result = new LinkedList<>();
+		for (EntityArchive child : this.getChildren()) {
+			result.add(child);
+		}
+		return result;
 	}
 
 	@Override
 	public List<ISourceFile> getContainedFiles() {
 		BaseStorage.instance.database.refreshObject(this);
-		return new LinkedList<>(this.getFiles());
+		List<ISourceFile> result = new LinkedList<>();
+		for (EntityFile file : this.getFiles()) {
+			result.add(file);
+		}
+		return result;
 	}
 
 	@Override
@@ -251,7 +259,9 @@ public class EntityArchive implements ISubmission, Serializable {
 		}
 
 		if (this.files != null && this.files.size() > 0) {
-			filesRec.addAll(new LinkedList<>(this.files));
+			for (ISourceFile file : this.files) {
+				filesRec.add(file);
+			}
 		}
 
 		return filesRec;
