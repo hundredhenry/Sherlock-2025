@@ -77,7 +77,10 @@ public class JavaASTNode extends ASTNode<JavaASTNode.Kind> {
             Kind.STRING_LITERAL,
             Kind.NUMBER_LITERAL,
             Kind.BOOL_LITERAL,
-            Kind.NULL_LITERAL
+            Kind.NULL_LITERAL,
+            Kind.BINARY_EXPR,
+            Kind.UNARY_EXPR,
+            Kind.CALL_EXPR
     );
 
     @Override
