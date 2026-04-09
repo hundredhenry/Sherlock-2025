@@ -168,7 +168,6 @@ public class PoolExecutorJob implements Runnable {
 							if (isAST) {
 								// AST-based: weight by node count instead of line count
 								float subtreeWeight = b.getSubtreeWeight();
-								fullSize.updateAndGet(v -> v + subtreeWeight);
 								return new Tuple<>(x, b.getBlockScore() * (subtreeWeight/fileTotal));
 							}else {
 								// Syntax/token-based: weight by line count
@@ -179,11 +178,14 @@ public class PoolExecutorJob implements Runnable {
 
 						}).collect(Collectors.toList());
 
-						// Normalise against full size to counteract overlaps
-						if (fullSize.get() > fileTotal) {
+						// For non-AST detectors, normalise against full size to counteract overlapping line ranges.
+						// Skipped for AST: AST groups are pairwise (2 files each), so fullSize sums subtree weights
+						// across ALL pairs, incorrectly deflating per-pair scores.
+						if (!isAST && fullSize.get() > fileTotal) {
 							float factor = fullSize.get() / fileTotal;
 							groupScores.forEach(x -> x.setValue(x.getValue()/factor));
 						}
+
 						this.status.incrementProgress();
 
 						IResultTask taskRes = fileRes.addTaskResult(t.getKey());
