@@ -45,13 +45,6 @@ public class ASTPostProcessor implements IPostProcessor<ASTRawResult> {
 
     /**
      * Processes raw AST comparison results into scored code block groups.
-     * <p>
-     * Matches whose line ranges overlap in any file are merged into a shared
-     * group, mirroring the NGramPostProcessor grouping strategy. This prevents
-     * the same line range appearing in N separate single-pair groups (one per
-     * comparison partner), which would cause the PoolExecutorJob normalisation
-     * to divide every score by ~N.
-     * </p>
      *
      * @param files      the list of all source files being compared
      * @param rawResults the raw results from all AST detector workers
@@ -59,70 +52,34 @@ public class ASTPostProcessor implements IPostProcessor<ASTRawResult> {
      */
     @Override
     public ModelTaskProcessedResults processResults(List<ISourceFile> files, List<ASTRawResult> rawResults) {
-        ModelTaskProcessedResults results = new ModelTaskProcessedResults();
+        ModelTaskProcessedResults results = new ModelTaskProcessedResults();    
 
-        // fileId -> list of (startLine, endLine, group)
-        // Used to find existing groups whose line ranges overlap a new match
-        Map<Long, List<RangeEntry>> rangesByFile = new HashMap<>();
+        Map<ISourceFile, Integer> totals = new HashMap<>(); // totals is the AST node count of eah file (i.e. the weight of the root node)
+        results.setFileTotals(totals);
 
-        for (ASTRawResult rawResult : rawResults) {
-            // TODO: Implement common code filtering using commonThreshold
+        for (ASTRawResult rawResult : rawResults) { // per pairwise comparison
+            ISourceFile file1 = rawResult.getFile1();
+            ISourceFile file2 = rawResult.getFile2();  
+            // The fileTotal is the files' AST node count
+            totals.putIfAbsent(file1, rawResult.getFile1NodeCount());
+            totals.putIfAbsent(file2, rawResult.getFile2NodeCount());
+
 
             for (ASTMatch match : rawResult.getMatches()) {
-                int s1 = match.lines.get(0).getKey(), e1 = match.lines.get(0).getValue();
-                int s2 = match.lines.get(1).getKey(), e2 = match.lines.get(1).getValue();
+                ICodeBlockGroup group = results.addGroup();
 
-                // Find an existing group whose line range overlaps in either file
-                ICodeBlockGroup group = findOverlappingGroup(rangesByFile, match.files[0].getPersistentId(), s1, e1);
-                if (group == null) {
-                    group = findOverlappingGroup(rangesByFile, match.files[1].getPersistentId(), s2, e2);
+                // Add code blocks for both files in the match
+                group.addCodeBlock(match.files[0], match.similarity, match.lines.get(0), match.subtreeWeight1);
+                group.addCodeBlock(match.files[1], match.similarity, match.lines.get(1), match.subtreeWeight2);
+                group.setComment("AST Structural Match");
+                // Remove empty groups
+                if (group.getCodeBlocks().isEmpty()) {
+                    results.removeGroup(group);
                 }
-
-                if (group == null) {
-                    group = results.addGroup();
-                    group.setComment("AST Structural Match");
-                }
-
-                // addCodeBlock handles the case where the file is already in the group:
-                // new line ranges are appended and scores are averaged.
-                group.addCodeBlock(match.files[0], match.similarity, match.lines.get(0));
-                group.addCodeBlock(match.files[1], match.similarity, match.lines.get(1));
-
-                addRange(rangesByFile, match.files[0].getPersistentId(), s1, e1, group);
-                addRange(rangesByFile, match.files[1].getPersistentId(), s2, e2, group);
             }
         }
 
-        results.cleanGroups();
         return results;
     }
-
-    /* Find a group that already covers an overlapping line range for the given file. */
-    private ICodeBlockGroup findOverlappingGroup(Map<Long, List<RangeEntry>> rangesByFile, long fileId, int start, int end) {
-        List<RangeEntry> entries = rangesByFile.get(fileId);
-        if (entries == null) return null;
-        for (RangeEntry entry : entries) {
-            if (start <= entry.end && entry.start <= end) {
-                return entry.group;
-            }
-        }
-        return null;
-    }
-
-    /* Record a line range and its associated group for a file. */
-    private void addRange(Map<Long, List<RangeEntry>> rangesByFile, long fileId, int start, int end, ICodeBlockGroup group) {
-        rangesByFile.computeIfAbsent(fileId, k -> new ArrayList<>()).add(new RangeEntry(start, end, group));
-    }
-
-    private static class RangeEntry {
-        final int start;
-        final int end;
-        final ICodeBlockGroup group;
-
-        RangeEntry(int start, int end, ICodeBlockGroup group) {
-            this.start = start;
-            this.end = end;
-            this.group = group;
-        }
-    }
 }
+    

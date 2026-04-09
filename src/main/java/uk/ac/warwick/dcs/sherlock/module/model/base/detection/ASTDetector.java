@@ -146,7 +146,7 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
         }
 
         // helper function for adding to metadata output mappings
-        private void addToRawResult(ASTRawResult res, ASTNode<?> n1, ASTNode<?> n2, float similarityScore) {
+        private void addToRawResult(ASTRawResult res, ASTNode<?> n1, int subtreeWeight1,ASTNode<?> n2, int subtreeWeight2, float similarityScore) {
             if (n1.getMetadata("startLine") == null || n2.getMetadata("startLine") == null) {
                 // Missing line metadata, skip this match
                 return;
@@ -156,7 +156,7 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
             int refEnd = n1.getMetadata("endLine", Integer.class);
             int checkStart = n2.getMetadata("startLine", Integer.class);
             int checkEnd = n2.getMetadata("endLine", Integer.class);
-            ASTMatch match = new ASTMatch(refStart, refEnd, checkStart, checkEnd, similarityScore, this.file1.getFile(), this.file2.getFile());
+            ASTMatch match = new ASTMatch(refStart, refEnd, checkStart, checkEnd, similarityScore, this.file1.getFile(), subtreeWeight1, this.file2.getFile(), subtreeWeight2);
             res.addMatch(match);
         }
 
@@ -246,7 +246,7 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
                         // Anchor-mapping conditions depend on parametrised matching strictness
                         if (n1.getFingerprint(useAbstraction).equals(n2.getFingerprint(useAbstraction))) {
                             // Add mapping for this subtree
-                            addToRawResult(res, n1, n2, 1.0f);
+                            addToRawResult(res, n1, n1.getWeight(), n2, n2.getWeight(), 1.0f);
                             anchorMatched1.add(n1);
                             anchorMatched2.add(n2);
                             anchorMap.put(n1, n2); // Build a map of anchor-mapped nodes for O(1) lookup during container matching
@@ -259,17 +259,43 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
                 }
             }
 
-            // PHASE 2: Bottom-up search for similar subtrees (containers) based on Dice similarity of their children
             List<ASTNode<?>> postOrder1 = postOrder(tree1);
+            List<ASTNode<?>> postOrder2 = postOrder(tree2);
+            // PHASE 1.5: Pre-calculate the sum of anchor weights for every subtree
+            // This allows O(1) retrieval of the "subtracted" weight during Phase 2
+            Map<ASTNode<?>, Integer> anchorWeightSums1 = new HashMap<>();
+            Map<ASTNode<?>, Integer> anchorWeightSums2 = new HashMap<>();
+             
+            for (ASTNode<?> n : postOrder1) {
+                int sum = 0;
+                if (anchorMatched1.contains(n)) {
+                    sum = n.getWeight(); // Entire subtree is matched; its anchor weight is its total weight
+                } else {
+                    for (ASTNode<?> child : n.getChildren()) { // Not an anchor itself, so pull up the anchor weights from below
+                        sum += anchorWeightSums1.getOrDefault(child, 0); 
+                    }
+                }
+                anchorWeightSums1.put(n, sum); // each node key stores the total weight of anchor-mapped nodes in its subtree
+            }
+            for (ASTNode<?> n : postOrder2) {
+                int sum = 0;
+                if (anchorMatched2.contains(n)) {
+                    sum = n.getWeight(); 
+                } else {
+                    for (ASTNode<?> child : n.getChildren()) { 
+                        sum += anchorWeightSums2.getOrDefault(child, 0); 
+                    }
+                }
+                anchorWeightSums2.put(n, sum); 
+            }
+
+            // PHASE 2: Bottom-up search for similar subtrees (containers) based on Dice similarity of their children
             for (ASTNode<?> n1 : postOrder1) {
                 if (anchorMatched1.contains(n1)) continue; // If already anchor-mapped, skip
                 if (n1.getChildren().isEmpty()) continue; // container-type mappings cannot be leaves
 
                 // Check if this node has any anchor-mapped descendants
-                boolean hasAnchorMatchedDescendants = false;
-                for (ASTNode<?> desc : n1.getDescendants()) {
-                    if (anchorMatched1.contains(desc)) hasAnchorMatchedDescendants = true;
-                }
+                boolean hasAnchorMatchedDescendants = anchorWeightSums1.getOrDefault(n1, 0) > 0;
                 if (!hasAnchorMatchedDescendants) continue;
 
                 // Find the candidate matches in tree2
@@ -299,7 +325,38 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
                 }
 
                 if (bestMatch != null && bestDice >= MIN_DICE) {
-                    addToRawResult(res, n1, bestMatch, bestDice); // Add container mapping as a match
+                    // EFFECTIVE WEIGHT n_c - sum(n_a)
+                    // (subtract weight of anchor-mapped descendants from container-mapping to prevent double-counting)
+                    int effectiveWeight1 = n1.getWeight() - anchorWeightSums1.getOrDefault(n1, 0);
+                    int effectiveWeight2 = bestMatch.getWeight() - anchorWeightSums2.getOrDefault(bestMatch, 0);
+                    if (effectiveWeight1 > 0 && effectiveWeight2 > 0) {
+                        addToRawResult(res, n1, effectiveWeight1, bestMatch, effectiveWeight2, bestDice); // add container mapping
+    
+                        // We "hide" the anchor weights from all ancestors so they aren't used again (only use first container mapping found for each anchor-mapped node, to prevent double-counting in multiple similar containers)
+                        int weightToHide1 = anchorWeightSums1.getOrDefault(n1, 0);
+                        int weightToHide2 = anchorWeightSums2.getOrDefault(bestMatch, 0);
+
+                        // Subtract this container's anchor-mass from all its ancestors
+                        ASTNode<?> p1 = n1.getParent();
+                        while (p1 != null) {
+                            int current = anchorWeightSums1.getOrDefault(p1, 0);
+                            anchorWeightSums1.put(p1, Math.max(0, current - weightToHide1));
+                            p1 = p1.getParent();
+                        }
+                        ASTNode<?> p2 = bestMatch.getParent();
+                        while (p2 != null) {
+                            int current = anchorWeightSums2.getOrDefault(p2, 0);
+                            anchorWeightSums2.put(p2, Math.max(0, current - weightToHide2));
+                            p2 = p2.getParent();
+                        }
+                        // 3. Clear the anchorMap for these descendants to kill the commonCount for parents
+                        for (ASTNode<?> d1 : n1.getDescendants()) {
+                            anchorMap.remove(d1); 
+                        }
+
+                        containerMatched1.add(n1);
+                        containerMatched2.add(bestMatch);
+                    }
                 }
             }
 

@@ -156,13 +156,27 @@ public class PoolExecutorJob implements Runnable {
 						List<ICodeBlockGroup> groupsContainingFile = t.getValue().getGroups(file);
 						int fileTotal = t.getValue().getFileTotal(file);
 
+						// Detect if AST-based by checking first block's subtreeWeight
+						boolean isAST = !groupsContainingFile.isEmpty() && groupsContainingFile.get(0).getCodeBlock(file).getSubtreeWeight() != null && groupsContainingFile.get(0).getCodeBlock(file).getSubtreeWeight() != null;
+
 						// Construct block scores weighted against the whole file, by default uses file line count, but can be set to custom totals (eg. variable counts)
 						AtomicReference<Float> fullSize = new AtomicReference<>((float) 0);
+						
 						List<ITuple<ICodeBlockGroup, Float>> groupScores = groupsContainingFile.stream().map(x -> {
 							ICodeBlock b = x.getCodeBlock(file);
-							float size = b.getLineNumbers().stream().mapToInt(y -> y.getValue()- y.getKey() + 1).sum();
-							fullSize.updateAndGet(v -> v + size);
+
+							if (isAST) {
+								// AST-based: weight by node count instead of line count
+								float subtreeWeight = b.getSubtreeWeight();
+								fullSize.updateAndGet(v -> v + subtreeWeight);
+								return new Tuple<>(x, b.getBlockScore() * (subtreeWeight/fileTotal));
+							}else {
+								// Syntax/token-based: weight by line count
+								float size = b.getLineNumbers().stream().mapToInt(y -> y.getValue()- y.getKey() + 1).sum();
+							    fullSize.updateAndGet(v -> v + size);
 							return new Tuple<>(x, b.getBlockScore() * (size/fileTotal));
+							}
+
 						}).collect(Collectors.toList());
 
 						// Normalise against full size to counteract overlaps
