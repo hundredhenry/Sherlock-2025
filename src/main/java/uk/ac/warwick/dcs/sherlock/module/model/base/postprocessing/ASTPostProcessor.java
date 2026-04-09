@@ -45,13 +45,6 @@ public class ASTPostProcessor implements IPostProcessor<ASTRawResult> {
 
     /**
      * Processes raw AST comparison results into scored code block groups.
-     * <p>
-     * Matches whose line ranges overlap in any file are merged into a shared
-     * group, mirroring the NGramPostProcessor grouping strategy. This prevents
-     * the same line range appearing in N separate single-pair groups (one per
-     * comparison partner), which would cause the PoolExecutorJob normalisation
-     * to divide every score by ~N.
-     * </p>
      *
      * @param files      the list of all source files being compared
      * @param rawResults the raw results from all AST detector workers
