@@ -683,7 +683,6 @@ public class WorkspaceCmd implements Runnable {
     /**
      * The Jobs command for the workspace.
      * Allows management of the workspace jobs; deleting and viewing.
-     * (Viewing is not yet implemented)
      * Command: workspace jobs -n=[name] -j=[job id] [OPTIONS]
      */
     @CommandLine.Command(name="jobs", description="Manage workspace jobs", mixinStandardHelpOptions = true)
@@ -701,7 +700,7 @@ public class WorkspaceCmd implements Runnable {
         @CommandLine.Option(names = {"-s", "--scores"}, description="View all submission overall match scores")
         boolean matchScores;
 
-        @CommandLine.Option(names = {"-r", "--report"}, description="ID of a submission to view")
+        @CommandLine.Option(names = {"-r", "--report"}, description="ID of a submission to view its match report")
         String viewReport;
 
         @CommandLine.Option(names = {"-t", "--thresh"}, description="Similarity threshold for the report", defaultValue="80")
@@ -712,7 +711,7 @@ public class WorkspaceCmd implements Runnable {
 
         /**
          * Matches the workspace and job if they exist.
-         * Deletes the job, or provides the means to view it (not yet implemented).
+         * Delete a job, view the match scores of a job, or save a PDF of the report
          */
         @Override
         public void run() {
