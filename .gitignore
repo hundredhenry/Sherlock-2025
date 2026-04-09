@@ -49,5 +49,3 @@ src/main/resources/static/css
 src/main/resources/static/js
 
 gradle.properties
-test-plagiarism-data
-test-plagiarism-data.zip
