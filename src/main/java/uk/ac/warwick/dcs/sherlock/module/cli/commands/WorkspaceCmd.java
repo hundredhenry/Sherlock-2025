@@ -13,6 +13,8 @@ import uk.ac.warwick.dcs.sherlock.api.registry.SherlockRegistry;
 import uk.ac.warwick.dcs.sherlock.module.cli.services.WorkspaceManagementService;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.SubmissionsForm;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.WorkspaceForm;
+import uk.ac.warwick.dcs.sherlock.module.core.data.models.internal.CodeBlock;
+import uk.ac.warwick.dcs.sherlock.module.core.data.models.internal.FileMatch;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TemplateRepository;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceRepository;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
@@ -29,7 +31,10 @@ import uk.ac.warwick.dcs.sherlock.module.web.exceptions.MapperException;
 import uk.ac.warwick.dcs.sherlock.module.core.data.results.JobResultsData;
 import uk.ac.warwick.dcs.sherlock.module.core.data.results.ResultsHelper;
 import uk.ac.warwick.dcs.sherlock.module.core.data.results.SubmissionResultsData;
+import uk.ac.warwick.dcs.sherlock.module.core.data.results.CodeMatchData;
+import uk.ac.warwick.dcs.sherlock.module.core.data.results.MatchGroupData;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,12 +43,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * The Workspace command that centralises workspace managemet
@@ -234,67 +245,192 @@ public class WorkspaceCmd implements Runnable {
                 return;
 
             } else if (inputPaths.size() > 0) {
-                // Add files
-                SubmissionsForm submissionForm = new SubmissionsForm();
-                List<MultipartFile> allFiles = new ArrayList<>();
-
                 for (Path p : inputPaths) {
                     if (!Files.exists(p)) {
                         System.out.println("File path does not exist.");
                         continue;
                     }
+
                     if (p.toString().endsWith(".zip")) {
-                        // Add a zip file containing a directory of files
+                        Map<String, List<MultipartFile>> dirGroups = new LinkedHashMap<>();
+                        List<MultipartFile> flatFiles = new ArrayList<>();
+                        boolean hasSubDirs = false;
+
                         try (ZipInputStream zip = new ZipInputStream(Files.newInputStream(p))) {
                             ZipEntry entry;
                             while ((entry = zip.getNextEntry()) != null) {
                                 if (!entry.isDirectory()) {
                                     byte[] bytes = zip.readAllBytes();
-                                    String fname = Paths.get(entry.getName()).getFileName().toString();
-                                    MultipartFile mf = new ZipMultipartFile(fname, fname, "application/octet-stream", bytes);
-                                    allFiles.add(mf);
+                                    String entryName = entry.getName();
+                                    String[] parts = entryName.split("/", 2);
+
+                                    if (parts.length > 1 && !parts[0].isEmpty()) {
+                                        hasSubDirs = true;
+                                        String relativePath = parts[1];
+                                        MultipartFile mf = new ZipMultipartFile(relativePath, relativePath, "application/octet-stream", bytes);
+                                        dirGroups.computeIfAbsent(parts[0], k -> new ArrayList<>()).add(mf);
+                                    } else {
+                                        String fname = Paths.get(entryName).getFileName().toString();
+                                        MultipartFile mf = new ZipMultipartFile(fname, fname, "application/octet-stream", bytes);
+                                        flatFiles.add(mf);
+                                    }
                                 }
                                 zip.closeEntry();
                             }
                         } catch (IOException e) {
-                            System.out.println(String.format("Failed to read directory %s.", p));
+                            System.out.println(String.format("Failed to read zip %s.", p));
+                            continue;
+                        }
+
+                        if (hasSubDirs) {
+                            for (Map.Entry<String, List<MultipartFile>> group : dirGroups.entrySet()) {
+                                try {
+                                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                    try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+                                        for (MultipartFile file : group.getValue()) {
+                                            if (file.getSize() > 0) {
+                                                zos.putNextEntry(new ZipEntry(file.getOriginalFilename()));
+                                                zos.write(file.getBytes());
+                                                zos.closeEntry();
+                                            }
+                                        }
+                                    }
+                                    // Named after the subdirectory to preserve submission name and avoid collisions
+                                    MultipartFile syntheticZip = new ZipMultipartFile(
+                                            "files", group.getKey() + ".zip", "application/zip", baos.toByteArray());
+
+                                    SubmissionsForm submissionForm = new SubmissionsForm();
+                                    submissionForm.setSingle(true);
+                                    submissionForm.setFiles(new MultipartFile[]{syntheticZip});
+                                    try {
+                                        workspace.addSubmissions(submissionForm);
+                                    } catch (NoFilesUploaded nfu) {
+                                        System.out.println(String.format("No files uploaded for group '%s'.", group.getKey()));
+                                    } catch (FileUploadFailed fuf) {
+                                        System.out.println(String.format("File upload failed for group '%s'.", group.getKey()));
+                                    }
+                                } catch (IOException e) {
+                                    System.out.println(String.format("Failed to create zip for group '%s'.", group.getKey()));
+                                }
+                            }
+
+                            if (!flatFiles.isEmpty()) {
+                                SubmissionsForm submissionForm = new SubmissionsForm();
+                                submissionForm.setSingle(true);
+                                submissionForm.setFiles(flatFiles.toArray(new MultipartFile[0]));
+                                try {
+                                    workspace.addSubmissions(submissionForm);
+                                } catch (NoFilesUploaded nfu) {
+                                    System.out.println("No files uploaded.");
+                                } catch (FileUploadFailed fuf) {
+                                    System.out.println("File upload failed.");
+                                }
+                            }
+                        } else {
+                            // Flat zip — original behaviour
+                            SubmissionsForm submissionForm = new SubmissionsForm();
+                            submissionForm.setSingle(true);
+                            submissionForm.setFiles(flatFiles.toArray(new MultipartFile[0]));
+                            try {
+                                workspace.addSubmissions(submissionForm);
+                            } catch (NoFilesUploaded nfu) {
+                                System.out.println("No files uploaded.");
+                            } catch (FileUploadFailed fuf) {
+                                System.out.println("File upload failed.");
+                            }
                         }
 
                     } else if (Files.isDirectory(p)) {
-                        // Add a directory of files
-                        try (Stream<Path> paths = Files.walk(p)) {
-                            paths.filter(Files::isRegularFile).forEach(fp -> {
-                                try {
-                                    byte[] bytes = Files.readAllBytes(fp);
-                                    MultipartFile mf = new ZipMultipartFile(fp.getFileName().toString(), fp.getFileName().toString(), "application/octet-stream", bytes);
-                                    allFiles.add(mf);
-                                } catch (IOException e) {
-                                    System.out.println(String.format("Failed to read directory %s.", fp));
-                                }
-                            });
+                        List<Path> subDirs;
+                        try (Stream<Path> children = Files.list(p)) {
+                            subDirs = children.filter(Files::isDirectory).collect(Collectors.toList());
                         } catch (IOException e) {
-                            System.out.println(String.format("Failed to read directory %s.", p));
+                            System.out.println(String.format("Failed to list directory %s.", p));
+                            continue;
+                        }
+
+                        if (!subDirs.isEmpty()) {
+                            for (Path subDir : subDirs) {
+                                try {
+                                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                    try (ZipOutputStream zos = new ZipOutputStream(baos);
+                                        Stream<Path> paths = Files.walk(subDir)) {
+                                        for (Path fp : (Iterable<Path>) paths.filter(Files::isRegularFile)::iterator) {
+                                            String relativePath = subDir.relativize(fp).toString().replace("\\", "/");
+                                            zos.putNextEntry(new ZipEntry(relativePath));
+                                            zos.write(Files.readAllBytes(fp));
+                                            zos.closeEntry();
+                                        }
+                                    }
+                                    // Named after the subdirectory to preserve submission name and avoid collisions
+                                    MultipartFile syntheticZip = new ZipMultipartFile(
+                                            "files", subDir.getFileName().toString() + ".zip", "application/zip", baos.toByteArray());
+
+                                    SubmissionsForm submissionForm = new SubmissionsForm();
+                                    submissionForm.setSingle(true);
+                                    submissionForm.setFiles(new MultipartFile[]{syntheticZip});
+                                    try {
+                                        workspace.addSubmissions(submissionForm);
+                                    } catch (NoFilesUploaded nfu) {
+                                        System.out.println(String.format("No files uploaded for sub-directory '%s'.", subDir.getFileName()));
+                                    } catch (FileUploadFailed fuf) {
+                                        System.out.println(String.format("File upload failed for sub-directory '%s'.", subDir.getFileName()));
+                                    }
+                                } catch (IOException e) {
+                                    System.out.println(String.format("Failed to create zip for sub-directory '%s'.", subDir.getFileName()));
+                                }
+                            }
+                        } else {
+                            // Flat directory — original behaviour
+                            SubmissionsForm submissionForm = new SubmissionsForm();
+                            List<MultipartFile> allFiles = new ArrayList<>();
+                            try (Stream<Path> paths = Files.walk(p)) {
+                                paths.filter(Files::isRegularFile).forEach(fp -> {
+                                    try {
+                                        byte[] bytes = Files.readAllBytes(fp);
+                                        MultipartFile mf = new ZipMultipartFile(
+                                                fp.getFileName().toString(),
+                                                fp.getFileName().toString(),
+                                                "application/octet-stream", bytes);
+                                        allFiles.add(mf);
+                                    } catch (IOException e) {
+                                        System.out.println(String.format("Failed to read file %s.", fp));
+                                    }
+                                });
+                            } catch (IOException e) {
+                                System.out.println(String.format("Failed to read directory %s.", p));
+                                continue;
+                            }
+                            submissionForm.setSingle(true);
+                            submissionForm.setFiles(allFiles.toArray(new MultipartFile[0]));
+                            try {
+                                workspace.addSubmissions(submissionForm);
+                            } catch (NoFilesUploaded nfu) {
+                                System.out.println("No files uploaded.");
+                            } catch (FileUploadFailed fuf) {
+                                System.out.println("File upload failed.");
+                            }
                         }
 
                     } else if (Files.isRegularFile(p)) {
-                        // Add a single file
+                        SubmissionsForm submissionForm = new SubmissionsForm();
                         try {
                             byte[] bytes = Files.readAllBytes(p);
-                            MultipartFile mf = new ZipMultipartFile(p.getFileName().toString(), p.getFileName().toString(), "application/octet-stream", bytes);
-                            allFiles.add(mf);
+                            MultipartFile mf = new ZipMultipartFile(
+                                    p.getFileName().toString(),
+                                    p.getFileName().toString(),
+                                    "application/octet-stream", bytes);
+                            submissionForm.setSingle(true);
+                            submissionForm.setFiles(new MultipartFile[]{mf});
+                            workspace.addSubmissions(submissionForm);
                         } catch (IOException e) {
-                            System.out.println(String.format("Failed to read directory %s.", p));
+                            System.out.println(String.format("Failed to read file %s.", p));
+                        } catch (NoFilesUploaded nfu) {
+                            System.out.println("No files uploaded.");
+                        } catch (FileUploadFailed fuf) {
+                            System.out.println("File upload failed.");
                         }
                     }
-                }
-                submissionForm.setFiles(allFiles.toArray(new MultipartFile[0]));
-                submissionForm.setSingle(true);
-                try {
-                    workspace.addSubmissions(submissionForm);
-                } catch (NoFilesUploaded nfu) {
-                    System.out.println("No files uploaded.");
-                } catch (FileUploadFailed fuf) {
-                    System.out.println("File upload failed.");
                 }
             }
         }
@@ -311,6 +447,9 @@ public class WorkspaceCmd implements Runnable {
 
         @CommandLine.Option(names = {"-n", "--name"}, description = "Name of the workspace", required = true)
         String workspaceName;
+
+        @CommandLine.Option(names = {"-s", "--submissions"}, description = "List the workspace submissions")
+        boolean listSubmissions = false;
 
         @CommandLine.Option(names = {"-f", "--files"}, description = "List the workspace files")
         boolean listFiles = false;
@@ -338,8 +477,11 @@ public class WorkspaceCmd implements Runnable {
             String name = workspace.getName();
             String language = workspace.getLanguage();
             
+            List<ISubmission> allSubmissions = workspace.getSubmissions();
+            int subCount = allSubmissions.size();
+
             List<ISourceFile> allFiles = workspace.getFiles();
-            int fileCount = allFiles.size();
+            int filesCount = allFiles.size();
 
             List<IJob> wJobs = workspace.getJobs();
             int jobCount = wJobs.size();
@@ -348,14 +490,26 @@ public class WorkspaceCmd implements Runnable {
             System.out.println(String.format("-- Name: %s", name));
             System.out.println(String.format("-- Language: %s", language));
 
-            if (listFiles) {
-                System.out.println(String.format("-- Files (%d):", fileCount));
+            if (listSubmissions) {
+                System.out.println(String.format("-- Submissions (%d):", subCount));
 
-                if (fileCount == 0) {
+                if (subCount == 0) {
+                    System.out.println("---- There are no submissions in this workspace.");
+                } else {
+                    for (ISubmission s : allSubmissions) {
+                        System.out.println(String.format("---- %s", s.getName()));
+                    }
+                }
+            }
+
+            if (listFiles) {
+                System.out.println(String.format("-- Files (%d):", filesCount));
+
+                if (filesCount == 0) {
                     System.out.println("---- There are no files in this workspace.");
                 } else {
                     for (ISourceFile f : allFiles) {
-                        System.out.println(String.format("---- %s (%sB)", f.getFileDisplayName(), f.getFileSize()));
+                        System.out.println(String.format("---- %s : (%sB)", f.getFileDisplayPath(), f.getFileSize()));
                     }
                 }
             }
@@ -485,6 +639,12 @@ public class WorkspaceCmd implements Runnable {
             WorkspaceRepository workspaceRepository = parent.workspaceRepository;
             WorkspaceManagementService service = parent.wms;
             WorkspaceWrapper workspace = service.getWorkspaceByName(accountWrapper, workspaceRepository, workspaceName);
+
+            if (workspace.getSubmissions().size() < 2) {
+                System.out.println("You need at least two submissions to run an analysis.");
+                return;
+            }
+
             TemplateWrapper template = null;
             List<TemplateWrapper> templateList = TemplateWrapper.findByAccountAndPublic(accountWrapper.getAccount(), parent.templateRepository);
             for (TemplateWrapper t : templateList) {
@@ -544,6 +704,9 @@ public class WorkspaceCmd implements Runnable {
         @CommandLine.Option(names = {"-r", "--report"}, description="ID of a submission to view")
         String viewReport;
 
+        @CommandLine.Option(names = {"-t", "--thresh"}, description="Similarity threshold for the report", defaultValue="80")
+        int thresh;
+
         @CommandLine.ParentCommand
         WorkspaceCmd parent;
 
@@ -593,26 +756,82 @@ public class WorkspaceCmd implements Runnable {
                 TemplateEngine templateEngine = parent.templateEngine;
                 try {
                     ISubmission submission = ResultsHelper.getSubmission(workspace, Long.parseLong(viewReport));
+                    List<ISourceFile> allSourceFiles = workspace.getFiles();
+                    ISourceFile submissionFile = null;
+                    for (ISourceFile isf : allSourceFiles) {
+                        if (isf.getArchiveId() == submission.getId() && isf.getFileDisplayName().equals(isf.getFileDisplayPath())) {
+                            submissionFile = isf;
+                            break;
+                        }
+                    }
                     SubmissionResultsData resultsWrapper = new SubmissionResultsData(job, submission);
                     if (resultsWrapper == null) return;
     
                     JobResultsData jobData = new JobResultsData(job);
                     String mapJSON = resultsWrapper.getMapJSON();
                     String matchesJSON = resultsWrapper.getMatchesJSON();
-                    System.out.println(mapJSON);
-                    System.out.println("\n\n\n");
-                    System.out.println(matchesJSON);
-    
+                    int contextLines = 5;
+
+                    Map<String, List<FileMatch>> matches = resultsWrapper.getMatches();
+                    Map<String, List<MatchGroupData>> groupedMatches = new HashMap<>();
+
+                    // Loop through the groups
+                    for (Map.Entry<String, List<FileMatch>> group : matches.entrySet()) {
+                        groupedMatches.put(group.getKey(), new ArrayList<>());
+                        
+                        // Loop through the match groups; these are collections of identical matches between n files
+                        for (FileMatch match : group.getValue()) {
+                            if ((int) match.getScore() < thresh) {continue;}
+                            MatchGroupData matchGroups = new MatchGroupData(match.getId(), group.getKey(), match.getScore());
+
+                            // Loop through each file to get their shared code blocks
+                            for (Map.Entry<ISourceFile, List<CodeBlock>> entry : match.getMap().entrySet()) {
+                                ISourceFile entryfile = entry.getKey();
+                                List<CodeBlock> cbs = entry.getValue();
+                                
+                                List<CodeMatchData> fileLinesList = new ArrayList<>();
+                                // Loop through the matching code blocks
+                                for (CodeBlock cb : cbs) {
+                                    int startingLine = Math.max(1, cb.getStartLine() - contextLines);
+                                    int endingLine = Math.min(entryfile.getFileContentsAsStringList().size(), cb.getEndLine() + contextLines);
+                                    List<String> fileLines = entryfile.getFileContentsAsStringList().subList(startingLine - 1, endingLine);
+                                    CodeMatchData md = new CodeMatchData(cb.getMatchId(), fileLines, cb.getStartLine(), cb.getEndLine(), startingLine, endingLine);
+                                    fileLinesList.add(md);
+                                }
+
+                                matchGroups.addFileMatches(entryfile.getFileDisplayPath(), fileLinesList);
+                            }
+                            groupedMatches.get(group.getKey()).add(matchGroups);
+                        }
+                    }
+
+                    /**
+                     * Structure of groupedMatches:
+                     * 
+                     * Map<String, List<MatchgroupData>>
+                     * --> String: Group Name
+                     * --> List<MatchGroupData>: The list containing the collections of matches 
+                     * ----> MatchGroupData
+                     * -------> Contains the match ID, group name, match score, and Map<String, List<CodeMatchData>>
+                     * ----------> Map<String, List<CodeMatchData>>
+                     * ---------------> String: Filename
+                     * ---------------> List<CodeMatchData>: Contains info about each individual matched codeblock for a file
+                     * 
+                     */
+
                     Context context = new Context();
                     context.setVariable("workspace", workspace);
                     context.setVariable("results", jobData);
                     context.setVariable("submission", submission);
+                    context.setVariable("sourceFile", submissionFile);
                     context.setVariable("wrapper", resultsWrapper);
+                    context.setVariable("groupedMatches", groupedMatches);
                     context.setVariable("printing", true);
                     
                     String htmlStr = templateEngine.process("dashboard/workspaces/results/reportPDF", context);
+                    String reportFilename = String.format("report_WSPACE_%s_SUBM_%s_JID%s.pdf", workspace.getName(), submission.getName(), jobId);
     
-                    try (OutputStream os = new FileOutputStream("ROROBEAR.pdf")) {
+                    try (OutputStream os = new FileOutputStream(reportFilename)) {
                         PdfRendererBuilder builder = new PdfRendererBuilder();
                         builder.withHtmlContent(htmlStr, null);
                         builder.toStream(os);
