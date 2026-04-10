@@ -1,8 +1,10 @@
 package uk.ac.warwick.dcs.sherlock.launch;
 
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.thymeleaf.TemplateEngine;
 
 import picocli.CommandLine;
 import uk.ac.warwick.dcs.sherlock.module.cli.commands.*;
@@ -35,13 +37,15 @@ public class SherlockCli {
         TemplateRepository templateRepository = context.getBean(TemplateRepository.class);
         TDetectorRepository tDetectorRepository = context.getBean(TDetectorRepository.class);
         TParameterRepository tParameterRepository = context.getBean(TParameterRepository.class);
+        TemplateEngine templateEngine = context.getBean(TemplateEngine.class);
         
         System.out.println("Welcome to the Sherlock CLI Interface!");
 
-        WorkspaceCmd workspaceCmd = new WorkspaceCmd(workspaceRepository, templateRepository, accountWrapper);
+        WorkspaceCmd workspaceCmd = new WorkspaceCmd(workspaceRepository, templateRepository, accountWrapper, templateEngine);
         CommandLine workspaceCmdLine = new CommandLine(workspaceCmd);
         TemplateCmd templateCmd = new TemplateCmd(templateRepository, accountWrapper, tDetectorRepository, tParameterRepository);
         CommandLine templateCmdLine = new CommandLine(templateCmd);
+
 
         CommandLine cmd = new CommandLine(this);
         
@@ -50,23 +54,27 @@ public class SherlockCli {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
-            System.out.print("> ");
-            String line = scanner.nextLine().trim();
-
-            if (line.isEmpty()) {
-                continue;
-            }
-
-            if (line.equalsIgnoreCase("exit")) {
-                break;
-            }
-
-            String[] args = line.split("\\s+");
-
             try {
-                cmd.execute(args);
-            } catch (Exception e) {
-                System.out.println("Error executing command: " + e.getMessage());
+                System.out.print("> ");
+                String line = scanner.nextLine().trim();
+
+                if (line.isEmpty()) {
+                    continue;
+                }
+
+                if (line.equalsIgnoreCase("exit")) {
+                    break;
+                }
+
+                String[] args = line.split("\\s+");
+
+                try {
+                    cmd.execute(args);
+                } catch (Exception e) {
+                    System.out.println("Error executing command: " + e.getMessage());
+                }
+            } catch (NoSuchElementException nsee) {
+                break;
             }
 
         }
