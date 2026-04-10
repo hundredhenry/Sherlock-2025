@@ -1,13 +1,11 @@
 package uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing;
 
-import uk.ac.warwick.dcs.sherlock.api.annotation.AdjustableParameter;
 import uk.ac.warwick.dcs.sherlock.api.component.ICodeBlockGroup;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.IPostProcessor;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.ModelTaskProcessedResults;
 import uk.ac.warwick.dcs.sherlock.module.model.base.detection.ASTMatch;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,25 +21,6 @@ import java.util.Map;
  * </p>
  */
 public class ASTPostProcessor implements IPostProcessor<ASTRawResult> {
-
-    /**
-     * Threshold for filtering common code.
-     * <p>
-     * If a code structure appears in more than this fraction of all files,
-     * it is considered common (e.g. boilerplate or skeleton code) and is
-     * excluded from results.
-     * Set to 1.0 to disable filtering.
-     * </p>
-     */
-    @AdjustableParameter(
-            name = "Common Threshold",
-            defaultValue = 0.3f,
-            minimumBound = 0.0f,
-            maximumBound = 1.0f,
-            step = 0.01f,
-            description = "If a structural pattern appears in more than this fraction of files, it will be ignored. Increase for small file sets."
-    )
-    public float commonThreshold;
 
     /**
      * Processes raw AST comparison results into scored code block groups.
