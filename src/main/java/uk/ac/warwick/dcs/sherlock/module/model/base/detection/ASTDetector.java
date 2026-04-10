@@ -32,7 +32,7 @@ public class ASTDetector extends PairwiseDetector<ASTDetector.ASTDetectorWorker>
 
     @AdjustableParameter(
             name = "Minimum Dice Threshold",
-            defaultValue = 0.5f,
+            defaultValue = 0.8f,
             minimumBound = 0f,
             maximumBound = 1f,
             step = 0.05f,

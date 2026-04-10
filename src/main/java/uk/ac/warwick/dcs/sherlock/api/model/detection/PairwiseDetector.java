@@ -24,9 +24,9 @@ public class PairwiseDetector<T extends PairwiseDetectorWorker> extends Detector
 	 * When enabled (set to 1), only files with the same filename across different submissions will be compared.
 	 * Useful for multi-file submissions where each submission contains files with the same names (e.g. Main.java, Helper.java).
 	 */
-	@AdjustableParameter(name = "Match by Filename Only", defaultValue = 0, minimumBound = 0, maximumBound = 1, step = 1,
+	@AdjustableParameter(name = "Match by Filename Only", defaultValue = 1, minimumBound = 0, maximumBound = 1, step = 1,
 			description = "When set to 1, only compare files with the same filename across submissions. Useful for multi-file submissions.")
-	public int matchByFilename = 0;
+	public int matchByFilename;
 
 	/**
 	 * Class object for the generic type of this detector's worker
