@@ -184,12 +184,10 @@ public class BaseStorage implements IStorageWrapper {
 				objects.add(g);
 			}
 		}
-
 		if (objects.size() > 0) {
 			this.database.storeObject(objects);
 			return true;
 		}
-
 		return false;
 	}
 

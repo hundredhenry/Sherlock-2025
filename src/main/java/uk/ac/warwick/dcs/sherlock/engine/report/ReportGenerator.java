@@ -17,14 +17,13 @@ public class ReportGenerator implements IReportGenerator<SubmissionMatchGroup> {
 	@Override
 	public List<SubmissionMatchGroup> generateSubmissionComparison(List<ISubmission> submissions, List<? extends ICodeBlockGroup> codeBlockGroups) {
 		List<SubmissionMatch> matchList = new ArrayList<>();
-
 		for (ICodeBlockGroup codeBlockGroup : codeBlockGroups) {
 			List<SubmissionMatchItem> items = new ArrayList<>();
 
 			for (ICodeBlock codeBlock : codeBlockGroup.getCodeBlocks()) {
 				long subId = codeBlock.getFile().getSubmission().getId();
-				if (submissions.get(0).getId() == subId || submissions.get(1).getId() == subId) {
-					items.add(new SubmissionMatchItem(codeBlock.getFile(), codeBlock.getBlockScore(), codeBlock.getLineNumbers()));
+				if (submissions.get(0).getId() == subId || submissions.get(1).getId() == subId) {						
+					items.add(new SubmissionMatchItem(codeBlock.getFile(), codeBlock.getBlockScore(), codeBlock.getLineNumbers(), codeBlock.getInternalSkeletonCode()));
 				}
 			}
 
@@ -62,7 +61,7 @@ public class ReportGenerator implements IReportGenerator<SubmissionMatchGroup> {
 			List<SubmissionMatchItem> items = new ArrayList<>();
 
 			for (ICodeBlock codeBlock : codeBlockGroup.getCodeBlocks()) {
-				items.add(new SubmissionMatchItem(codeBlock.getFile(), codeBlock.getBlockScore(), codeBlock.getLineNumbers()));
+				items.add(new SubmissionMatchItem(codeBlock.getFile(), codeBlock.getBlockScore(), codeBlock.getLineNumbers(), codeBlock.getInternalSkeletonCode()));
 
 				if (!submission.getContainedFiles().contains(codeBlock.getFile()))
 					subIdsConnected.add(codeBlock.getFile().getSubmission().getId());

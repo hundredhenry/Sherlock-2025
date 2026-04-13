@@ -9,6 +9,7 @@ import jakarta.persistence.Entity;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,13 +37,13 @@ public class EntityCodeBlockGroup implements ICodeBlockGroup, Serializable {
 	}
 
 	@Override
-	public void addCodeBlock(ISourceFile file, float score, ITuple<Integer, Integer> line) {
+	public void addCodeBlock(ISourceFile file, float score, ITuple<Integer, Integer> line,HashSet<ITuple<Integer, Integer>> internalSkeletonCode) {
 		if (this.blockMap.containsKey(file.getPersistentId())) {
-			this.blockMap.get(file.getPersistentId()).append(score, line);
+			this.blockMap.get(file.getPersistentId()).append(score, line,internalSkeletonCode);
 		}
 		else {
 			if (file instanceof EntityFile) {
-				EntityCodeBlock block = new EntityCodeBlock((EntityFile) file, score, line);
+				EntityCodeBlock block = new EntityCodeBlock((EntityFile) file, score, line, internalSkeletonCode);
 				this.blockMap.put(file.getPersistentId(), block);
 			}
 			else {
@@ -52,13 +53,13 @@ public class EntityCodeBlockGroup implements ICodeBlockGroup, Serializable {
 	}
 
 	@Override
-	public void addCodeBlock(ISourceFile file, float score, List<ITuple<Integer, Integer>> lines) {
+	public void addCodeBlock(ISourceFile file, float score, List<ITuple<Integer, Integer>> lines,List<HashSet<ITuple<Integer, Integer>>> internalSkeletonCode) {
 		if (this.blockMap.containsKey(file.getPersistentId())) {
-			this.blockMap.get(file.getPersistentId()).append(score, lines);
+			this.blockMap.get(file.getPersistentId()).append(score, lines,internalSkeletonCode);
 		}
 		else {
 			if (file instanceof EntityFile) {
-				EntityCodeBlock block = new EntityCodeBlock((EntityFile) file, score, lines);
+				EntityCodeBlock block = new EntityCodeBlock((EntityFile) file, score, lines, internalSkeletonCode);
 				this.blockMap.put(file.getPersistentId(), block);
 			}
 			else {

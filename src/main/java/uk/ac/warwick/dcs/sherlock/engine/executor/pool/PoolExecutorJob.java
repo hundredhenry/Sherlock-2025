@@ -19,6 +19,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+
+
 record FileIdPair(long file1Id, long file2Id) {}
 
 /**
@@ -180,14 +182,14 @@ public class PoolExecutorJob implements Runnable {
 					//now the intention with the following code is to get the code in a state which miniises the number of 
 					// loops spent removing lines from the raw results. The idea is to go through both lists of matches
 					// and combine them, stripping the skeleton code matches but combining the legitimate matches into
-					// one paired tuple. ie going from:
+					// one paired ITuple. ie going from:
 					//	skeletonCodeResult1: <<skeleCodeMatchStartLine1, skeleCodeMatchEndLine1>,<legitMatchStartLine1, legitMatchEndLine1>>
 					//  skeletonCodeResult2: <<skeleCodeMatchStartLine2, skeleCodeMatchEndLine2>,<legitMatchStartLine2, legitMatchEndLine2>>
 					//to:
 					//  results: <<legitMatchStartLine1, legitMatchEndLine1>,<legitMatchStartLine2, legitMatchEndLine2>>
 					//so do one loop over both lists (rather than two)
 					for (int i = 0; i < skeletonCodeFile1Matches.size() || i < skeletonCodeFile2Matches.size(); i++){ //O(M)
-						Tuple<Integer, Integer> file1Match;
+						ITuple<Integer, Integer> file1Match;
 						//and check if there are matches left in the first file
 						if (i >= skeletonCodeFile1Matches.size()){
 							//if not, then just use a dummy match, which will never affect results
@@ -205,7 +207,7 @@ public class PoolExecutorJob implements Runnable {
 							}
 						}
 						//then do the same for the second file
-						Tuple<Integer, Integer> file2Match;
+						ITuple<Integer, Integer> file2Match;
 						if (i >= skeletonCodeFile2Matches.size()){
 							file2Match = new Tuple<>(-1,-1);
 						} else {
@@ -218,7 +220,7 @@ public class PoolExecutorJob implements Runnable {
 						}
 
 
-						//now we have one paired tuple, we can call the removeLine method to remove it from the raw result
+						//now we have one paired ITuple, we can call the removeLine method to remove it from the raw result
 						result.removeLine(new PairedTuple<>(file1Match, file2Match));//O(M)
 
 					}
@@ -230,6 +232,9 @@ public class PoolExecutorJob implements Runnable {
 			for (AbstractModelTaskRawResult result : normalSubmissionResults){//O(L)
 				//and just check that there are actually lines left in the result
 				if (result.getLocations().size()>0){
+					//clean up the internal skeleton code
+					result.cleanInternalSkeletonCode();
+					//and add it to the full list
 					fullResults.add(result);
 				}
 			}
@@ -272,24 +277,21 @@ public class PoolExecutorJob implements Runnable {
 			return;
 		}
 
+
 		// score
 		if (results.size() > 0) {
 			this.status.nextStep();
 			this.status.calculateProgressIncrement(((this.job.getWorkspace().getFiles().size() * results.size()) * 2) + this.job.getWorkspace().getFiles().size());
-
 			List<ICodeBlockGroup> allGroups = results.stream().flatMap(f -> f.getValue().getGroups().stream()).collect(Collectors.toList());
 			SherlockEngine.storage.storeCodeBlockGroups(allGroups);
-
 			// TODO: thread scoring loops
 			IResultJob jobRes = this.job.createNewResult();
-			
 			// Track which groups have been added to each task to prevent duplicates
 			// Map: Task -> Set of group identity hash codes already added
 			Map<ITask, Set<Integer>> taskGroupsAdded = new HashMap<>();
 			for (ITuple<ITask, ModelTaskProcessedResults> t : results) {
 				taskGroupsAdded.put(t.getKey(), new HashSet<>());
 			}
-			
 			for (ISourceFile file : this.job.getWorkspace().getFiles()) {
 				IResultFile fileRes = jobRes.addFile(file);
 				List<ITuple<ICodeBlockGroup, Float>> overallGroupScores = new LinkedList<>();
@@ -298,7 +300,6 @@ public class PoolExecutorJob implements Runnable {
 					try {
 						List<ICodeBlockGroup> groupsContainingFile = t.getValue().getGroups(file);
 						int fileTotal = t.getValue().getFileTotal(file);
-
 						// Construct block scores weighted against the whole file, by default uses file line count, but can be set to custom totals (eg. variable counts)
 						AtomicReference<Float> fullSize = new AtomicReference<>((float) 0);
 						List<ITuple<ICodeBlockGroup, Float>> groupScores = groupsContainingFile.stream().map(x -> {
@@ -325,7 +326,6 @@ public class PoolExecutorJob implements Runnable {
 						if (!newGroups.isEmpty()) {
 							taskRes.addContainingBlock(newGroups);
 						}
-
 						// calculate and store the scores from the group scores, uses weightings
 						calculateScoreForBlockList(file, groupScores, taskRes, taskRes.getClass().getDeclaredMethod("setTaskScore", float.class), taskRes.getClass().getDeclaredMethod("addFileScore", ISourceFile.class, float.class));
 						overallGroupScores.addAll(groupScores);
@@ -338,14 +338,12 @@ public class PoolExecutorJob implements Runnable {
 						}
 					}
 				}
-
 				try {
 					calculateScoreForBlockList(file, overallGroupScores, fileRes, fileRes.getClass().getDeclaredMethod("setOverallScore", float.class), fileRes.getClass().getDeclaredMethod("addFileScore", ISourceFile.class, float.class));
 				}
 				catch (NoSuchMethodException e) {
 					e.printStackTrace();
 				}
-
 				this.status.incrementProgress();
 			}
 		}

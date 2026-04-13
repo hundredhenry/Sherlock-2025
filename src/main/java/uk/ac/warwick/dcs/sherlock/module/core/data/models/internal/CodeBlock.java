@@ -1,7 +1,11 @@
 package uk.ac.warwick.dcs.sherlock.module.core.data.models.internal;
 
+import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+
 
 /**
  * Code blocks used by the results section of the website
@@ -23,15 +27,21 @@ public class CodeBlock {
     private int matchId;
 
     /**
+     * The internal skeleton code for this code block
+     */
+    private HashSet<ITuple<Integer, Integer>> internalSkeletonCode;
+
+    /**
      * Initialise this code block without a match
      *
      * @param startLine the start line number
      * @param endLine the end line number
      */
-    public CodeBlock(int startLine, int endLine) {
+    public CodeBlock(int startLine, int endLine, HashSet<ITuple<Integer, Integer>> internalSkeletonCode) {
         this.startLine = startLine;
         this.endLine = endLine;
         this.matchId = 0;
+        this.internalSkeletonCode = internalSkeletonCode;
     }
 
     /**
@@ -45,6 +55,7 @@ public class CodeBlock {
         this.startLine = startLine;
         this.endLine = endLine;
         this.matchId = matchId;
+        this.internalSkeletonCode = new HashSet<>();
     }
 
     /**
@@ -72,6 +83,10 @@ public class CodeBlock {
      */
     public int getMatchId() {
         return matchId;
+    }
+
+    public HashSet<ITuple<Integer, Integer>> getInternalSkeletonCode() {
+        return internalSkeletonCode;
     }
 
     /**

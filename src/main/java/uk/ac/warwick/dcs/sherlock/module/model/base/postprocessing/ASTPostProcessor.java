@@ -85,8 +85,9 @@ public class ASTPostProcessor implements IPostProcessor<ASTRawResult> {
 
                 // addCodeBlock handles the case where the file is already in the group:
                 // new line ranges are appended and scores are averaged.
-                group.addCodeBlock(match.files[0], match.similarity, match.lines.get(0));
-                group.addCodeBlock(match.files[1], match.similarity, match.lines.get(1));
+                
+                group.addCodeBlock(match.files[0], match.similarity, match.lines.get(0), match.getInternalSkeletonCodeFile(1));
+                group.addCodeBlock(match.files[1], match.similarity, match.lines.get(1), match.getInternalSkeletonCodeFile(2));
 
                 addRange(rangesByFile, match.files[0].getPersistentId(), s1, e1, group);
                 addRange(rangesByFile, match.files[1].getPersistentId(), s2, e2, group);

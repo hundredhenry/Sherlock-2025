@@ -4,7 +4,7 @@ import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.report.ISubmissionMatchItem;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * Stored by SubmissionMatch to ensure data for a given file remains together.
@@ -27,16 +27,22 @@ public class SubmissionMatchItem implements ISubmissionMatchItem {
 	private List<ITuple<Integer, Integer>> lineNumbers;
 
 	/**
+	 * The internal skeleton code for this file
+	 */
+	private HashMap<ITuple, HashSet<ITuple<Integer, Integer>>> internalSkeletonCode;
+
+	/**
 	 * Initialise a new SubmissionMatchItem.
 	 *
 	 * @param file        The file the match was found in
 	 * @param score       The score assigned to this match
 	 * @param lineNumbers The location of the match in the file
 	 */
-	public SubmissionMatchItem(ISourceFile file, float score, List<ITuple<Integer, Integer>> lineNumbers) {
+	public SubmissionMatchItem(ISourceFile file, float score, List<ITuple<Integer, Integer>> lineNumbers, HashMap<ITuple, HashSet<ITuple<Integer, Integer>>> internalSkeletonCode) {
 		this.file = file;
 		this.score = score;
 		this.lineNumbers = lineNumbers;
+		this.internalSkeletonCode = internalSkeletonCode;
 	}
 
 	/**
@@ -61,5 +67,14 @@ public class SubmissionMatchItem implements ISubmissionMatchItem {
 	@Override
 	public float getScore() {
 		return this.score;
+	}
+
+	/**
+	 * Get the internal skeleton code for this file
+	 * @return the internal skeleton code for this file
+	 */
+	@Override
+	public HashMap<ITuple, HashSet<ITuple<Integer, Integer>>> getInternalSkeletonCode() {
+		return this.internalSkeletonCode;
 	}
 }
