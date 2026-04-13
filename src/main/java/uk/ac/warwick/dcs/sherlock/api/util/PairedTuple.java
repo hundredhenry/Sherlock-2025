@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import org.springframework.security.access.method.P;
 
+
 /**
  * Implementation of a pair of tuples in a single object
  *
@@ -14,24 +15,24 @@ import org.springframework.security.access.method.P;
  */
 public class PairedTuple<W, X, Y, Z> implements Serializable {
 
-	Tuple<W, X> point1;
-	Tuple<Y, Z> point2;
+	ITuple<W, X> point1;
+	ITuple<Y, Z> point2;
 
 	public PairedTuple(W key1, X value1, Y key2, Z value2) {
 		this.point1 = new Tuple<>(key1, value1);
 		this.point2 = new Tuple<>(key2, value2);
 	}
 
-	public PairedTuple(Tuple<W, X> point1, Tuple<Y, Z> point2) {
+	public PairedTuple(ITuple<W, X> point1, ITuple<Y, Z> point2) {
 		this.point1 = point1;
 		this.point2 = point2;
 	}
 
-	public Tuple<W, X> getPoint1() {
+	public ITuple<W, X> getPoint1() {
 		return point1;
 	}
 
-	public Tuple<Y, Z> getPoint2() {
+	public ITuple<Y, Z> getPoint2() {
 		return point2;
 	}
 

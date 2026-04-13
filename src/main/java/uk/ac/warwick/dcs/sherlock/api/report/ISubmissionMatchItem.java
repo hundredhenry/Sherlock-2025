@@ -4,6 +4,8 @@ import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
 import java.util.List;
+import java.util.HashSet;
+import java.util.HashMap;
 
 public interface ISubmissionMatchItem {
 
@@ -21,5 +23,10 @@ public interface ISubmissionMatchItem {
 	 * @return the score for this file
 	 */
 	float getScore();
+
+	/**
+	 * @return the internal skeleton code for this file
+	 */
+	HashMap<ITuple, HashSet<ITuple<Integer, Integer>>> getInternalSkeletonCode();
 
 }

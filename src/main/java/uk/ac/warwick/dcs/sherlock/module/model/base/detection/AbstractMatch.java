@@ -4,12 +4,14 @@ import uk.ac.warwick.dcs.sherlock.api.util.SherlockHelper;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.util.PairedTuple;
 import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
+import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Objects;
 
 
@@ -29,8 +31,21 @@ public abstract class AbstractMatch<S extends AbstractMatch<S>> implements Seria
      * The line positions of both blocks.
      * Index 0 = file 1 (start, end), Index 1 = file 2 (start, end).
      */
-    public ArrayList<Tuple<Integer, Integer>> lines;    // array list used for type safety of generics
+    public ArrayList<ITuple<Integer, Integer>> lines;    // array list used for type safety of generics
    
+
+    /**
+     * If the match contains skeleton code fully surrounded by legitimate code, then this defines the range 
+     * (or ranges) of where the skeleton code is located for file 1
+     */
+    public HashSet<ITuple<Integer, Integer>> internalSkeletonCodeFile1;
+
+    /**
+     * If the match contains skeleton code fully surrounded by legitimate code, then this defines the range 
+     * (or ranges) of where the skeleton code is located for file 2
+     */
+    public HashSet<ITuple<Integer, Integer>> internalSkeletonCodeFile2;
+
     /**
      * The two files being compared.
      */
@@ -69,6 +84,31 @@ public abstract class AbstractMatch<S extends AbstractMatch<S>> implements Seria
         this.files[1] = file2;
     }
 
+    /**
+     * Sets the internal skeleton code for the match
+     * @param internalSkeletonCode the internal skeleton code
+     */
+    public void setInternalSkeletonCode(
+        HashSet<ITuple<Integer, Integer>> internalSkeletonCode1,
+        HashSet<ITuple<Integer, Integer>> internalSkeletonCode2
+        ){
+        this.internalSkeletonCodeFile1 = internalSkeletonCode1;
+        this.internalSkeletonCodeFile2 = internalSkeletonCode2;
+    }
+
+    /**
+     * Get the internal skeleton code for a file
+     * @param fileNum 1 for file 1, 2 for file 2
+     * @return the internal skeleton code for the file
+     */
+    public HashSet<ITuple<Integer, Integer>> getInternalSkeletonCodeFile(int fileNum){
+        if (fileNum == 1){
+            return this.internalSkeletonCodeFile1;
+        }else{
+            return this.internalSkeletonCodeFile2;
+        }
+    }
+    
 
     /**
      * Creates a copy of the match, with the same ranges and similarity score

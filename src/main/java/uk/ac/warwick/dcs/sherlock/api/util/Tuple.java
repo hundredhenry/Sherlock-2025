@@ -2,11 +2,14 @@ package uk.ac.warwick.dcs.sherlock.api.util;
 
 import java.io.Serializable;
 
+import jakarta.persistence.Embeddable;
+
 /**
  * Basic tuple implementation
  * @param <K> key type
  * @param <V> value type
  */
+@Embeddable
 public class Tuple<K, V> implements ITuple<K, V>, Serializable {
 
 	private K key;
@@ -30,7 +33,10 @@ public class Tuple<K, V> implements ITuple<K, V>, Serializable {
 	}
 
 	@Override
-	public boolean equals(ITuple tuple) {
+	public boolean equals(Object obj) {
+		if (obj == null) return false;
+		if (obj == this) return true;
+		if (!(obj instanceof ITuple<?,?> tuple)) return false;
 		return this.key.equals(tuple.getKey()) && this.value.equals(tuple.getValue());
 	}
 
@@ -67,5 +73,10 @@ public class Tuple<K, V> implements ITuple<K, V>, Serializable {
 	@Override
 	public boolean valueEquals(ITuple tuple) {
 		return this.value.equals(tuple.getValue());
+	}
+
+	@Override
+	public int hashCode() {
+		return java.util.Objects.hash(this.key, this.value);
 	}
 }

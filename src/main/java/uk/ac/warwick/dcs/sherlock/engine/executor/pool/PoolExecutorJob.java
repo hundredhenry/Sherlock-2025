@@ -19,6 +19,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+
+
 record FileIdPair(long file1Id, long file2Id) {}
 
 /**
@@ -187,7 +189,7 @@ public class PoolExecutorJob implements Runnable {
 					//  results: <<legitMatchStartLine1, legitMatchEndLine1>,<legitMatchStartLine2, legitMatchEndLine2>>
 					//so do one loop over both lists (rather than two)
 					for (int i = 0; i < skeletonCodeFile1Matches.size() || i < skeletonCodeFile2Matches.size(); i++){ //O(M)
-						Tuple<Integer, Integer> file1Match;
+						ITuple<Integer, Integer> file1Match;
 						//and check if there are matches left in the first file
 						if (i >= skeletonCodeFile1Matches.size()){
 							//if not, then just use a dummy match, which will never affect results
@@ -205,7 +207,7 @@ public class PoolExecutorJob implements Runnable {
 							}
 						}
 						//then do the same for the second file
-						Tuple<Integer, Integer> file2Match;
+						ITuple<Integer, Integer> file2Match;
 						if (i >= skeletonCodeFile2Matches.size()){
 							file2Match = new Tuple<>(-1,-1);
 						} else {
@@ -230,6 +232,9 @@ public class PoolExecutorJob implements Runnable {
 			for (AbstractModelTaskRawResult result : normalSubmissionResults){//O(L)
 				//and just check that there are actually lines left in the result
 				if (result.getLocations().size()>0){
+					//clean up the internal skeleton code
+					result.cleanInternalSkeletonCode();
+					//and add it to the full list
 					fullResults.add(result);
 				}
 			}
@@ -272,6 +277,7 @@ public class PoolExecutorJob implements Runnable {
 			return;
 		}
 
+
 		// score
 		if (results.size() > 0) {
 			this.status.nextStep();
@@ -304,7 +310,7 @@ public class PoolExecutorJob implements Runnable {
 
 						// Construct block scores weighted against the whole file, by default uses file line count, but can be set to custom totals (eg. variable counts)
 						AtomicReference<Float> fullSize = new AtomicReference<>((float) 0);
-						
+
 						List<ITuple<ICodeBlockGroup, Float>> groupScores = groupsContainingFile.stream().map(x -> {
 							ICodeBlock b = x.getCodeBlock(file);
 

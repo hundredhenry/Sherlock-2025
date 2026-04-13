@@ -6,9 +6,11 @@ import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.internal.CodeBlock;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.internal.FileMatch;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.MapperException;
+import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
 
 /**
  * Maps every line of a file that the system thinks is plagiarised to
@@ -121,7 +123,44 @@ public class LineMapper {
             //Store the max line num, used for the "Fill" method
             maxLineNum = Math.max(maxLineNum, block.getEndLine());
 
-            list.add(new CodeBlock(block.getStartLine(), block.getEndLine(), match.getId()));
+            //right now we possibly have internal skeleton code (which we dont want to display in the UI)
+            //This is currently stored as a HashSet containing multiple Tuples, representing the ranges of 
+            //skeleton code. We are going to convert this into a single HashMap, where a key is a line number
+            // which is skeleton code.
+
+            HashSet<ITuple<Integer, Integer>> skeletonCode = block.getInternalSkeletonCode();
+            HashMap<Integer, Integer> skeletonCodeMap = new HashMap<>();
+
+
+            if (skeletonCode != null){
+                for (ITuple<Integer, Integer> t : skeletonCode) {
+                    for (int i = t.getKey(); i <= t.getValue(); i++) {
+                        skeletonCodeMap.put(i, 1);
+                    }
+                }
+            }
+
+            //now go through and add as many code blocks as we need from start to end line, ignoring skeleton code
+            int start = block.getStartLine();
+            int end = block.getStartLine();
+            boolean content = false;
+            while(end <= block.getEndLine()){
+                if (!skeletonCodeMap.containsKey(end)){
+                    end++;
+                    content = true;
+                }else{
+                    if (content){
+                        list.add(new CodeBlock(start, end-1, match.getId()));
+                        content = false;
+                    }
+                    end++;
+                    start=end;
+                }
+            }
+            //add the last block
+            if (content){
+                list.add(new CodeBlock(start, end-1, match.getId()));
+            }
 
             tempMap.put(block.getStartLine(), list);
         }

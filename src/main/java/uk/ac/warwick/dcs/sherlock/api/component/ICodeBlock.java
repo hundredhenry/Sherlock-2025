@@ -3,6 +3,8 @@ package uk.ac.warwick.dcs.sherlock.api.component;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
 import java.util.List;
+import java.util.HashSet;
+import java.util.HashMap;
 
 /**
  * Interface for storing a single block of code flagged by a detector as suspected plagiarism.
@@ -26,6 +28,11 @@ public interface ICodeBlock {
 	 * file, all instances of the block will be output here.
 	 */
 	List<ITuple<Integer, Integer>> getLineNumbers();
+
+	/**
+	 * @return the internal skeleton code for this block
+	 */
+	HashMap<ITuple, HashSet<ITuple<Integer, Integer>>> getInternalSkeletonCode();
 
 	/**
 	 * @return The subtree weight of the block

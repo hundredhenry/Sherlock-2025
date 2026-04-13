@@ -3,15 +3,20 @@ package uk.ac.warwick.dcs.sherlock.api.model.postprocessing;
 import uk.ac.warwick.dcs.sherlock.api.util.SherlockHelper;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.util.PairedTuple;
+import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
 import uk.ac.warwick.dcs.sherlock.module.model.base.detection.AbstractMatch;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
+import org.springframework.security.access.method.P;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * Raw results storage class, acts a stored cache. Data structure from this can be directly accessed in post-processing
@@ -44,6 +49,15 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 	 */
 	protected List<PairedTuple<Integer, Integer, Integer, Integer>> locations;
 
+	/**
+	 * If there is skeleton code within a match, then this will track the locations of such, passing it
+	 * eventually to the report generator to make sure it isnt highlighted.
+	 */
+	protected HashMap<ITuple, HashSet<ITuple<Integer, Integer>>> file1InternalSkeletonCode;
+
+	protected HashMap<ITuple, HashSet<ITuple<Integer, Integer>>> file2InternalSkeletonCode;
+
+
 
 	/**
 	 * Object constructor, saves the compared file ids, initialises interior lists as ArrayLists, and sets size to zero.
@@ -57,6 +71,9 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 
 		this.objects = new ArrayList<>();
 		this.locations = new ArrayList<>();
+
+		this.file1InternalSkeletonCode = new HashMap<>();
+		this.file2InternalSkeletonCode = new HashMap<>();
 	}
 
 	/**
@@ -142,6 +159,14 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 		return this.locations.get(index);
 	}
 
+	public synchronized HashMap<ITuple, HashSet<ITuple<Integer, Integer>>> getInternalSkeletonCode(int fileNum){
+		if (fileNum == 1){
+			return this.file1InternalSkeletonCode;
+		}else{
+			return this.file2InternalSkeletonCode;
+		}
+	}
+
 	/**
 	 * Getter for the number of matches stored in the object.
 	 * @return The number of matches stored in the object.
@@ -152,7 +177,7 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 
 	/**
 	 * Removed two ranges of lines from the list of lines in the result
-	 * @param line A paired tuple of <<file1start, file1end>, <file2start, file2end>> to remove from
+	 * @param line A paired ITuple of <<file1start, file1end>, <file2start, file2end>> to remove from
 	 *             the list of lines in the result
 	 */
 	public synchronized void removeLine(PairedTuple<Integer, Integer, Integer, Integer> line) {
@@ -161,7 +186,7 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 			//get the lines
 			PairedTuple<Integer, Integer, Integer, Integer> location = this.locations.get(i);
 			//and remove the first files lines
-			List<Tuple<Integer, Integer>> newRanges1 = removePairFrom(location.getPoint1(), line.getPoint1());
+			List<ITuple<Integer, Integer>> newRanges1 = removePairFrom(location.getPoint1(), line.getPoint1());
 			//this will either return one or two tuples. If its two, its guaranteed to be proper ranges.
 			if (newRanges1.size()==1){
 				//if its only one, then need to check if its a flag to remove the whole line
@@ -174,7 +199,7 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 			}
 
 			//then do the same for the second file
-			List<Tuple<Integer, Integer>> newRanges2 = removePairFrom(location.getPoint2(), line.getPoint2());
+			List<ITuple<Integer, Integer>> newRanges2 = removePairFrom(location.getPoint2(), line.getPoint2());
 			if (newRanges2.size()==1){
 				if (newRanges2.get(0).getKey()==-1){
 					this.locations.remove(i);
@@ -183,19 +208,148 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 				}
 			}
 		
-			//if here, then we have legitimate ranges. 
-			//so for each combination of ranges
-			for (Tuple<Integer, Integer> range1 : newRanges1) {//O(1) as max 2x2
-				for (Tuple<Integer, Integer> range2 : newRanges2) {
-					//add the pair to the list of locations
-					this.locations.add(new PairedTuple<>(range1,range2));
-					//and create a new match with updated locations
-					T match = this.objects.get(i).copy();
-					match.setLines(new PairedTuple<>(range1,range2));
-					//and add the match to the list of matches
-					this.objects.add(match);
+			//check if we have two ranges
+			if (newRanges1.size()==2){
+				//then we have internal skeleton code
+				if (this.file1InternalSkeletonCode.containsKey(newRanges1.get(0))){
+					this.file1InternalSkeletonCode.get(newRanges1.get(0)).add(newRanges1.get(1));
+				}else{
+					HashSet<ITuple<Integer, Integer>> temp = new HashSet<>();
+					temp.add(newRanges1.get(1));
+					this.file1InternalSkeletonCode.put(newRanges1.get(0), temp);
 				}
 			}
+
+			if (newRanges2.size()==2){
+				//then we have internal skeleton code
+				if (this.file2InternalSkeletonCode.containsKey(newRanges2.get(0))){
+					this.file2InternalSkeletonCode.get(newRanges2.get(0)).add(newRanges2.get(1));
+				}else{
+					HashSet<ITuple<Integer, Integer>> temp = new HashSet<>();
+					temp.add(newRanges2.get(1));
+					this.file2InternalSkeletonCode.put(newRanges2.get(0), temp);
+				}
+			}
+
+			ITuple<Integer, Integer> temp;
+			HashSet<ITuple<Integer, Integer>> list = new HashSet<>();
+			boolean change = true;
+			HashSet<ITuple<Integer, Integer>> ISCs = new HashSet<>();
+			//if there was a change
+			if (!newRanges1.get(0).equals(this.locations.get(i).getPoint1())){
+				//then for each ISC for that range
+				if (this.file1InternalSkeletonCode.containsKey(this.locations.get(i).getPoint1())){
+					temp = newRanges1.get(0);
+					ISCs = this.file1InternalSkeletonCode.get(this.locations.get(i).getPoint1());
+					while (change){
+						change = false;
+						list = new HashSet<>();
+						for (ITuple<Integer, Integer> isc : ISCs) {
+							//check if it is now on the side
+							List<ITuple<Integer, Integer>> newList = removePairFrom(temp,isc);
+							//if it isnt, then append to a new list, and continue
+							if (newList.size()==2){
+								//then still interal
+								list.add(isc);
+							}else{
+								// if it is, then mark the fact there has been a change, 
+								change = true;
+								//and remove it from the list, 
+								//just not adding it
+								// update the thing
+								//if its only one, then need to check if its a flag to remove the whole line
+								if (newList.get(0).getKey()==-1){
+									//if it is, then remove the match
+									this.locations.remove(i);
+									this.objects.remove(i);
+									continue;
+								}
+								temp = newList.get(0);
+							}
+						//continue until the end.
+						}
+					//if there was a change, then do the whole thing again
+					ISCs = list;
+					}
+					//if there wasnt, append the new range to the hashmaps, with the new final range, and remove the old range
+					if (this.file1InternalSkeletonCode.containsKey(temp)){
+						for (ITuple<Integer, Integer> item : list) {
+							this.file1InternalSkeletonCode.get(temp).add(item);
+						}
+					}else{
+						if (list.size()>0){
+							this.file1InternalSkeletonCode.put(temp, list);
+						}
+					}
+					newRanges1.set(0, temp);
+				}
+			}
+			//if there wasnt a change, then the ranges cant have changed, so internal is the same
+
+			//do the same thing for the second file
+
+			list = new HashSet<>();
+			ISCs = new HashSet<>();
+			change = true;
+			//if there was a change
+			if (!newRanges2.get(0).equals(this.locations.get(i).getPoint2())){
+				//then for each ISC for that range
+				if (this.file2InternalSkeletonCode.containsKey(this.locations.get(i).getPoint2())){
+					temp = newRanges2.get(0);
+					ISCs = this.file2InternalSkeletonCode.get(this.locations.get(i).getPoint2());
+					while (change){
+						change = false;
+						list = new HashSet<>();
+						for (ITuple<Integer, Integer> isc : ISCs) {
+							//check if it is now on the side
+							List<ITuple<Integer, Integer>> newList = removePairFrom(temp,isc);
+							//if it isnt, then append to a new list, and continue
+							if (newList.size()==2){
+								//then still interal
+								list.add(isc);
+							}else{
+								// if it is, then mark the fact there has been a change, 
+								change = true;
+								//and remove it from the list, 
+								//just not adding it
+								// update the thing
+								//if its only one, then need to check if its a flag to remove the whole line
+								if (newList.get(0).getKey()==-1){
+									//if it is, then remove the match
+									this.locations.remove(i);
+									this.objects.remove(i);
+									continue;
+								}
+								temp = newList.get(0);
+							}
+						//continue until the end.
+						}
+					//if there was a change, then do the whole thing again
+					ISCs = list;
+					}
+					//if there wasnt, append the new range to the hashmaps, with the new final range, and remove the old range
+					if (this.file2InternalSkeletonCode.containsKey(temp)){
+						for (ITuple<Integer, Integer> item : list) {
+							this.file2InternalSkeletonCode.get(temp).add(item);
+						}
+					}else{
+						if (list.size()>0){
+							this.file2InternalSkeletonCode.put(temp, list);
+						}
+					}
+					newRanges2.set(0, temp);
+				}
+			}
+
+			//add the pair to the list of locations
+			ITuple<Integer, Integer> start = newRanges1.get(0);
+			ITuple<Integer, Integer> end = newRanges2.get(0);
+			this.locations.add(new PairedTuple<Integer,Integer,Integer,Integer>(start,end));
+			//and create a new match with updated locations
+			T match = this.objects.get(i).copy();
+			match.setLines(new PairedTuple<Integer,Integer,Integer,Integer>(start,end));
+			//and add the match to the list of matches
+			this.objects.add(match);
 
 			//then finally remove the original pair of lines
 			this.locations.remove(i);
@@ -205,12 +359,12 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 
 	/**
 	 * Takes two ranges as two tuples, the first being the current range, and the second being the range of values to remove
-	 * @param original The current range, in the form of a tuple <start, end>
-	 * @param toRemove The range to remove, in the form of a tuple <start, end>
+	 * @param original The current range, in the form of a ITuple <start, end>
+	 * @param toRemove The range to remove, in the form of a ITuple <start, end>
 	 * @return A list of ranges, which contain the ranges present in the original range, but not the range to remove. Returns
 	 * 		<-1,-1> if there are no values in the original range left
 	 */
-	private List<Tuple<Integer, Integer>> removePairFrom(Tuple<Integer, Integer> original, Tuple<Integer, Integer> toRemove) {
+	private List<ITuple<Integer, Integer>> removePairFrom(ITuple<Integer, Integer> original, ITuple<Integer, Integer> toRemove) {
 		//define our start and ending points to be more readable
 		Integer a1 = original.getKey(); //original start
 		Integer b1 = original.getValue(); //original end
@@ -218,7 +372,7 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 		Integer b2 = toRemove.getValue(); //to remove end
 
 		//and initialise our return list
-		List<Tuple<Integer, Integer>> list = new ArrayList<>();
+		List<ITuple<Integer, Integer>> list = new ArrayList<>();
 
 		//if the start of the original range is greater than the end of the range to remove,
 		// or if the start of the range to remove is greater than the end of the original range
@@ -249,6 +403,16 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 				//then add a new range from the end of the range to remove to the end of the original range
 				list.add(new Tuple<>(b2+1,b1));
 			}
+
+			//if lsit is two, ie we have made two locations, then ignore this and just return the original, along with
+			// the range to remove - we will deal with this manually on return
+			if (list.size()==2){
+				list.clear();
+				list.add(original);
+				list.add(toRemove);
+				return list;
+			}
+
 			//if the list is empty, then its because a1=a2, and b1=b2, (which cant happen as we check for this just above
 			// but will keep regardless), so add a flag to remove the whole line
 			if (list.size()==0){
@@ -271,6 +435,43 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 		//if we get here, then something has gone wrong, so just remove the line.
 		list.add(new Tuple<>(-1,-1));
 		return list;
+	}
+
+	/**
+	 * Cleans the internal skeleton code hashmaps, removing any entry's that are no longer in locations, and
+	 * removing any possible duplicates
+	 */
+	public void cleanInternalSkeletonCode(){
+		HashMap<ITuple, HashSet<ITuple<Integer, Integer>>> tempFile1ISC = new HashMap<>();
+		HashMap<ITuple, HashSet<ITuple<Integer, Integer>>> tempFile2ISC = new HashMap<>();
+		for (int i=0; i<this.locations.size(); i++){
+			PairedTuple<Integer, Integer, Integer, Integer> location = this.locations.get(i);
+			if (this.file1InternalSkeletonCode.containsKey(location.getPoint1())){
+				HashSet<ITuple<Integer, Integer>> file1ISC = this.file1InternalSkeletonCode.get(location.getPoint1());
+				if (tempFile1ISC.containsKey(location.getPoint1())){
+					tempFile1ISC.get(location.getPoint1()).addAll(file1ISC);
+				}else{
+					tempFile1ISC.put(location.getPoint1(), file1ISC);
+				}
+			}
+
+			if(this.file2InternalSkeletonCode.containsKey(location.getPoint2())){
+				HashSet<ITuple<Integer, Integer>> file2ISC = this.file2InternalSkeletonCode.get(location.getPoint2());
+				if (tempFile2ISC.containsKey(location.getPoint2())){
+					tempFile2ISC.get(location.getPoint2()).addAll(file2ISC);
+				}else{
+					tempFile2ISC.put(location.getPoint2(), file2ISC);
+				}
+			}
+		}
+		this.file1InternalSkeletonCode = tempFile1ISC;
+		this.file2InternalSkeletonCode = tempFile2ISC;
+
+		for (int i=0; i<this.objects.size(); i++){
+			this.objects.get(i).setInternalSkeletonCode(
+				this.file1InternalSkeletonCode.get(this.locations.get(i).getPoint1()), 
+				this.file2InternalSkeletonCode.get(this.locations.get(i).getPoint2()));
+		}
 	}
 
 	/**
