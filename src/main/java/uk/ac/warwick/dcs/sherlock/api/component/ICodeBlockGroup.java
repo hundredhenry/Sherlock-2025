@@ -26,7 +26,7 @@ public interface ICodeBlockGroup {
 	 * @param line  Tuple containing the start and end line of the code block
 	 * @param subtreeWeight Integer containing the weight of the block represented by the "similarity-significant" no. of nodes in its AST subtree (for AST-based algorithms)
 	 */
-	void addCodeBlock(ISourceFile file, float score, ITuple<Integer, Integer> line, Integer subtreeWeight);
+	void addCodeBlock(ISourceFile file, float score, ITuple<Integer, Integer> line, Integer subtreeWeight, HashSet<ITuple<Integer, Integer>> internalSkeletonCode);
 
 	/**
 	 * Adds a code block to the group

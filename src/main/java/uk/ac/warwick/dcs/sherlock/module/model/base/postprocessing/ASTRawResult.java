@@ -64,7 +64,7 @@ public class ASTRawResult extends AbstractModelTaskRawResult<ASTMatch> {
                                  int file2Start, int file2End,
                                  float similarity, int subtreeWeight1, int subtreeWeight2) {
         super.put(
-                new ASTMatch(file1Start, file1End, file2Start, file2End, similarity, getFile1(), subtreeWeight1, getFile2(), subtreeWeight2)
+                new ASTMatch(file1Start, file1End, file2Start, file2End, similarity, getFile1(), subtreeWeight1, getFile2(), subtreeWeight2),
                 file1Start, file1End,
                 file2Start, file2End
         );

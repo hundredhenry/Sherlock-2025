@@ -52,7 +52,7 @@ public class EntityCodeBlock implements ICodeBlock, Serializable {
 
 	// Overloaded constructor for AST-based code blocks
 	EntityCodeBlock(EntityFile file, float score, ITuple<Integer, Integer> lines, Integer subtreeWeight, HashSet<ITuple<Integer, Integer>> internalSkeletonCode) {
-		this(file, score, lines, internalSkeletonCode)
+		this(file, score, lines, internalSkeletonCode);
 		this.subtreeWeight = subtreeWeight;
 	}
 

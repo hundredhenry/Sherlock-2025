@@ -49,6 +49,6 @@ public class ASTMatch extends AbstractMatch<ASTMatch> {
     public ASTMatch copy() {
         return new ASTMatch(this.lines.get(0).getKey(), this.lines.get(0).getValue(),
          this.lines.get(1).getKey(), this.lines.get(1).getValue(),
-         this.similarity, this.files[0], this.files[1]);
+         this.similarity, this.files[0],this.subtreeWeight1, this.files[1], this.subtreeWeight2);
     }
 }

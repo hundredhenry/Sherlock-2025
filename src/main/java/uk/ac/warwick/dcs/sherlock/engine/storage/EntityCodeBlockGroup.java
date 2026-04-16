@@ -54,13 +54,13 @@ public class EntityCodeBlockGroup implements ICodeBlockGroup, Serializable {
 
 
 	@Override
-	public void addCodeBlock(ISourceFile file, float score, ITuple<Integer, Integer> line, Integer subtreeWeight) {
+	public void addCodeBlock(ISourceFile file, float score, ITuple<Integer, Integer> line, Integer subtreeWeight, HashSet<ITuple<Integer, Integer>> internalSkeletonCode) {
 		if (this.blockMap.containsKey(file.getPersistentId())) {
-			this.blockMap.get(file.getPersistentId()).append(score, line);
+			this.blockMap.get(file.getPersistentId()).append(score, line, internalSkeletonCode);
 		}
 		else {
 			if (file instanceof EntityFile) {
-				EntityCodeBlock block = new EntityCodeBlock((EntityFile) file, score, line, subtreeWeight);
+				EntityCodeBlock block = new EntityCodeBlock((EntityFile) file, score, line, subtreeWeight, internalSkeletonCode);
 				this.blockMap.put(file.getPersistentId(), block);
 			}
 			else {
