@@ -47,7 +47,12 @@ public class EntityCodeBlock implements ICodeBlock, Serializable {
 		this.addLineToList(lines);
 
 		this.internalSkeletonCode = new HashMap<>();
-		this.internalSkeletonCode.put(new Tuple<>(lines.getKey(), lines.getValue()), internalSkeletonCode);
+		if (internalSkeletonCode != null){
+			if (internalSkeletonCode.size() != 0){
+				this.internalSkeletonCode.put(new Tuple<>(lines.getKey(), lines.getValue()), internalSkeletonCode);
+			}
+		}
+
 	}
 
 	// Overloaded constructor for AST-based code blocks
@@ -66,6 +71,8 @@ public class EntityCodeBlock implements ICodeBlock, Serializable {
 		lines.forEach(this::addLineToList);
 		this.internalSkeletonCode = new HashMap<>();
 		for (int i = 0; i < lines.size(); i++){
+			if (internalSkeletonCode.get(i) == null) continue;
+			if (internalSkeletonCode.get(i).size() == 0) continue;
 			this.internalSkeletonCode.put(new Tuple<>(lines.get(i).getKey(), lines.get(i).getValue()), internalSkeletonCode.get(i));
 		}
 	}
@@ -93,6 +100,8 @@ public class EntityCodeBlock implements ICodeBlock, Serializable {
 	void append(float score, ITuple<Integer, Integer> lines, HashSet<ITuple<Integer, Integer>> internalSkeletonCode) {
 		this.score = ((this.score * this.size) + score) / (this.size + 1); //new avg score
 		this.addLineToList(lines);
+		if (internalSkeletonCode == null) return;
+		if (internalSkeletonCode.size() == 0) return;
 		if (!this.internalSkeletonCode.containsKey(new Tuple<>(lines.getKey(), lines.getValue()))){
 			this.internalSkeletonCode.put(new Tuple<>(lines.getKey(), lines.getValue()), internalSkeletonCode);
 		}else{
@@ -103,7 +112,12 @@ public class EntityCodeBlock implements ICodeBlock, Serializable {
 	void append(float score, List<ITuple<Integer, Integer>> lines, List<HashSet<ITuple<Integer, Integer>>> internalSkeletonCode) {
 		this.score = ((this.score * this.size) + score) / (this.size + lines.size()); //new avg score
 		lines.forEach(this::addLineToList);
+
+		if (internalSkeletonCode == null) return;
+		if (internalSkeletonCode.size() == 0) return;
 		for (int i = 0; i < lines.size(); i++){
+			if (internalSkeletonCode.get(i) == null) continue;
+			if (internalSkeletonCode.get(i).size() == 0) continue;
 			if (!this.internalSkeletonCode.containsKey(new Tuple<>(lines.get(i).getKey(), lines.get(i).getValue()))){
 				this.internalSkeletonCode.put(new Tuple<>(lines.get(i).getKey(), lines.get(i).getValue()), internalSkeletonCode.get(i));
 			}else{
