@@ -159,6 +159,12 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 		return this.locations.get(index);
 	}
 
+	/**
+	 * Gets the internal skeleton associated with the provided file number, either 1 or 2
+	 * @param fileNum which file to get the internal skeleton code for
+	 * @return a HashMap of ITuple keys, representing ranges of code blocks, and an associated HashSet of ITuple ranges
+	 * 			which correspond to the ranges of skeleton code which lie fully within the code blocks
+	 */
 	public synchronized HashMap<ITuple, HashSet<ITuple<Integer, Integer>>> getInternalSkeletonCode(int fileNum){
 		if (fileNum == 1){
 			return this.file1InternalSkeletonCode;
@@ -254,9 +260,6 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 							}else{
 								// if it is, then mark the fact there has been a change, 
 								change = true;
-								//and remove it from the list, 
-								//just not adding it
-								// update the thing
 								//if its only one, then need to check if its a flag to remove the whole line
 								if (newList.get(0).getKey()==-1){
 									//if it is, then remove the match
@@ -310,9 +313,6 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 							}else{
 								// if it is, then mark the fact there has been a change, 
 								change = true;
-								//and remove it from the list, 
-								//just not adding it
-								// update the thing
 								//if its only one, then need to check if its a flag to remove the whole line
 								if (newList.get(0).getKey()==-1){
 									//if it is, then remove the match
@@ -442,12 +442,19 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 	 * removing any possible duplicates
 	 */
 	public void cleanInternalSkeletonCode(){
+		//make some temp hashmaps for the final internal skeleton code
 		HashMap<ITuple, HashSet<ITuple<Integer, Integer>>> tempFile1ISC = new HashMap<>();
 		HashMap<ITuple, HashSet<ITuple<Integer, Integer>>> tempFile2ISC = new HashMap<>();
+		//for each location
 		for (int i=0; i<this.locations.size(); i++){
+			//get the location
 			PairedTuple<Integer, Integer, Integer, Integer> location = this.locations.get(i);
+
+			//then for the first file, check if there is any internal skeleton code registered for this location
 			if (this.file1InternalSkeletonCode.containsKey(location.getPoint1())){
+				//if so, get the internal skeleton code for it
 				HashSet<ITuple<Integer, Integer>> file1ISC = this.file1InternalSkeletonCode.get(location.getPoint1());
+				//and then add the internal skeleton code to the range within the temporary hashmaps
 				if (tempFile1ISC.containsKey(location.getPoint1())){
 					tempFile1ISC.get(location.getPoint1()).addAll(file1ISC);
 				}else{
@@ -455,6 +462,7 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 				}
 			}
 
+			//and do the same thing for the second file
 			if(this.file2InternalSkeletonCode.containsKey(location.getPoint2())){
 				HashSet<ITuple<Integer, Integer>> file2ISC = this.file2InternalSkeletonCode.get(location.getPoint2());
 				if (tempFile2ISC.containsKey(location.getPoint2())){
@@ -464,9 +472,11 @@ public abstract class AbstractModelTaskRawResult<T extends AbstractMatch<T>> imp
 				}
 			}
 		}
+		//then update the actual attribute
 		this.file1InternalSkeletonCode = tempFile1ISC;
 		this.file2InternalSkeletonCode = tempFile2ISC;
 
+		//then update all of the objects to have the same cleaned internal skeleton code
 		for (int i=0; i<this.objects.size(); i++){
 			this.objects.get(i).setInternalSkeletonCode(
 				this.file1InternalSkeletonCode.get(this.locations.get(i).getPoint1()), 
