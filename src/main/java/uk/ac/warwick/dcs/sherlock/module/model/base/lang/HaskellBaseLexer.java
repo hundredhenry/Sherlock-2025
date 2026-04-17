@@ -363,9 +363,11 @@ public abstract class HaskellBaseLexer extends Lexer {
             lastKeyWord = next.getText();
 
             if (type == HaskellLexer.WHERE) {
-                if (!indentStack.isEmpty()
-                    && (indentStack.peek().first().equals("do") 
-                    || indentStack.peek().first().equals("mdo"))) {
+                while (!indentStack.isEmpty()
+                    && (indentStack.peek().first().equals("do")
+                    || indentStack.peek().first().equals("mdo")
+                    || indentStack.peek().first().equals("of"))
+                    && indentCount <= indentStack.peek().second()) {
                     tokenQueue.offer(createToken(HaskellLexer.SEMI, "SEMI", next));
                     tokenQueue.offer(createToken(HaskellLexer.VCCURLY, "VCCURLY", next));
                     indentStack.pop();
