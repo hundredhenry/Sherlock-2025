@@ -171,13 +171,26 @@ public class PoolExecutorJob implements Runnable {
 					AbstractModelTaskRawResult skeletonCodeResult2 = skeletonCodeResults.get(new FileIdPair(fileID, result.getFile2().getPersistentId()));
 
 					//if there is no skeleton code result, then we can just continue
-					if (skeletonCodeResult1 == null || skeletonCodeResult2 == null){
+					if (skeletonCodeResult1 == null && skeletonCodeResult2 == null){
 						continue;
 					}
 
-					//otherwise, get all the locations of all the matches between the two files and the skeleton code file
-					List<PairedTuple<Integer, Integer, Integer, Integer>> skeletonCodeFile1Matches = skeletonCodeResult1.getLocations();
-					List<PairedTuple<Integer, Integer, Integer, Integer>> skeletonCodeFile2Matches = skeletonCodeResult2.getLocations();
+					//otherwise, get all the locations of all the matches between the two files and the skeleton code
+					// file
+					List<PairedTuple<Integer, Integer, Integer, Integer>> skeletonCodeFile1Matches;
+					List<PairedTuple<Integer, Integer, Integer, Integer>> skeletonCodeFile2Matches;
+
+					if (skeletonCodeResult1 == null){
+						skeletonCodeFile1Matches = new ArrayList<>();
+					}else{
+						skeletonCodeFile1Matches = skeletonCodeResult1.getLocations();
+					}
+
+					if (skeletonCodeResult2 == null){
+						skeletonCodeFile2Matches = new ArrayList<>();
+					}else{
+						skeletonCodeFile2Matches = skeletonCodeResult2.getLocations();
+					}
 
 					//now the intention with the following code is to get the code in a state which miniises the number of 
 					// loops spent removing lines from the raw results. The idea is to go through both lists of matches
