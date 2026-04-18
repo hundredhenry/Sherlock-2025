@@ -21,6 +21,7 @@ import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.CommentRemover
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.TrimWhitespaceOnly;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.VariableExtractor;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.VariableExtractorJava;
+import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.VariableExtractorHaskell;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ParseTreeGenerator;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ParseTreeGeneratorJava;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ParseTreeGeneratorHaskell;
@@ -36,6 +37,7 @@ public class ModuleModelBase {
 		SherlockRegistry.registerGeneralPreProcessor(CommentExtractor.class);
 		SherlockRegistry.registerGeneralPreProcessor(CommentRemover.class);
 		SherlockRegistry.registerGeneralPreProcessor(TrimWhitespaceOnly.class);
+		SherlockRegistry.registerAdvancedPreProcessorImplementation("uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.VariableExtractor", VariableExtractorHaskell.class);
 		SherlockRegistry.registerAdvancedPreProcessorImplementation("uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.VariableExtractor", VariableExtractorJava.class);
 		SherlockRegistry.registerAdvancedPreProcessorImplementation("uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ParseTreeGenerator", ParseTreeGeneratorJava.class);
 		SherlockRegistry.registerAdvancedPreProcessorImplementation("uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.ASTGenerator", ASTGeneratorJava.class);
