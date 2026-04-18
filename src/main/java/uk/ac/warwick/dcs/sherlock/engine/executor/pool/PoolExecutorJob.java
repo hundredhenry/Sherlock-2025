@@ -199,7 +199,7 @@ public class PoolExecutorJob implements Runnable {
 							PairedTuple<Integer, Integer, Integer, Integer> skeletonCodeFile1Match = skeletonCodeFile1Matches.get(i);
 							//and if the first file is from the skeleton code submission, then use the second pair of locations
 							// which represent the start and end of the code block in the legitimate file
-							if (skeletonCodeResult1.getFile1().getFileDisplayName().equals(SherlockEngine.skeletonCodeName)){
+							if (skeletonCodeResult1.getFile1().getSubmission().getName().equals(SherlockEngine.skeletonCodeName)){
 								file1Match = skeletonCodeFile1Match.getPoint2();
 							}else{
 								//otherwise, use the first pair of locations
@@ -212,7 +212,7 @@ public class PoolExecutorJob implements Runnable {
 							file2Match = new Tuple<>(-1,-1);
 						} else {
 							PairedTuple<Integer, Integer, Integer, Integer> skeletonCodeFile2Match = skeletonCodeFile2Matches.get(i);
-							if (skeletonCodeResult2.getFile1().getFileDisplayName().equals(SherlockEngine.skeletonCodeName)){
+							if (skeletonCodeResult2.getFile1().getSubmission().getName().equals(SherlockEngine.skeletonCodeName)){
 								file2Match = skeletonCodeFile2Match.getPoint2();
 							}else{
 								file2Match = skeletonCodeFile2Match.getPoint1();
