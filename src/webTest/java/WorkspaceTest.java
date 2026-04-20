@@ -77,10 +77,9 @@ public class WorkspaceTest extends AbstractWebTest {
         nameDetailsTextBox.clear();
         nameDetailsTextBox.sendKeys(newWorkspaceName);
         browser.findElement(By.cssSelector("#details-parent button.btn.btn-primary.float-right")).click();
-        WebElement alertElement = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#name")));
-
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#name")));
         takeScreenshot("03_newName.jpg");
-        assertEquals(newWorkspaceName, alertElement.getDomAttribute("value"));
+        assertEquals(newWorkspaceName, browser.findElement(By.cssSelector("input#name")).getDomAttribute("value"));
         String updateAlert = messageProperties.getProperty("workspaces.details.updated");
         assertEquals(updateAlert, browser.findElement(By.cssSelector("#details-parent div.alert")).getText());
 
@@ -93,10 +92,10 @@ public class WorkspaceTest extends AbstractWebTest {
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input#num_sub_one"))).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#num_sub_one_div .form-row input[type='file']"))).sendKeys(filePath);
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#num_sub_one_div .form-group .btn-primary"))).click();
-        alertElement = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#upload-parent .modal-body div.alert")));
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#upload-parent .modal-body div.alert")));
         takeScreenshot("04_uploadFile.jpg");
         String submissionAlert = messageProperties.getProperty("workspaces.submissions.uploaded.no_dups");
-        assertEquals(submissionAlert, alertElement.getText());
+        assertEquals(submissionAlert, browser.findElement(By.cssSelector("#upload-parent .modal-body div.alert")).getText());
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".modal-footer .btn-secondary"))).click();
 
         Sleeper.sleep();

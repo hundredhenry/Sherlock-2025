@@ -59,7 +59,7 @@
                                 <div class="dropdown-divider"></div>
                                 <form th:action="@{/logout}" id="logout" method="post">
                                     <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-                                    <button type="submit" style="cursor: pointer" class="dropdown-item" th:href="@{/logout}" th:text="#{nav.logout}"></button>
+                                    <button type="submit" style="cursor: pointer" class="dropdown-item" th:text="#{nav.logout}"></button>
                                 </form>
                             </div>
                         </li>

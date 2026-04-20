@@ -62,18 +62,23 @@ public class TemplateUtils {
 
     public static void deleteTemplate(TestSettings settings, String templateToDelete) {
         navigateToTemplates(settings);
+        settings.wait.until(ExpectedConditions.invisibilityOfElementLocated(By.className("modal-backdrop")));
+        settings.wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id("modal")));
         WebElement searchbox = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input.form-control")));
         searchbox.sendKeys(templateToDelete);
         searchbox.sendKeys(Keys.ENTER);
         WebElement table = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".table.table-hover.table-borderless")));
         for (WebElement row : table.findElements(By.cssSelector("tbody tr"))) {
-            String selectedWorkspaceName = row.findElement(By.cssSelector("h5 span")).getText();
-            if (selectedWorkspaceName.equals(templateToDelete)) {
-                row.findElement(By.cssSelector(".btn.btn-primary.dropdown-toggle")).click();
-                row.findElement(By.cssSelector("a.dropdown-item")).click();
-                WebElement modal = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
-                modal.findElement(By.cssSelector(".modal-footer .btn.btn-primary")).click();
-                break;
+            List<WebElement> cells = row.findElements(By.cssSelector("h5 span"));
+            if (!cells.isEmpty()) {
+                String selectedWorkspaceName = cells.get(0).getText();
+                if (selectedWorkspaceName.equals(templateToDelete)) {
+                    row.findElement(By.cssSelector(".btn.btn-primary.dropdown-toggle")).click();
+                    row.findElement(By.cssSelector("a.dropdown-item")).click();
+                    WebElement modal = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
+                    modal.findElement(By.cssSelector(".modal-footer .btn.btn-primary")).click();
+                    break;
+                }
             }
         }
     }

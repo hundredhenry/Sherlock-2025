@@ -97,7 +97,10 @@ public class SecurityConfig {
 		//Delete the cookies on logout
 		http
 				.logout(logout -> logout
+						.logoutUrl("/logout")
+						.logoutSuccessUrl("/login?logout")
 						.deleteCookies("JSESSIONID")
+						.permitAll()
 				);
 
 		//Enable "remember me" support
