@@ -63,12 +63,6 @@ public class AdminTest extends AbstractWebTest {
         AccountUtils.navigateToLogin(getSettings());
         AccountUtils.loginWithDetails(getSettings(), newAccountEmail, newAccountPassword);
         takeScreenshot("04_loggedInToAccount.jpg");
-        if (browser.getCurrentUrl().contains("login")) {
-            AccountUtils.clearLoginCookies(getSettings());
-            AccountUtils.navigateToLogin(getSettings());
-            AccountUtils.loginWithAdmin(getSettings());
-            takeScreenshot("06_secondLogInAttempt.jpg");
-        }
             
         //assert that url = dashboard
         String expected = baseURL + "dashboard/index";

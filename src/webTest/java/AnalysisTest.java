@@ -39,6 +39,7 @@ public class AnalysisTest extends AbstractWebTest {
         WorkspaceUtils.deleteWorkspace(getSettings(), nameOfWorkspace);
         Sleeper.sleep();
         TemplateUtils.deleteTemplate(getSettings(), nameOfTemplate);
+        Sleeper.sleep();
         browser.close();
     }
 
@@ -79,7 +80,7 @@ public class AnalysisTest extends AbstractWebTest {
         Sleeper.sleep();
 
         // Confirm successful upload of second zip of files
-        alertMessage = modal.findElement(By.cssSelector("div.alert.alert-info")).getText();
+        alertMessage = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("div.alert.alert-info"))).getText();
         expectedMessage = messageProperties.getProperty("workspaces.submissions.uploaded.no_dups");
         assertEquals(expectedMessage, alertMessage);
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal .btn-secondary"))).click();

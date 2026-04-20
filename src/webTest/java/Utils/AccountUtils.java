@@ -69,7 +69,7 @@ public class AccountUtils {
 
     public static String addAccount(TestSettings settings, String newAccountName, String newAccountEmail) {
         navigateToAdminSettings(settings);
-        settings.browser.findElement(By.cssSelector(".btn.btn-primary")).click();
+        settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".btn.btn-primary"))).click();
 
         WebElement modal = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
         modal.findElement(By.cssSelector("#name")).sendKeys(newAccountName);
@@ -80,30 +80,37 @@ public class AccountUtils {
         Sleeper.sleep();
         modal = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
         Sleeper.sleep();
-        WebElement passwordText = settings.wait.until(ExpectedConditions.elementToBeClickable((By.cssSelector(".modal-body"))));
-        String newAccountPassword =  passwordText.findElement(By.cssSelector("#newPassword")).getDomAttribute("value");
-        modal.findElement(By.cssSelector(".btn.btn-secondary")).click();
+        WebElement passwordText = settings.wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".modal-body")));
 
+        String newAccountPassword = settings.wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("newPassword"))).getDomAttribute("value");
+        modal.findElement(By.cssSelector(".btn.btn-secondary")).click();
+        settings.wait.until(ExpectedConditions.invisibilityOfElementLocated(By.cssSelector("#modal")));
         return newAccountPassword;
     }
 
     public static void deleteAccount(TestSettings settings, String accountEmail) {
         navigateToAdminSettings(settings);
+        settings.wait.until(ExpectedConditions.invisibilityOfElementLocated(By.className("modal-backdrop")));
+        settings.wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id("modal")));
         WebElement searchbox = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("input.form-control")));
         searchbox.sendKeys(accountEmail);
         searchbox.sendKeys(Keys.ENTER);
         Sleeper.sleep();
         WebElement table = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".table.table-hover.table-borderless")));
         for (WebElement row : table.findElements(By.cssSelector("tbody tr"))) {
-            String selectedAccount = row.findElement(By.cssSelector("td.align-middle")).getText();
-            if (selectedAccount.equals(accountEmail)) {
-                row.findElement(By.cssSelector(".btn.btn-primary.dropdown-toggle")).click();
+            List<WebElement> cells = row.findElements(By.cssSelector("td.align-middle"));
+            if (!cells.isEmpty()) {
+                String selectedAccount = cells.get(0).getText();
+                if (selectedAccount.equals(accountEmail)) {
+                    row.findElement(By.cssSelector(".btn.btn-primary.dropdown-toggle")).click();
 
-                row.findElement(By.cssSelector("a.dropdown-item.delete")).click();
-                WebElement modal = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
-                modal.findElement(By.cssSelector("#confirmPassword")).sendKeys(getAdminPassword(settings));
-                modal.findElement(By.cssSelector(".modal-footer .btn.btn-primary")).click();
-                break;
+                    row.findElement(By.cssSelector("a.dropdown-item.delete")).click();
+                    WebElement modal = settings.wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#modal")));
+                    modal.findElement(By.cssSelector("#confirmPassword")).sendKeys(getAdminPassword(settings));
+                    modal.findElement(By.cssSelector(".modal-footer .btn.btn-primary")).click();
+                    Sleeper.sleep();
+                    break;
+                }
             }
         }
     }
