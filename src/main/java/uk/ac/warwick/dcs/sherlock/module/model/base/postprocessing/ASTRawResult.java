@@ -3,10 +3,14 @@ package uk.ac.warwick.dcs.sherlock.module.model.base.postprocessing;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.model.postprocessing.AbstractModelTaskRawResult;
 import uk.ac.warwick.dcs.sherlock.api.util.SherlockHelper;
+import uk.ac.warwick.dcs.sherlock.api.util.PairedTuple;
 import uk.ac.warwick.dcs.sherlock.module.model.base.detection.ASTMatch;
 import uk.ac.warwick.dcs.sherlock.api.util.ASTNode;
 import java.util.ArrayList;
 import java.util.List;
+
+import java.io.Serial;
+import java.io.Serializable;
 
 /**
  * Stores the raw match results from an AST-based comparison of two files.
@@ -14,28 +18,14 @@ import java.util.List;
  * Thread-safe: all mutating and reading operations are synchronised.
  * </p>
  */
-public class ASTRawResult extends AbstractModelTaskRawResult {
-
-    /**
-     * The persistent ID of the first file in the comparison pair.
-     */
-    private final long file1id;
-
-    /**
-     * The persistent ID of the second file in the comparison pair.
-     */
-    private final long file2id;
-
-    /**
-     * The list of AST matches found between the two files.
-     */
-    private final List<ASTMatch> matches;
+public class ASTRawResult extends AbstractModelTaskRawResult<ASTMatch> {
 
     /**
      * The AST trees for the two files, used for calculating node counts.
      */
     private transient ASTNode<?> tree1; // Does not need to be serialised (surviving to disk)
     private transient ASTNode<?> tree2;
+
     /**
      * Constructs a new empty result container for a file pair.
      *
@@ -43,9 +33,7 @@ public class ASTRawResult extends AbstractModelTaskRawResult {
      * @param file2 the second source file
      */
     public ASTRawResult(ISourceFile file1, ISourceFile file2, ASTNode<?> tree1, ASTNode<?> tree2) {
-        this.file1id = file1.getPersistentId();
-        this.file2id = file2.getPersistentId();
-        this.matches = new ArrayList<>();
+        super(file1,file2);
         this.tree1 = tree1;
         this.tree2 = tree2;
     }
@@ -56,7 +44,11 @@ public class ASTRawResult extends AbstractModelTaskRawResult {
      * @param match the AST match to store
      */
     public synchronized void addMatch(ASTMatch match) {
-        this.matches.add(match);
+        super.put(
+                match,
+                match.lines.get(0).getKey(), match.lines.get(0).getValue(),
+                match.lines.get(1).getKey(), match.lines.get(1).getValue()
+        );
     }
 
     /**
@@ -71,33 +63,19 @@ public class ASTRawResult extends AbstractModelTaskRawResult {
     public synchronized void put(int file1Start, int file1End,
                                  int file2Start, int file2End,
                                  float similarity, int subtreeWeight1, int subtreeWeight2) {
-        this.matches.add(new ASTMatch(
+        super.put(
+                new ASTMatch(file1Start, file1End, file2Start, file2End, similarity, getFile1(), subtreeWeight1, getFile2(), subtreeWeight2),
                 file1Start, file1End,
-                file2Start, file2End,
-                similarity,
-                getFile1(), subtreeWeight1, getFile2(), subtreeWeight2
-        ));
+                file2Start, file2End
+        );
     }
 
-    /**
-     * @return the first file in the comparison pair
-     */
-    public ISourceFile getFile1() {
-        return SherlockHelper.getSourceFile(file1id);
-    }
-
-    /**
-     * @return the second file in the comparison pair
-     */
-    public ISourceFile getFile2() {
-        return SherlockHelper.getSourceFile(file2id);
-    }
 
     /**
      * @return a copy of the list of matches
      */
     public synchronized List<ASTMatch> getMatches() {
-        return new ArrayList<>(matches);
+        return super.getObjects();
     }
 
     /**
@@ -109,26 +87,11 @@ public class ASTRawResult extends AbstractModelTaskRawResult {
 
     /**
      * @return the node count of the second file's AST
-     */ 
+     */
     public int getFile2NodeCount() {
         return tree2.getWeight();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public synchronized boolean isEmpty() {
-        return matches.isEmpty();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public synchronized boolean testType(AbstractModelTaskRawResult baseline) {
-        return baseline instanceof ASTRawResult;
-    }
 
     /**
      * Returns a string representation of all stored matches.
@@ -138,7 +101,7 @@ public class ASTRawResult extends AbstractModelTaskRawResult {
     @Override
     public synchronized String toString() {
         StringBuilder str = new StringBuilder();
-        for (ASTMatch match : matches) {
+        for (ASTMatch match : super.getObjects()) {
             str.append("AST Match: similarity=").append(match.similarity)
                     .append(" lines=").append(match.lines).append("\n");
         }

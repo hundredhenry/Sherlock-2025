@@ -29,7 +29,6 @@ public class FileMapper {
      */
     public FileMapper(Map<String, List<FileMatch>> matches) throws MapperException {
         this.map = new HashMap<>();
-
         //Loop through all the matches
         for (Map.Entry<String, List<FileMatch>> group : matches.entrySet()) {
             for (FileMatch match : group.getValue()) {
@@ -41,7 +40,6 @@ public class FileMapper {
                     if (!map.containsKey(entryFileId)) {
                         map.put(entryFileId, new LineMapper(entryFileId));
                     }
-
                     map.get(entryFileId).AddMatch(match);
                 }
             }

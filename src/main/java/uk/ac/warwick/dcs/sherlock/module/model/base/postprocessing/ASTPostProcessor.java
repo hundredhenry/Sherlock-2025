@@ -31,14 +31,14 @@ public class ASTPostProcessor implements IPostProcessor<ASTRawResult> {
      */
     @Override
     public ModelTaskProcessedResults processResults(List<ISourceFile> files, List<ASTRawResult> rawResults) {
-        ModelTaskProcessedResults results = new ModelTaskProcessedResults();    
+        ModelTaskProcessedResults results = new ModelTaskProcessedResults();
 
         Map<ISourceFile, Integer> totals = new HashMap<>(); // totals is the AST node count of eah file (i.e. the weight of the root node)
         results.setFileTotals(totals);
 
         for (ASTRawResult rawResult : rawResults) { // per pairwise comparison
             ISourceFile file1 = rawResult.getFile1();
-            ISourceFile file2 = rawResult.getFile2();  
+            ISourceFile file2 = rawResult.getFile2();
             // The fileTotal is the files' AST node count
             totals.putIfAbsent(file1, rawResult.getFile1NodeCount());
             totals.putIfAbsent(file2, rawResult.getFile2NodeCount());
@@ -48,8 +48,8 @@ public class ASTPostProcessor implements IPostProcessor<ASTRawResult> {
                 ICodeBlockGroup group = results.addGroup();
 
                 // Add code blocks for both files in the match
-                group.addCodeBlock(match.files[0], match.similarity, match.lines.get(0), match.subtreeWeight1);
-                group.addCodeBlock(match.files[1], match.similarity, match.lines.get(1), match.subtreeWeight2);
+                group.addCodeBlock(match.files[0], match.similarity, match.lines.get(0), match.subtreeWeight1, match.getInternalSkeletonCodeFile(1));
+                group.addCodeBlock(match.files[1], match.similarity, match.lines.get(1), match.subtreeWeight2, match.getInternalSkeletonCodeFile(2));
                 group.setComment("AST Structural Match");
                 // Remove empty groups
                 if (group.getCodeBlocks().isEmpty()) {
@@ -61,4 +61,3 @@ public class ASTPostProcessor implements IPostProcessor<ASTRawResult> {
         return results;
     }
 }
-    

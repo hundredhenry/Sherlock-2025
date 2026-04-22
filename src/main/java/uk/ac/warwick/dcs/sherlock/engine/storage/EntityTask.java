@@ -209,7 +209,8 @@ public class EntityTask implements ITask, IStorable, Serializable {
 	 * Clears the raw results for this task, allowing it to be re-run from scratch.
 	 * This removes stored raw results and resets the task status to PREPARED.
 	 */
-	void clearResults() {
+	@Override
+	public void clearResults() {
 		// Remove raw results from filesystem
 		BaseStorage.instance.filesystem.removeTaskRawResults(this);
 		

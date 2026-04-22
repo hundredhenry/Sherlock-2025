@@ -9,7 +9,7 @@ public interface ITuple<K, V> {
 
 	ITuple clone();
 
-	boolean equals(ITuple tuple);
+	boolean equals(Object obj);
 
 	K getKey();
 

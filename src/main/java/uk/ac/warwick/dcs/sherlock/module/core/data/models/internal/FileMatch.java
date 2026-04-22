@@ -3,6 +3,8 @@ package uk.ac.warwick.dcs.sherlock.module.core.data.models.internal;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
+import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
+import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
 import uk.ac.warwick.dcs.sherlock.engine.report.SubmissionMatch;
 import uk.ac.warwick.dcs.sherlock.engine.report.SubmissionMatchItem;
 import uk.ac.warwick.dcs.sherlock.module.core.data.results.ResultsHelper;
@@ -49,7 +51,11 @@ public class FileMatch {
 
         for (SubmissionMatchItem item : match.getItems()) {
             List<CodeBlock> blocks = new ArrayList<>();
-            item.getLineNumbers().forEach(t -> blocks.add(new CodeBlock(t.getKey(), t.getValue())));
+            List<ITuple<Integer, Integer>> lines = item.getLineNumbers();
+            HashMap<ITuple, HashSet<ITuple<Integer, Integer>>> internalSkeletonCode = item.getInternalSkeletonCode();
+            for (ITuple<Integer, Integer> t : lines) {
+                blocks.add(new CodeBlock(t.getKey(), t.getValue(), internalSkeletonCode.get(new Tuple<>(t.getKey(), t.getValue()))));
+            }
             map.put(item.getFile(), blocks);
             this.score = item.getScore() * 100;
         }

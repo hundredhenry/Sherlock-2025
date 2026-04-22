@@ -6,9 +6,11 @@ import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.internal.CodeBlock;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.internal.FileMatch;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.MapperException;
+import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
 
 /**
  * Maps every line of a file that the system thinks is plagiarised to
@@ -112,18 +114,93 @@ public class LineMapper {
 
         //Loop through the code blocks (the list is empty if the match isn't relevant to this file)
         for (CodeBlock block : blocks) {
-            List<CodeBlock> list = new ArrayList<>();
 
-            if (tempMap.containsKey(block.getStartLine())) {
-                list = tempMap.get(block.getStartLine());
-            }
+            //we will use a hashmap to keep track of new code blocks and where they start
+            HashMap<Integer, List<CodeBlock>> blockMap = new HashMap<>();
 
             //Store the max line num, used for the "Fill" method
             maxLineNum = Math.max(maxLineNum, block.getEndLine());
 
-            list.add(new CodeBlock(block.getStartLine(), block.getEndLine(), match.getId()));
+            //right now we possibly have internal skeleton code (which we dont want to display in the UI)
+            //This is currently stored as a HashSet containing multiple Tuples, representing the ranges of 
+            //skeleton code. We are going to convert this into a single HashMap, where a key is a line number
+            // which is skeleton code.
 
-            tempMap.put(block.getStartLine(), list);
+            //get our internal skeleton code and initialise the skeleton code map
+            HashSet<ITuple<Integer, Integer>> skeletonCode = block.getInternalSkeletonCode();
+            //this map will just be a map containing all lines that are skeleton code
+            HashMap<Integer, Integer> skeletonCodeMap = new HashMap<>();
+
+            //if we actually have skeleton code
+            if (skeletonCode != null){
+                //then add into the map an arbrirary value to make a key for the line
+                for (ITuple<Integer, Integer> t : skeletonCode) {
+                    for (int i = t.getKey(); i <= t.getValue(); i++) {
+                        skeletonCodeMap.put(i, 1);
+                    }
+                }
+            }
+
+            //now go through and add as many code blocks as we need from start to end line, ignoring skeleton code
+            int start = block.getStartLine();
+            int end = block.getStartLine();
+            //content is used to denote if there is something useful to add (and not just an empty codeblock)
+            boolean content = false;
+            //from the start to the end of the file
+            while(end <= block.getEndLine()){
+                //if this end line is not skeleton code
+                if (!skeletonCodeMap.containsKey(end)){
+                    //keep going, and mark that this code block is useful
+                    end++;
+                    content = true;
+                }else{
+                    //otherwise, this code block has reached a line of skeleton code
+                    if (content){
+                        //if there was something useful to add (ie last line wasnt also skeleton code)
+                        //we need to add it eventually to tempMap, but for now just add it to blockMap
+                        if (blockMap.containsKey(start)){
+                            //if already has blocks for this start line, add a new codeblock to it
+                            blockMap.get(start).add(new CodeBlock(start, end-1, match.getId()));
+                        }else{
+                            //otherwise create a new list and add the code block to it
+                            List<CodeBlock> t = new ArrayList<>();
+                            t.add(new CodeBlock(start, end-1, match.getId()));
+                            blockMap.put(start, t);
+                        }
+                        //and flag that there is no useful content now
+                        content = false;
+                    }
+                    //then increment the end and start pointer to the next line
+                    end++;
+                    start=end;
+                }
+            }
+            //once we have finished, we need to check if there was a final code block we didnt add
+            //add the last block
+            if (content){
+                //if so, then add the final code block as above
+                if (blockMap.containsKey(start)){
+                    blockMap.get(start).add(new CodeBlock(start, end-1, match.getId()));
+                }else{
+                    List<CodeBlock> t = new ArrayList<>();
+                    t.add(new CodeBlock(start, end-1, match.getId()));
+                    blockMap.put(start, t);
+                }
+            }
+
+            //Now we need to add all the info in blockMap into the tempMap, so for each startLine
+            for (int startLine : blockMap.keySet()){
+                //initialise a new list
+                List<CodeBlock> list = new ArrayList<>();
+                //and if there are already blocks for this start line, fetch them and add them to the list
+                if (tempMap.containsKey(startLine)) {
+                    list = tempMap.get(startLine);
+                }
+                //then add all of our new blocks to this start line
+                list.addAll(blockMap.get(startLine));
+                //and put them into the tempMap
+                tempMap.put(startLine, list);
+            }
         }
     }
 

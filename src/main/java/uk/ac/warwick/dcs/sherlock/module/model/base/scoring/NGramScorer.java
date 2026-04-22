@@ -3,9 +3,11 @@ package uk.ac.warwick.dcs.sherlock.module.model.base.scoring;
 import uk.ac.warwick.dcs.sherlock.api.component.ICodeBlockGroup;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
+import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 import uk.ac.warwick.dcs.sherlock.module.model.base.detection.NGramMatch;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  *
@@ -55,7 +57,7 @@ public class NGramScorer {
 			} else {
 				// add the new file and a respective FileInfo object (ass they are always added in pairs the indexes will always match)
 				file_list.add(pair.files[i]);
-				file_info.add(new FileInfo(pair.similarity, pair.lines.get(i)));
+				file_info.add(new FileInfo(pair.similarity, pair.lines.get(i), pair.getInternalSkeletonCodeFile(i+1)));
 				// create a new match list and add the pair to it
 //				match_list.add(file);
 //				file_matches.add(new MatchList(pair));
@@ -91,7 +93,7 @@ public class NGramScorer {
 		// average similarity across all matches for this file
 		float score = file_info.get(index).total_similarity / file_info.get(index).similar_files;
 
-		out_group.addCodeBlock(file, score, file_info.get(index).lines);
+		out_group.addCodeBlock(file, score, file_info.get(index).lines, file_info.get(index).internalSkeletonCode);
 	}
 
 	/**
@@ -110,17 +112,23 @@ public class NGramScorer {
 		/**
 		 * The position of the block being referenced.
 		 */
-		public Tuple<Integer, Integer> lines;
+		public ITuple<Integer, Integer> lines;
+
+		/**
+		 * The internal skeleton code for the file
+		 */
+		public HashSet<ITuple<Integer, Integer>> internalSkeletonCode;
 
 		/**
 		 * Constructor, adds first match info set and the relevant line position.
 		 * @param similarity The similarity score of the first matched pair.
 		 * @param lines The line positions of the referenced section.
 		 */
-		public FileInfo(float similarity, Tuple<Integer, Integer> lines) {
+		public FileInfo(float similarity, ITuple<Integer, Integer> lines, HashSet<ITuple<Integer, Integer>> internalSkeletonCode) {
 			total_similarity = similarity;
 			similar_files = 1;
 			this.lines = lines;
+			this.internalSkeletonCode = internalSkeletonCode;
 		}
 
 		/**

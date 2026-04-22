@@ -2,6 +2,7 @@ package uk.ac.warwick.dcs.sherlock.module.model.base.detection;
 
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
+import uk.ac.warwick.dcs.sherlock.module.model.base.detection.AbstractMatch;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -14,22 +15,8 @@ import java.util.Objects;
  * indicating how structurally similar the two AST subtrees are.
  * </p>
  */
-public class ASTMatch implements Serializable {
-    /**
-     * Line ranges for the matched blocks.
-     * Index 0 = file 1 (start, end), Index 1 = file 2 (start, end).
-     */
-    public ArrayList<Tuple<Integer, Integer>> lines;
-
-    /**
-     * The two files being compared.
-     */
-    public ISourceFile[] files;
-
-    /**
-     * Structural similarity score between 0 and 1.
-     */
-    public float similarity;
+public class ASTMatch extends AbstractMatch<ASTMatch> {
+    
 
     /**
      * The  weight of AST nodes in matched subtree from file 1 and 2
@@ -52,45 +39,16 @@ public class ASTMatch implements Serializable {
      */
     public ASTMatch(int file1Start, int file1End, int file2Start, int file2End,
                     float similarity, ISourceFile file1, int subtreeWeight1, ISourceFile file2, int subtreeWeight2) {
-        this.lines = new ArrayList<>();
-        this.lines.add(new Tuple<>(file1Start, file1End));
-        this.lines.add(new Tuple<>(file2Start, file2End));
-
-        this.similarity = similarity;
-
-        this.files = new ISourceFile[2];
-        this.files[0] = file1;
+        super(file1Start, file1End, file2Start, file2End, similarity, file1, file2);
         this.subtreeWeight1 = subtreeWeight1;
-        this.files[1] = file2;
         this.subtreeWeight2 = subtreeWeight2;
-
     }
 
-    /**
-     * Checks if two matches reference the same line ranges.
-     * Two matches are equal if they span the same lines in both files,
-     * regardless of similarity score or file references.
-     *
-     * @param obj the object to compare with
-     * @return true if both matches have identical line ranges, false otherwise
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof ASTMatch)) return false;
-        ASTMatch other = (ASTMatch) obj;
-        return this.lines.get(0).equals(other.lines.get(0))
-                && this.lines.get(1).equals(other.lines.get(1));
-    }
 
-    /**
-     * Returns hash code based on line ranges.
-     * Consistent with equals() — only considers line positions, not similarity or files.
-     *
-     * @return hash code value for this match
-     */
     @Override
-    public int hashCode() {
-        return Objects.hash(lines.get(0), lines.get(1));
+    public ASTMatch copy() {
+        return new ASTMatch(this.lines.get(0).getKey(), this.lines.get(0).getValue(),
+         this.lines.get(1).getKey(), this.lines.get(1).getValue(),
+         this.similarity, this.files[0],this.subtreeWeight1, this.files[1], this.subtreeWeight2);
     }
 }

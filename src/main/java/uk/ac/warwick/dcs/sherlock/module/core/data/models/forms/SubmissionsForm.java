@@ -24,6 +24,12 @@ public class SubmissionsForm {
 
     public boolean multiFolder = false;
 
+    //denotes whether this submission is skeleton code or not
+    public boolean skeleton = false;
+
+    //denote whether the uploaded submission is in a zipped file or not
+    public boolean zipped = false;
+
     public SubmissionsForm() { }
 
     public SubmissionsForm(MultipartFile[] files, boolean single) {
@@ -69,5 +75,29 @@ public class SubmissionsForm {
 
     public void setMultiFolder(boolean multiFolder) {
         this.multiFolder = multiFolder;
+    }
+
+    public boolean isSkeleton() {
+        return skeleton;
+    }
+
+    public boolean getSkeleton() {
+        return skeleton;
+    }
+
+    public void setSkeleton(boolean skeleton) {
+        this.skeleton = skeleton;
+    }
+
+    public boolean isZipped() {
+        return zipped;
+    }
+
+    public boolean getZipped() {
+        return zipped;
+    }
+
+    public void setZipped(boolean zipped) {
+        this.zipped = zipped;
     }
 }

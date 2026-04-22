@@ -2,7 +2,7 @@ package uk.ac.warwick.dcs.sherlock.api.component;
 
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * An interface that connects multiple ICodeBlocks where plagiarism is detected between those files.
@@ -14,9 +14,9 @@ public interface ICodeBlockGroup {
 	 *
 	 * @param file  File containing the block
 	 * @param score score (0 to 1) of the block within the group, eg: 1 means block exactly matches the other blocks in the group
-	 * @param line  Tuple containing the start and end line of the code block
+	 * @param line  ITuple containing the start and end line of the code block
 	 */
-	void addCodeBlock(ISourceFile file, float score, ITuple<Integer, Integer> line);
+	void addCodeBlock(ISourceFile file, float score, ITuple<Integer, Integer> line, HashSet<ITuple<Integer, Integer>> internalSkeletonCode);
 
 	/**
 	 * Adds a code block to the group
@@ -26,7 +26,7 @@ public interface ICodeBlockGroup {
 	 * @param line  Tuple containing the start and end line of the code block
 	 * @param subtreeWeight Integer containing the weight of the block represented by the "similarity-significant" no. of nodes in its AST subtree (for AST-based algorithms)
 	 */
-	void addCodeBlock(ISourceFile file, float score, ITuple<Integer, Integer> line, Integer subtreeWeight);
+	void addCodeBlock(ISourceFile file, float score, ITuple<Integer, Integer> line, Integer subtreeWeight, HashSet<ITuple<Integer, Integer>> internalSkeletonCode);
 
 	/**
 	 * Adds a code block to the group
@@ -35,7 +35,7 @@ public interface ICodeBlockGroup {
 	 * @param score score (0 to 1) of the block within the group, eg: 1 means block exactly matches the other blocks in the group
 	 * @param lines list of tuples, each containing the start and end line of the code block, the block covers multiple groups of non-consecutive lines in this file
 	 */
-	void addCodeBlock(ISourceFile file, float score, List<ITuple<Integer, Integer>> lines);
+	void addCodeBlock(ISourceFile file, float score, List<ITuple<Integer, Integer>> lines,List<HashSet<ITuple<Integer, Integer>>> internalSkeletonCode);
 
 	/**
 	 * Tests whether a passed file is included in the group

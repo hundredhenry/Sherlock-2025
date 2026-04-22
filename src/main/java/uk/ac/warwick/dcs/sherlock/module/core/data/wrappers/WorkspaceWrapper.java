@@ -252,7 +252,7 @@ public class WorkspaceWrapper {
         List<ITuple<ISubmission, ISubmission>> collisions = new ArrayList<ITuple<ISubmission, ISubmission>>();
         boolean multiple = false;
 
-        if(submissionsForm.getFiles().length == 1 && !submissionsForm.getSingle()) {
+        if(submissionsForm.getFiles().length == 1 && !submissionsForm.getSingle() && !submissionsForm.isSkeleton()) {
             multiple = true;
         }
 
