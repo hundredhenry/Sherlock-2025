@@ -11,11 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleObjectEqualityRawResult<T extends AbstractMatch<T>> extends AbstractModelTaskRawResult<T> {
-
-
 	private final int file1NumObjs;
 	private final int file2NumObjs;
-
 
 	public SimpleObjectEqualityRawResult(ISourceFile file1, ISourceFile file2, int numObjectsFile1, int numObjectsFile2) {
 		super(file1,file2);

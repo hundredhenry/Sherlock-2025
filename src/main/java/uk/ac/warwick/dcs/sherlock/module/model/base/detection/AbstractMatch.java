@@ -6,16 +6,12 @@ import uk.ac.warwick.dcs.sherlock.api.util.PairedTuple;
 import uk.ac.warwick.dcs.sherlock.api.util.Tuple;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
-
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
-
-
-
 
 /**
  * Match storage class, stores further information about a match between two code blocks. 

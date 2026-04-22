@@ -10,8 +10,6 @@ import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.LineListArtifact;
 
 import java.util.List;
 
-import javassist.Loader.Simple;
-
 public class VariableNameDetectorWorker extends PairwiseDetectorWorker<SimpleObjectEqualityRawResult<StringMatch>> {
 
 	public VariableNameDetectorWorker(IDetector parent, ModelDataItem file1Data, ModelDataItem file2Data) {

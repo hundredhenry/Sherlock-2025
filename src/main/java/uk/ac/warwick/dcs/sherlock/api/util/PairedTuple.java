@@ -2,8 +2,6 @@ package uk.ac.warwick.dcs.sherlock.api.util;
 
 import java.io.Serializable;
 
-import org.springframework.security.access.method.P;
-
 
 /**
  * Implementation of a pair of tuples in a single object
