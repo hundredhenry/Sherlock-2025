@@ -30,8 +30,6 @@ public class ASTGeneratorJava implements IAdvancedPreProcessor<JavaLexer> {
 
         ParseTree tree = parser.compilationUnit();
 
-        JavaASTNode ast = new JavaASTNode(JavaASTNode.Kind.FUNCTION_DECL);
-
         JavaASTBuilder astBuilder = new JavaASTBuilder();
 
         JavaASTNode astRoot = astBuilder.visit(tree);
