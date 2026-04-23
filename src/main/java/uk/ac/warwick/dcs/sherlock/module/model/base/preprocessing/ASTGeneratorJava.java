@@ -14,6 +14,8 @@ import uk.ac.warwick.dcs.sherlock.module.model.base.lang.JavaParserBaseListener;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.JavaParserBaseVisitor;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.ASTArtifact;
 import uk.ac.warwick.dcs.sherlock.api.util.JavaASTNode;
+import uk.ac.warwick.dcs.sherlock.engine.executor.common.ExecutorUtils;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -25,16 +27,25 @@ public class ASTGeneratorJava implements IAdvancedPreProcessor<JavaLexer> {
     @Override
     public ASTArtifact process(JavaLexer lexer) {
 
+
         lexer.reset();
         JavaParser parser = new JavaParser(new CommonTokenStream(lexer));
+        parser.setErrorHandler(new BailErrorStrategy());
 
-        ParseTree tree = parser.compilationUnit();
+        try {
+            ParseTree tree = parser.compilationUnit();
 
-        JavaASTBuilder astBuilder = new JavaASTBuilder();
+            JavaASTBuilder astBuilder = new JavaASTBuilder();
 
-        JavaASTNode astRoot = astBuilder.visit(tree);
+            JavaASTNode astRoot = astBuilder.visit(tree);
 
-        return new ASTArtifact(astRoot);
+            return new ASTArtifact(astRoot);
+
+        }catch (ParseCancellationException e) {
+            ExecutorUtils.logger.error("Error building parse tree for a submission, if a submission doesn't compile it may report plagiarism scores of 0");
+        }
+
+        return new ASTArtifact(new JavaASTNode(JavaASTNode.Kind.UNKNOWN));
     }
 }
 
