@@ -94,7 +94,7 @@ public class TemplateCmd implements Runnable {
 
     /**
      * The Create command which creates a new Empty Template, given a name and language
-     * Command: template create -n=[name] -l=[language]
+     * Command: template create -n=[template name] -l=[language]
      */
     @CommandLine.Command(name="create", description="Create a new template", mixinStandardHelpOptions = true)
     public static class addTemplate implements Runnable {
@@ -145,7 +145,7 @@ public class TemplateCmd implements Runnable {
      * The View Detectors command for the Template command. Outputs the detectors
      *  available in Sherlock for a language, or template. If no language or template
      *  is provided, then output all detectors available in Sherlock.
-     * Command: template viewDetectors -l=[language] -t=[template]
+     * Command: template viewDetectors -l=[language] -n=[template name]
      */
     @CommandLine.Command(name="viewDetectors", description="View detectors for a language or template", mixinStandardHelpOptions = true)
     static class viewDetectors implements Runnable {
@@ -155,7 +155,7 @@ public class TemplateCmd implements Runnable {
         @CommandLine.Option(names = {"-l", "--language"}, description = "Name of the language", required = false)
         String languageName;
 
-        @CommandLine.Option(names = {"-t", "--template"}, description = "Name of the template", required = false)
+        @CommandLine.Option(names = {"-n", "--name"}, description = "Name of the template", required = false)
         String templateName;
 
         /**
@@ -230,14 +230,14 @@ public class TemplateCmd implements Runnable {
      * The Update Detectors command for the Template command. Updates the detectors
      *  for a template. Does not change detectors not provided - only adds or removes 
      *  detectors that are provided.
-     * Command: template updateDetectors -t=[template] [detectorName=TRUE/FALSE]
+     * Command: template updateDetectors -n=[template name] [detectorName=TRUE/FALSE]
      */
     @CommandLine.Command(name="updateDetectors", description="Change detectors for a template", mixinStandardHelpOptions = true)
     static class setDetectors implements Runnable {
         @CommandLine.ParentCommand
         TemplateCmd parent;
 
-        @CommandLine.Option(names = {"-t", "--template"}, description = "Name of the template", required = true)
+        @CommandLine.Option(names = {"-n", "--name"}, description = "Name of the template", required = true)
         String templateName;
 
         @CommandLine.Parameters(arity = "1..*", paramLabel = "detectorName=TRUE/FALSE", description = "Detectors to update, in the form of detectorName=TRUE/FALSE")
@@ -309,7 +309,7 @@ public class TemplateCmd implements Runnable {
      * The Set Pre-Processing Parameters command for the Template command. Sets the pre-processing
      *  parameters for a template's detector. Does not change parameters not provided - only adds or removes 
      *  parameters that are provided.
-     * Command: template setPreProcessingParameters -t=[template] -d=[detector] PARAMETER_NAME=VALUE
+     * Command: template setPreProcessingParameters -n=[template name] -d=[detector] PARAMETER_NAME=VALUE
      */
     @CommandLine.Command(name="setPreProcessingParameters", description="Set pre-processing parameters for a template's detector", mixinStandardHelpOptions = true)
     static class setPreProcessingParameters implements Runnable {
@@ -317,7 +317,7 @@ public class TemplateCmd implements Runnable {
         @CommandLine.ParentCommand
         TemplateCmd parent;
 
-        @CommandLine.Option(names = {"-t", "--template"}, description = "Name of the template", required = true)
+        @CommandLine.Option(names = {"-n", "--name"}, description = "Name of the template", required = true)
         String templateName;
 
         @CommandLine.Option(names = {"-d", "--detector"}, description = "Name of the detector", required = true)
@@ -435,7 +435,7 @@ public class TemplateCmd implements Runnable {
      * The Set Post-Processing Parameters command for the Template command. Sets the post-processing
      *  parameters for a template's detector. Does not change parameters not provided - only adds or removes 
      *  parameters that are provided.
-     * Command: template setPostProcessingParameters -t=[template] -d=[detector] PARAMETER_NAME=VALUE
+     * Command: template setPostProcessingParameters -n=[template name] -d=[detector] PARAMETER_NAME=VALUE
      */
     @CommandLine.Command(name="setPostProcessingParameters", description="Set post-processing parameters for a template's detector", mixinStandardHelpOptions = true)
     static class setPostProcessingParameters implements Runnable {
@@ -443,7 +443,7 @@ public class TemplateCmd implements Runnable {
         @CommandLine.ParentCommand
         TemplateCmd parent;
 
-        @CommandLine.Option(names = {"-t", "--template"}, description = "Name of the template", required = true)
+        @CommandLine.Option(names = {"-n", "--name"}, description = "Name of the template", required = true)
         String templateName;
 
         @CommandLine.Option(names = {"-d", "--detector"}, description = "Name of the detector", required = true)
@@ -560,14 +560,14 @@ public class TemplateCmd implements Runnable {
 
     /**
      * The Update command for the Template command. Updates the name and/or language of a template.
-     * Command: template update -t=[template] -n=[newName] -l=[newLanguage]
+     * Command: template update -c=[current template name] -n=[newName] -l=[newLanguage]
      */
     @CommandLine.Command(name="update", description="Update name and/or language of template", mixinStandardHelpOptions = true)
     static class updateTemplates implements Runnable {
         @CommandLine.ParentCommand
         TemplateCmd parent;
 
-        @CommandLine.Option(names = {"-t", "--template"}, description = "Current name of the template", required = true)
+        @CommandLine.Option(names = {"-c", "--current"}, description = "Current name of the template", required = true)
         String currentName;
 
         @CommandLine.Option(names = {"-n", "--new"}, description = "New name of the template", required = false)
@@ -734,14 +734,14 @@ public class TemplateCmd implements Runnable {
     /**
      * The View command for the Template command. Outputs the details of a template. Does the same
      *  as the viewParameters command, just named differently.
-     * Command: template view -t=[templateName]
+     * Command: template view -n=[templateName]
      */
     @CommandLine.Command(name="view", description="View template details", mixinStandardHelpOptions = true)
     static class viewTemplateDetails implements Runnable {
         @CommandLine.ParentCommand
         TemplateCmd parent;
 
-        @CommandLine.Option(names = {"-t", "--template"}, description = "Name of the template", required = true)
+        @CommandLine.Option(names = {"-n", "--name"}, description = "Name of the template", required = true)
         String templateName;
 
         @Override

@@ -39,7 +39,7 @@
 <body>
 
     <div class="report-header">
-        <h1 th:text="Primary Submission: ${submission.getName()}">Submission Name</h1>
+        <h1 th:text="|Primary Submission: ${submission.getName()}|">Submission Name</h1>
         <h3 th:if="${sourceFile != null}" th:text="|Primary Source File: ${sourceFile.getFileDisplayName()}|"></h3>
         <div class="score-box">
             <span style="font-size: 7pt; color: #666; text-transform: uppercase;">Overall Score</span>
@@ -81,8 +81,8 @@
                                                             th:with="ln=${pBlock.getContextStartLine() + iter.index}"
                                                             th:classappend="${ln >= pBlock.getStartLine() and ln <= pBlock.getEndLine()} ? 'highlighted-match' : ''"
                                                             class="code-row">
-                                                            <td class="line-number" th:text="${ln}"></td>
-                                                            <td class="code-cell" th:text="${line}"></td>
+                                                            <td class="line-number" th:text="|${ln}|"></td>
+                                                            <td class="code-cell" th:text="|${line}|"></td>
                                                         </tr>
                                                     </table>
                                                 </div>
@@ -97,8 +97,8 @@
                                                             th:with="ln=${oBlock.getContextStartLine() + iter.index}"
                                                             th:classappend="${ln >= oBlock.getStartLine() and ln <= oBlock.getEndLine()} ? 'highlighted-match' : ''"
                                                             class="code-row">
-                                                            <td class="line-number" th:text="${ln}"></td>
-                                                            <td class="code-cell" th:text="${line}"></td>
+                                                            <td class="line-number" th:text="|${ln}|"></td>
+                                                            <td class="code-cell" th:text="|${line}|"></td>
                                                         </tr>
                                                     </table>
                                                 </div>
