@@ -300,7 +300,8 @@ public class WorkspaceWrapper {
      * Delete all submissions from this workspace
      */
     public void deleteAll(){
-        for (ISubmission submission : this.getSubmissions()) {
+        List<ISubmission> submissions = new ArrayList<>(this.getSubmissions());
+        for (ISubmission submission : submissions) {
             submission.remove();
         }
     }

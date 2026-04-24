@@ -1158,6 +1158,11 @@ function bindForms(){
         var input = $(this);
         var url = input.attr("action");
         var target = $(input.attr("data-js-target"));
+        var timeout = parseInt(input.attr("data-js-timeout"), 10);
+
+        if (isNaN(timeout) || timeout <= 0) {
+            timeout = 30000;
+        }
 
         input.find("button[type=submit]").prop("disabled", true);
         input.find("button[type=submit]").addClass("disabled");
@@ -1172,7 +1177,8 @@ function bindForms(){
                 target.html(result);
             },
             "POST",
-            target
+            target,
+            timeout
         );
 
         return false;
@@ -1361,13 +1367,13 @@ function submitGetAjax(url, success, target) {
  * @param type post type: GET/POST
  * @param target the target to update if there was an error
  */
-function submitGenericAjax(url, data, success, type, target) {
+function submitGenericAjax(url, data, success, type, target, timeout) {
     var input = {
         type: type,
         accept:"text/html",
         dataType: "html",
         url: url,
-        timeout: 30000,
+        timeout: timeout || 30000,
         data: data,
         success: function (result, status, xhr) {
             if (xhr.getResponseHeader("sherlock-url") != url || result.includes("<link ")) {

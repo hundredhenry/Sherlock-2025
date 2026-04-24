@@ -153,9 +153,11 @@ public class EntityArchive implements ISubmission, Serializable {
 
 	@Override
 	public void remove() {
-		//Set all the jobs as having missing files
-		if (this.getWorkspace() != null) {
-			for (IJob job : this.getWorkspace().getJobs()) {
+		// Set all the jobs as having missing files
+		EntityWorkspace workspace = this.getWorkspace();
+		List<IJob> jobs = workspace != null ? workspace.getJobs() : null;
+		if (jobs != null) {
+			for (IJob job : new LinkedList<>(jobs)) {
 				job.setStatus(WorkStatus.MISSING_FILES);
 				job.remove();
 			}
@@ -163,20 +165,23 @@ public class EntityArchive implements ISubmission, Serializable {
 
 		BaseStorage.instance.database.refreshObject(this);
 		if (this.children != null) {
-			for (EntityArchive child : this.children) {
+			for (EntityArchive child : new ArrayList<>(this.children)) {
 				child.remove();
 			}
 		}
 
 		if (this.files != null) {
-			files.forEach(EntityFile::remove_);
+			for (EntityFile file : new ArrayList<>(this.files)) {
+				file.remove_();
+			}
 		}
 
 		try {
 			BaseStorage.instance.database.refreshObject(this);
 			BaseStorage.instance.database.removeObject(this);
 		}
-		catch (Exception ignored) {
+		catch (Exception e) {
+			BaseStorage.logger.error("Failed to remove submission {} (id={})", this.name, this.id, e);
 		}
 	}
 
@@ -234,7 +239,7 @@ public class EntityArchive implements ISubmission, Serializable {
 	private void cleanRecursive() {
 		BaseStorage.instance.database.refreshObject(this);
 		if (this.children != null) {
-			for (EntityArchive child : this.children) {
+			for (EntityArchive child : new ArrayList<>(this.children)) {
 				child.cleanRecursive();
 			}
 		}
@@ -245,7 +250,9 @@ public class EntityArchive implements ISubmission, Serializable {
 	}
 
 	private void setPendingRecursive(boolean pending) {
-		this.children.forEach(a -> a.setPendingRecursive(pending));
+		for (EntityArchive child : new ArrayList<>(this.children)) {
+			child.setPendingRecursive(pending);
+		}
 		this.pending = pending;
 	}
 
@@ -253,7 +260,7 @@ public class EntityArchive implements ISubmission, Serializable {
 		BaseStorage.instance.database.refreshObject(this);
 
 		if (this.children != null) {
-			for (EntityArchive child : this.children) {
+			for (EntityArchive child : new ArrayList<>(this.children)) {
 				child.getAllFilesRecursive(filesRec);
 			}
 		}

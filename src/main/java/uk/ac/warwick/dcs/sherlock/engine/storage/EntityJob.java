@@ -214,7 +214,7 @@ public class EntityJob implements IJob, Serializable {
 	public void remove() {
 
 		if (this.tasks != null) {
-			for (EntityTask t : this.tasks) {
+			for (EntityTask t : new ArrayList<>(this.tasks)) {
 				t.remove();
 			}
 		}

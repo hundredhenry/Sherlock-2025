@@ -192,14 +192,22 @@ public class EntityFile implements ISourceFile, IStorable, Serializable {
 
 	@Override
 	public void remove() {
-		//Set all the jobs as having missing files
-		for (IJob job : this.getArchive().getWorkspace().getJobs()) {
-			job.setStatus(WorkStatus.MISSING_FILES);
-			job.remove();
+		// Set all the jobs as having missing files
+		EntityArchive archive = this.getArchive();
+		EntityWorkspace workspace = archive != null ? archive.getWorkspace() : null;
+		List<IJob> jobs = workspace != null ? workspace.getJobs() : null;
+
+		if (jobs != null) {
+			for (IJob job : new ArrayList<>(jobs)) {
+				job.setStatus(WorkStatus.MISSING_FILES);
+				job.remove();
+			}
 		}
 
 		this.remove_();
-		this.archive.clean();
+		if (archive != null) {
+			archive.clean();
+		}
 	}
 
 	@Override
@@ -229,7 +237,8 @@ public class EntityFile implements ISourceFile, IStorable, Serializable {
 			BaseStorage.instance.filesystem.removeFile(this);
 			BaseStorage.instance.database.removeObject(this);
 		}
-		catch (Exception ignored) {
+		catch (Exception e) {
+			BaseStorage.logger.error("Failed to remove file {} (id={})", this.getFileDisplayPath(), this.id, e);
 		}
 	}
 

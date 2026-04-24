@@ -112,13 +112,13 @@ public class EntityWorkspace implements IWorkspace, Serializable {
 	@Override
 	public void remove() {
 		if (this.submissions != null) {
-			for (EntityArchive a : this.submissions) {
+			for (EntityArchive a : new LinkedList<>(this.submissions)) {
 				a.remove();
 			}
 		}
 
 		if (this.jobs != null) {
-			for (EntityJob j : this.jobs) {
+			for (EntityJob j : new LinkedList<>(this.jobs)) {
 				j.remove();
 			}
 		}
