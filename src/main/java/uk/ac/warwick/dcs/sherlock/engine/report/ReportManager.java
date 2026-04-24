@@ -127,7 +127,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 		List<Long> fileIds2 = submissionFileMap.get(sub_id2);
 
 		if (fileIds1 == null || fileIds2 == null) {
-			logger.info("Skipping match score lookup for incomplete submission data: {} vs {}", sub_id1, sub_id2);
+			logger.warn("Skipping match score lookup for incomplete submission data: {} vs {}", sub_id1, sub_id2);
 			return 0f;
 		}
 
@@ -206,7 +206,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 		for(Long submissionId : submissionFileMap.keySet()) {
 			Float overallScore = submissionScores.get(submissionId);
 			if (overallScore == null) {
-				logger.info("Skipping submission {} because its overall score is not available yet", submissionId);
+				logger.warn("Skipping submission {} because its overall score is not available yet", submissionId);
 				continue;
 			}
 			SubmissionSummary submissionSummary = new SubmissionSummary(submissionId, overallScore);
@@ -291,7 +291,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 			// submission is not top level, don't make reports on non-top level submission.
 
 			//Either just return null with an error msg
-			logger.error("Cannot generate report on a submission which has a parent");
+			logger.warn("Cannot generate report on a submission which has a parent");
 			return null;
 
 			// or get the parent recursively
@@ -305,7 +305,7 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 		Float overallScore = submissionScores.get(submission.getId());
 
 		if (overallScore == null) {
-			logger.info("Skipping report for submission {} because its score is not available yet", submission.getId());
+			logger.warn("Skipping report for submission {} because its score is not available yet", submission.getId());
 			return new Tuple<>(Collections.emptyList(), "Results are still being generated for this submission.");
 		}
 
