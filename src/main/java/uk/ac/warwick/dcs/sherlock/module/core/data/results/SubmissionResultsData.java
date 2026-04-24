@@ -4,6 +4,7 @@ import org.json.JSONObject;
 import uk.ac.warwick.dcs.sherlock.api.component.IJob;
 import uk.ac.warwick.dcs.sherlock.api.component.ISourceFile;
 import uk.ac.warwick.dcs.sherlock.api.component.ISubmission;
+import uk.ac.warwick.dcs.sherlock.api.component.WorkStatus;
 import uk.ac.warwick.dcs.sherlock.api.exception.ResultJobUnsupportedException;
 import uk.ac.warwick.dcs.sherlock.api.report.IReportManager;
 import uk.ac.warwick.dcs.sherlock.api.report.ISubmissionSummary;
@@ -79,11 +80,13 @@ public class SubmissionResultsData {
         this.score = 0;
 
         IReportManager report = null;
-        try {
-            report = SherlockEngine.storage.getReportGenerator(job.getLatestResult());
-        } catch (ResultJobUnsupportedException e) {
-            // No results
-            // e.printStackTrace();
+        if (job.getStatus() == WorkStatus.COMPLETE && job.getLatestResult() != null) {
+            try {
+                report = SherlockEngine.storage.getReportGenerator(job.getLatestResult());
+            } catch (ResultJobUnsupportedException e) {
+                // No results
+                // e.printStackTrace();
+            }
         }
 
         if (report != null) {
@@ -153,11 +156,13 @@ public class SubmissionResultsData {
         this.fileScores = new HashMap<>();
 
         IReportManager report = null;
-        try {
-            report = SherlockEngine.storage.getReportGenerator(job.getLatestResult());
-        } catch (ResultJobUnsupportedException e) {
-            // No results
-            // e.printStackTrace();
+        if (job.getStatus() == WorkStatus.COMPLETE && job.getLatestResult() != null) {
+            try {
+                report = SherlockEngine.storage.getReportGenerator(job.getLatestResult());
+            } catch (ResultJobUnsupportedException e) {
+                // No results
+                // e.printStackTrace();
+            }
         }
 
         if (report != null) {

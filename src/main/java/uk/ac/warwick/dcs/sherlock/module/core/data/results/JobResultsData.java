@@ -3,6 +3,7 @@ package uk.ac.warwick.dcs.sherlock.module.core.data.results;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import uk.ac.warwick.dcs.sherlock.api.component.IJob;
+import uk.ac.warwick.dcs.sherlock.api.component.WorkStatus;
 import uk.ac.warwick.dcs.sherlock.api.exception.ResultJobUnsupportedException;
 import uk.ac.warwick.dcs.sherlock.api.report.IReportManager;
 import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
@@ -182,6 +183,10 @@ public class JobResultsData {
 	 */
 	private void fillResultsMap() {
 		resultsMap = new HashMap<>();
+
+		if (this.job.getStatus() != WorkStatus.COMPLETE || this.job.getLatestResult() == null) {
+			return;
+		}
 
 		IReportManager<SubmissionMatchGroup,SubmissionSummary> report = null;
 		try {

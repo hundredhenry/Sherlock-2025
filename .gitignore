@@ -50,5 +50,4 @@ src/main/resources/static/js
 
 gradle.properties
 
-# Claude
-CLAUDE.md
+AGENTS.md

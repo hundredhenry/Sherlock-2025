@@ -123,9 +123,16 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 	 */
 	private float getMaxMatchScore(long sub_id1, long sub_id2) {
 		float maxScore = 0f;
+		List<Long> fileIds1 = submissionFileMap.get(sub_id1);
+		List<Long> fileIds2 = submissionFileMap.get(sub_id2);
 
-		for (Long id1 : submissionFileMap.get(sub_id1)) {
-			for (Long id2 : submissionFileMap.get(sub_id2)) {
+		if (fileIds1 == null || fileIds2 == null) {
+			logger.info("Skipping match score lookup for incomplete submission data: {} vs {}", sub_id1, sub_id2);
+			return 0f;
+		}
+
+		for (Long id1 : fileIds1) {
+			for (Long id2 : fileIds2) {
 				List<Long> filePair = new ArrayList<>(Arrays.asList(id1, id2));
 				float score = fileMatchScores.getOrDefault(filePair, 0f);
 
@@ -197,7 +204,11 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 		ArrayList<SubmissionSummary> output = new ArrayList<>();
 
 		for(Long submissionId : submissionFileMap.keySet()) {
-			float overallScore = submissionScores.get(submissionId);
+			Float overallScore = submissionScores.get(submissionId);
+			if (overallScore == null) {
+				logger.info("Skipping submission {} because its overall score is not available yet", submissionId);
+				continue;
+			}
 			SubmissionSummary submissionSummary = new SubmissionSummary(submissionId, overallScore);
 			ArrayList<Tuple<Long, Float>> matchingSubs = new ArrayList<>();
 			ArrayList<Long> matchingSubIds = new ArrayList<>();
@@ -207,8 +218,15 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 				//If this group contains a file for the current submission, add all other submissions in the group to the list, if they aren't already added
 				if(codeBlockGroup.submissionIdPresent(submissionId)) {
 					for(ICodeBlock codeBlock : codeBlockGroup.getCodeBlocks()) {
+						if (codeBlock.getFile() == null || codeBlock.getFile().getSubmission() == null) {
+							continue;
+						}
 						long currentId = codeBlock.getFile().getSubmission().getId();
 						if(currentId != submissionId && !matchingSubIds.contains(currentId)) {
+							if (!submissionFileMap.containsKey(currentId)) {
+								logger.info("Skipping incomplete match for submission {} -> {}", submissionId, currentId);
+								continue;
+							}
 							float matchScore = getMaxMatchScore(submissionId, currentId);
 
 							matchingSubs.add(new Tuple<>(currentId, matchScore));
@@ -250,6 +268,10 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 		if(submissions.size() < 2)
 			return null;
 
+		if (!submissionFileMap.containsKey(submissions.get(0).getId()) || !submissionFileMap.containsKey(submissions.get(1).getId())) {
+			logger.info("Skipping comparison because one or more submissions are still being loaded");
+			return Collections.emptyList();
+		}
 
 		List<ICodeBlockGroup> relevantGroups = getCodeBlockGroups(submissions);
 
@@ -280,9 +302,15 @@ public class ReportManager implements IReportManager<SubmissionMatchGroup, Submi
 		}
 
 		List<ICodeBlockGroup> relevantGroups = getCodeBlockGroups(submission);
+		Float overallScore = submissionScores.get(submission.getId());
+
+		if (overallScore == null) {
+			logger.info("Skipping report for submission {} because its score is not available yet", submission.getId());
+			return new Tuple<>(Collections.emptyList(), "Results are still being generated for this submission.");
+		}
 
 		//Generate and return the report.
-		return reportGenerator.generateSubmissionReport(submission, relevantGroups, submissionScores.get(submission.getId()));
+		return reportGenerator.generateSubmissionReport(submission, relevantGroups, overallScore);
 	}
 
 }
