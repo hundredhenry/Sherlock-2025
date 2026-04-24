@@ -17,7 +17,6 @@ import uk.ac.warwick.dcs.sherlock.engine.executor.common.ExecutorUtils;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.StandardStringifier;
 import uk.ac.warwick.dcs.sherlock.module.model.base.preprocessing.StandardTokeniser;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -87,12 +86,13 @@ public class WorkPreProcessFile extends RecursiveAction {
 					Class<? extends IAdvancedPreProcessorGroup> groupClass = (Class<? extends IAdvancedPreProcessorGroup>) strategy.getPreProcessorClasses().get(0);
 					ITuple<Class<? extends IAdvancedPreProcessor>, Class<? extends Lexer>> t = SherlockRegistry.getAdvancedPostProcessorForLanguage(groupClass, task.getLanguage());
 
-					Lexer lexer = t.getValue().getDeclaredConstructor(CharStream.class).newInstance(CharStreams.fromStream(file.getFileContents()));
+					CharStream stream = CharStreams.fromString(this.fileContent, this.file.getFileDisplayPath());
+					Lexer lexer = ExecutorUtils.configureAntlrLexer(t.getValue().getDeclaredConstructor(CharStream.class).newInstance(stream));
 					IAdvancedPreProcessor processor = t.getKey().getConstructor().newInstance();
 					IPreprocessArtifact artifact = (IPreprocessArtifact) processor.getClass().getMethod("process", t.getValue()).invoke(processor, lexer);
 					map.put(strategy.getName(), artifact);
 				}
-				catch (InstantiationException | IllegalAccessException | NoSuchMethodException | IOException | InvocationTargetException e) {
+				catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
 					e.printStackTrace();
 				}
 			}
@@ -100,7 +100,8 @@ public class WorkPreProcessFile extends RecursiveAction {
 				try {
 					Class<? extends Lexer> clazz = SherlockRegistry.getLexerForStrategy(strategy, task.getLanguage());
 					if (clazz != null) {
-						Lexer lexer = clazz.getDeclaredConstructor(CharStream.class).newInstance(CharStreams.fromString(this.fileContent));
+						CharStream stream = CharStreams.fromString(this.fileContent, this.file.getFileDisplayPath());
+						Lexer lexer = ExecutorUtils.configureAntlrLexer(clazz.getDeclaredConstructor(CharStream.class).newInstance(stream));
 						List<? extends Token> tokensMaster = lexer.getAllTokens();
 
 						List<? extends Token> tokens = new LinkedList<>(tokensMaster);

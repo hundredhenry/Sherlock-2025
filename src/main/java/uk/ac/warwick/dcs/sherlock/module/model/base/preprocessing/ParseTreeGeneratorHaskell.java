@@ -6,6 +6,7 @@ import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.IAdvancedPreProcessor;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.HaskellLexer;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.HaskellParser;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.ParseTreeArtifact;
+import uk.ac.warwick.dcs.sherlock.engine.executor.common.ExecutorUtils;
 
 public class ParseTreeGeneratorHaskell implements IAdvancedPreProcessor<HaskellLexer> {
 
@@ -13,7 +14,7 @@ public class ParseTreeGeneratorHaskell implements IAdvancedPreProcessor<HaskellL
     public ParseTreeArtifact process(HaskellLexer lexer) {
 
         lexer.reset();
-        HaskellParser parser = new HaskellParser(new CommonTokenStream(lexer));
+        HaskellParser parser = ExecutorUtils.configureAntlrParser(new HaskellParser(new CommonTokenStream(lexer)));
 
         Tree tree = parser.module();
 

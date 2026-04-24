@@ -8,6 +8,7 @@ import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.IAdvancedPreProcessor;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.JavaLexer;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.JavaParser;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.JavaParserBaseListener;
+import uk.ac.warwick.dcs.sherlock.engine.executor.common.ExecutorUtils;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -19,7 +20,7 @@ public class VariableExtractorJava implements IAdvancedPreProcessor<JavaLexer> {
 		List<IndexedString> fields = new LinkedList<>();
 
 		lexer.reset();
-		JavaParser parser = new JavaParser(new CommonTokenStream(lexer));
+		JavaParser parser = ExecutorUtils.configureAntlrParser(new JavaParser(new CommonTokenStream(lexer)));
 
 		ParseTreeWalker.DEFAULT.walk(new JavaParserBaseListener() {
 			//globals

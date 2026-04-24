@@ -29,7 +29,7 @@ public class ASTGeneratorJava implements IAdvancedPreProcessor<JavaLexer> {
 
 
         lexer.reset();
-        JavaParser parser = new JavaParser(new CommonTokenStream(lexer));
+        JavaParser parser = ExecutorUtils.configureAntlrParser(new JavaParser(new CommonTokenStream(lexer)));
         parser.setErrorHandler(new BailErrorStrategy());
 
         try {

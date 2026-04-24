@@ -1,5 +1,11 @@
 package uk.ac.warwick.dcs.sherlock.engine.executor.common;
 
+import org.antlr.v4.runtime.BaseErrorListener;
+import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.TokenSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.warwick.dcs.sherlock.api.annotation.AdjustableParameter;
@@ -20,6 +26,17 @@ import java.util.Map;
 public class ExecutorUtils {
 
 	public static final Logger logger = LoggerFactory.getLogger(IExecutor.class);
+	private static final BaseErrorListener ANTLR_ERROR_LISTENER = new BaseErrorListener() {
+		@Override
+		public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
+			logger.warn("ANTLR {} error in {} at {}:{}: {}",
+					recognizer instanceof Lexer ? "lexer" : "parser",
+					getRecognizerSource(recognizer),
+					line,
+					charPositionInLine,
+					msg);
+		}
+	};
 
 	/**
 	 * does average of list
@@ -28,6 +45,33 @@ public class ExecutorUtils {
 	 */
 	public static float aggregateScores(Collection<Float> scores) {
 		return (float) scores.stream().mapToDouble(x -> x).average().orElse(-1);
+	}
+
+	public static <T extends Lexer> T configureAntlrLexer(T lexer) {
+		lexer.removeErrorListeners();
+		lexer.addErrorListener(ANTLR_ERROR_LISTENER);
+		return lexer;
+	}
+
+	public static <T extends Parser> T configureAntlrParser(T parser) {
+		parser.removeErrorListeners();
+		parser.addErrorListener(ANTLR_ERROR_LISTENER);
+		return parser;
+	}
+
+	private static String getRecognizerSource(Recognizer<?, ?> recognizer) {
+		if (recognizer instanceof Lexer lexer) {
+			return lexer.getSourceName();
+		}
+
+		if (recognizer instanceof Parser parser && parser.getInputStream() != null) {
+			TokenSource tokenSource = parser.getInputStream().getTokenSource();
+			if (tokenSource != null) {
+				return tokenSource.getSourceName();
+			}
+		}
+
+		return "<unknown source>";
 	}
 
 	/**

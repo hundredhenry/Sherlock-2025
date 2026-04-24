@@ -8,6 +8,7 @@ import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.IAdvancedPreProcessor;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.HaskellLexer;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.HaskellParser;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.HaskellParserBaseListener;
+import uk.ac.warwick.dcs.sherlock.engine.executor.common.ExecutorUtils;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -19,7 +20,7 @@ public class VariableExtractorHaskell implements IAdvancedPreProcessor<HaskellLe
         List<IndexedString> fields = new LinkedList<>();
 
         lexer.reset();
-        HaskellParser parser = new HaskellParser(new CommonTokenStream(lexer));
+        HaskellParser parser = ExecutorUtils.configureAntlrParser(new HaskellParser(new CommonTokenStream(lexer)));
 
         ParseTreeWalker.DEFAULT.walk(new HaskellParserBaseListener() {
 

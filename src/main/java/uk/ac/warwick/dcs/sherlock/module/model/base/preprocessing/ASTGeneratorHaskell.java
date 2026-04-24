@@ -21,7 +21,7 @@ public class ASTGeneratorHaskell implements IAdvancedPreProcessor<HaskellLexer> 
     @Override
     public ASTArtifact process(HaskellLexer lexer) {
         lexer.reset();
-        HaskellParser parser = new HaskellParser(new CommonTokenStream(lexer));
+        HaskellParser parser = ExecutorUtils.configureAntlrParser(new HaskellParser(new CommonTokenStream(lexer)));
 
         parser.setErrorHandler(new BailErrorStrategy());
 

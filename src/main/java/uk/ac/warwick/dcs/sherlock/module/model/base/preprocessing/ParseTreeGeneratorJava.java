@@ -6,6 +6,7 @@ import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.IAdvancedPreProcessor;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.JavaLexer;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.JavaParser;
 import uk.ac.warwick.dcs.sherlock.api.model.preprocessing.ParseTreeArtifact;
+import uk.ac.warwick.dcs.sherlock.engine.executor.common.ExecutorUtils;
 
 public class ParseTreeGeneratorJava implements IAdvancedPreProcessor<JavaLexer> {
 
@@ -13,7 +14,7 @@ public class ParseTreeGeneratorJava implements IAdvancedPreProcessor<JavaLexer> 
     public ParseTreeArtifact process(JavaLexer lexer) {
 
         lexer.reset();
-        JavaParser parser = new JavaParser(new CommonTokenStream(lexer));
+        JavaParser parser = ExecutorUtils.configureAntlrParser(new JavaParser(new CommonTokenStream(lexer)));
 
         Tree tree = parser.compilationUnit();
 
