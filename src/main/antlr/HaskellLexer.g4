@@ -186,43 +186,46 @@ CloseRoundBracket  : ')';
 OpenSquareBracket  : '[';
 CloseSquareBracket : ']';
 
-CHAR:
-    '\'' (
-        ' '
-        | DECIMAL
-        | SMALL
-        | LARGE
-        | SYMBOL
-        | DIGIT
-        | ','
-        | ';'
-        | '('
-        | ')'
-        | '['
-        | ']'
-        | '`'
-        | '"'
-    ) '\''
-;
+fragment SIMPLE_ESC
+    : ['"\\abfnrtv]
+    ;
 
-STRING:
-    '"' (
-        ' '
-        | DECIMAL
-        | SMALL
-        | LARGE
-        | SYMBOL
-        | DIGIT
-        | ','
-        | ';'
-        | '('
-        | ')'
-        | '['
-        | ']'
-        | '`'
-        | '\''
-    )* '"'
-;
+fragment HEX
+    : [0-9a-fA-F]
+    ;
+
+fragment OCT
+    : [0-7]
+    ;
+
+fragment ESC
+    : '\\' (
+        SIMPLE_ESC
+        | 'x' HEX+     // hex: \x41
+        | 'o' OCT+     // octal: \o101
+        | DIGIT+       // decimal: \65
+        | '&'          // empty escape
+        | LARGE+       // named escapes: \NUL (approx)
+      )
+    ;
+
+fragment STRING_CHAR
+    : ESC
+    | ~["\\\r\n]
+    ;
+
+fragment CHAR_CHAR
+    : ESC
+    | ~['\\\r\n]
+    ;
+
+CHAR
+    : '\'' CHAR_CHAR '\''
+    ;
+
+STRING
+    : '"' STRING_CHAR* '"'
+    ;
 
 VARID : SMALL (SMALL | LARGE | DIGIT | '\'')* '#'*;
 CONID : LARGE (SMALL | LARGE | DIGIT | '\'')* '#'*;
