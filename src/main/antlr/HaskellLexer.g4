@@ -198,6 +198,10 @@ fragment OCT
     : [0-7]
     ;
 
+fragment GAP_WHITECHAR
+    : [\t\r\n\f\u000B\u0020\u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]
+    ;
+
 fragment ESC
     : '\\' (
         SIMPLE_ESC
@@ -209,8 +213,13 @@ fragment ESC
       )
     ;
 
+fragment STRING_GAP
+    : '\\' GAP_WHITECHAR+ '\\'
+    ;
+
 fragment STRING_CHAR
-    : ESC
+    : STRING_GAP
+    | ESC
     | ~["\\\r\n]
     ;
 
