@@ -8,6 +8,8 @@ import uk.ac.warwick.dcs.sherlock.api.util.HaskellASTNode;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.HaskellLexer;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.HaskellParser;
 import uk.ac.warwick.dcs.sherlock.module.model.base.lang.HaskellParserBaseVisitor;
+import uk.ac.warwick.dcs.sherlock.engine.executor.common.ExecutorUtils;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,13 +23,22 @@ public class ASTGeneratorHaskell implements IAdvancedPreProcessor<HaskellLexer> 
         lexer.reset();
         HaskellParser parser = new HaskellParser(new CommonTokenStream(lexer));
 
-        // Top-level grammar rule is 'module'
-        ParseTree tree = parser.module();
+        parser.setErrorHandler(new BailErrorStrategy());
 
-        HaskellASTBuilder builder = new HaskellASTBuilder();
-        HaskellASTNode astRoot = builder.visit(tree);
+        try {
+            // Top-level grammar rule is 'module'
+            ParseTree tree = parser.module();
 
-        return new ASTArtifact(astRoot);
+            HaskellASTBuilder builder = new HaskellASTBuilder();
+            HaskellASTNode astRoot = builder.visit(tree);
+
+            return new ASTArtifact(astRoot);
+
+        }catch (ParseCancellationException e) {
+            ExecutorUtils.logger.error("Error building parse tree for a submission, if a submission doesn't compile it may report plagiarism scores of 0");
+        }
+
+        return new ASTArtifact(new HaskellASTNode(HaskellASTNode.Kind.UNKNOWN));
     }
 }
 
