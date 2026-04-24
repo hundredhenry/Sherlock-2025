@@ -220,12 +220,14 @@ public class WorkspaceCmd implements Runnable {
             
             if (clear) {
                 // Delete all files
+                System.out.println("Deleting submissions...");
                 workspace.deleteAll();
                 System.out.println("Deleted all submissions successfully.");
                 return;
 
             } else if (delFile != null) {
                 // Delete a specific file
+                System.out.println(String.format("Deleting file %s", delFile));
                 List<ISourceFile> allFiles = workspace.getFiles();
                 ISourceFile file = null;
 
@@ -701,7 +703,7 @@ public class WorkspaceCmd implements Runnable {
         boolean matchScores;
 
         @CommandLine.Option(names = {"-r", "--report"}, description="ID of a submission to view its match report")
-        String viewReport;
+        String submissionID;
 
         @CommandLine.Option(names = {"-t", "--thresh"}, description="Similarity threshold for the report", defaultValue="80")
         int thresh;
@@ -751,10 +753,11 @@ public class WorkspaceCmd implements Runnable {
                 }
             }
 
-            if (viewReport != null) {
+            if (submissionID != null) {
                 TemplateEngine templateEngine = parent.templateEngine;
                 try {
-                    ISubmission submission = ResultsHelper.getSubmission(workspace, Long.parseLong(viewReport));
+                    System.out.println("Fetching match data...");
+                    ISubmission submission = ResultsHelper.getSubmission(workspace, Long.parseLong(submissionID));
                     List<ISourceFile> allSourceFiles = workspace.getFiles();
                     ISourceFile submissionFile = null;
                     for (ISourceFile isf : allSourceFiles) {
@@ -817,7 +820,7 @@ public class WorkspaceCmd implements Runnable {
                      * ---------------> List<CodeMatchData>: Contains info about each individual matched codeblock for a file
                      * 
                      */
-
+                    System.out.println("Generating report...");
                     Context context = new Context();
                     context.setVariable("workspace", workspace);
                     context.setVariable("results", jobData);
@@ -828,14 +831,14 @@ public class WorkspaceCmd implements Runnable {
                     context.setVariable("printing", true);
                     
                     String htmlStr = templateEngine.process("dashboard/workspaces/results/reportPDF", context);
-                    String reportFilename = String.format("report_WSPACE_%s_SUBM_%s_JID%s.pdf", workspace.getName(), submission.getName(), jobId);
+                    String reportFilename = String.format("report_WSPACE_%s_SUBM_%s_JID%s_THRESH%s.pdf", workspace.getName(), submission.getName(), jobId, thresh);
     
                     try (OutputStream os = new FileOutputStream(reportFilename)) {
                         PdfRendererBuilder builder = new PdfRendererBuilder();
                         builder.withHtmlContent(htmlStr, null);
                         builder.toStream(os);
                         builder.run();
-                        System.out.println("PDF generated and saved successfully.");
+                        System.out.println(String.format("PDF generated and saved successfully under filename: %s.", reportFilename));
                     } catch (FileNotFoundException fnfe) {
                         System.out.println("File not found.");
                     } catch (IOException ioe) {
