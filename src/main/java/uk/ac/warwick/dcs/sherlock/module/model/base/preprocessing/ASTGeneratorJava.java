@@ -88,7 +88,10 @@ class JavaASTBuilder extends JavaParserBaseVisitor<JavaASTNode>{
             JavaLexer.DECIMAL_LITERAL, JavaASTNode.Kind.NUMBER_LITERAL,
             JavaLexer.FLOAT_LITERAL, JavaASTNode.Kind.NUMBER_LITERAL,
             JavaLexer.BOOL_LITERAL, JavaASTNode.Kind.BOOL_LITERAL,
-            JavaLexer.NULL_LITERAL, JavaASTNode.Kind.NULL_LITERAL
+            JavaLexer.NULL_LITERAL, JavaASTNode.Kind.NULL_LITERAL,
+            JavaLexer.BREAK, JavaASTNode.Kind.BREAK,
+            JavaLexer.CONTINUE, JavaASTNode.Kind.CONTINUE,
+            JavaLexer.RETURN, JavaASTNode.Kind.RETURN
     );
 
     @Override
@@ -192,6 +195,12 @@ class JavaASTBuilder extends JavaParserBaseVisitor<JavaASTNode>{
             node = new JavaASTNode(JavaASTNode.Kind.FOR_LOOP);
         } else if (first.getText().equals("try")) {
             node = new JavaASTNode(JavaASTNode.Kind.TRY_STATEMENT);
+        } else if (first.getText().equals("switch")) {
+            node = new JavaASTNode(JavaASTNode.Kind.SWITCH_EXPR);
+        } else if (first.getText().equals("do")) {
+            node = new JavaASTNode(JavaASTNode.Kind.DO_WHILE_LOOP);
+        } else if (first.getText().equals("throw")) {
+            node = new JavaASTNode(JavaASTNode.Kind.THROW);
         }
 
         // If this isn't a control flow statement, just unwrap it
