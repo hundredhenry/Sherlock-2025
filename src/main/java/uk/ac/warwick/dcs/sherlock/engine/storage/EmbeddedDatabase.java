@@ -41,20 +41,20 @@ public class EmbeddedDatabase {
 		this.em.flush();
 	}
 
-	public void close() {
+	public synchronized void close() {
 		this.em.close();
 		this.dbFactory.close();
 	}
 
-	public Query createQuery(String query) {
+	public synchronized Query createQuery(String query) {
 		return em.createQuery(query);
 	}
 
-	public <X> TypedQuery<X> createQuery(String query, Class<X> xclass) {
+	public synchronized <X> TypedQuery<X> createQuery(String query, Class<X> xclass) {
 		return em.createQuery(query, xclass);
 	}
 
-	public int executeUpdate(Query query) {
+	public synchronized int executeUpdate(Query query) {
 		if (query != null) {
 			return this.runInTransaction(query::executeUpdate);
 		}
@@ -62,13 +62,13 @@ public class EmbeddedDatabase {
 		return -1;
 	}
 
-	public void refreshObject(Object obj) {
+	public synchronized void refreshObject(Object obj) {
 		if (obj != null && this.em.contains(obj)) {
 			this.em.refresh(obj);
 		}
 	}
 
-	public void removeObject(Object obj) {
+	public synchronized void removeObject(Object obj) {
 		if (obj instanceof List) {
 			this.removeObject(((List) obj).toArray());
 		}
@@ -77,7 +77,7 @@ public class EmbeddedDatabase {
 		}
 	}
 
-	public void removeObject(Object... objects) {
+	public synchronized void removeObject(Object... objects) {
 		this.runInTransaction(() -> {
 			for (Object obj : objects) {
 				em.remove(this.getManagedObject(obj));
@@ -85,12 +85,12 @@ public class EmbeddedDatabase {
 		});
 	}
 
-	public <X> List<X> runQuery(String query, Class<X> xclass) {
+	public synchronized <X> List<X> runQuery(String query, Class<X> xclass) {
 		List<X> q = em.createQuery(query, xclass).getResultList();
 		return q;
 	}
 
-	public void storeObject(Object obj) {
+	public synchronized void storeObject(Object obj) {
 		if (obj instanceof List) {
 			this.storeObject(((List) obj).toArray());
 		}
@@ -99,7 +99,7 @@ public class EmbeddedDatabase {
 		}
 	}
 
-	public void storeObject(Object... objects) {
+	public synchronized void storeObject(Object... objects) {
 		this.runInTransaction(() -> {
 			for (Object obj : objects) {
 				em.persist(obj);
