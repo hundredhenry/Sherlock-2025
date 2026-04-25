@@ -26,7 +26,7 @@
                         <h6>
                             <span th:text="#{workspaces.submissions.upload.directory_notice}" style="font-style: italic;"></span>
                         </h6>
-                        <form th:action="@{/dashboard/workspaces/manage/{id}/submissions/upload(id=${workspace.getId()})}" enctype="multipart/form-data" data-js='form' data-js-target="#upload-parent" method="post">
+                        <form th:action="@{/dashboard/workspaces/manage/{id}/submissions/upload(id=${workspace.getId()})}" enctype="multipart/form-data" data-js='form' data-js-target="#upload-parent" data-js-timeout="300000" method="post">
                             <div class="form-row">
                                 <div class="form-group col-md-12">
                                    <!-- currently restricted to .java & .hs files only -->
@@ -92,7 +92,7 @@
                         <div id="sub_org_file_div" class="sub_org ml-4 d-none">
                             <span th:text="#{workspaces.submissions.upload.instructions.folder} " style="font-style: italic;"></span>
 
-                            <form th:action="@{/dashboard/workspaces/manage/{id}/submissions/upload(id=${workspace.getId()})}" enctype="multipart/form-data" data-js='form' data-js-target="#upload-parent" method="post" class="mt-3">
+                            <form th:action="@{/dashboard/workspaces/manage/{id}/submissions/upload(id=${workspace.getId()})}" enctype="multipart/form-data" data-js='form' data-js-target="#upload-parent" data-js-timeout="300000" method="post" class="mt-3">
                                 <div class="form-row">
                                     <div class="form-group col-md-12">
                                         <!-- folder upload using webkitdirectory NOTE: does not work with internet explorer/only partially with safari -->
@@ -145,7 +145,7 @@
                         <div id="sub_org_folder_div" class="sub_org ml-4 d-none">
                             <span th:text="#{workspaces.submissions.upload.instructions.zip_file}" style="font-style: italic;"></span><a href="https://www.wikihow.com/Make-a-Zip-File" target="_blank" th:text="#{workspaces.submissions.upload.instructions.zip_link}"></a>
 
-                            <form th:action="@{/dashboard/workspaces/manage/{id}/submissions/upload(id=${workspace.getId()})}" enctype="multipart/form-data" data-js='form' data-js-target="#upload-parent" method="post" class="mt-3">
+                            <form th:action="@{/dashboard/workspaces/manage/{id}/submissions/upload(id=${workspace.getId()})}" enctype="multipart/form-data" data-js='form' data-js-target="#upload-parent" data-js-timeout="300000" method="post" class="mt-3">
                                 <div class="form-row">
                                     <div class="form-group col-md-12">
                                         <input type="file" name="files" accept=".zip,.tar,.tar.gz,.tgz">
@@ -211,7 +211,7 @@
                         <div id="multi_org_folder_div" class="multi_org ml-4 d-none">
                             <span th:text="#{workspaces.submissions.upload.multifile.instructions.folder}" style="font-style: italic;"></span>
 
-                            <form th:action="@{/dashboard/workspaces/manage/{id}/submissions/upload(id=${workspace.getId()})}" enctype="multipart/form-data" data-js='form' data-js-target="#upload-parent" method="post" class="mt-3">
+                            <form th:action="@{/dashboard/workspaces/manage/{id}/submissions/upload(id=${workspace.getId()})}" enctype="multipart/form-data" data-js='form' data-js-target="#upload-parent" data-js-timeout="300000" method="post" class="mt-3">
                                 <div class="form-row">
                                     <div class="form-group col-md-12">
                                         <!-- folder upload using webkitdirectory -->
@@ -265,7 +265,7 @@
                         <div id="multi_org_zip_div" class="multi_org ml-4 d-none">
                             <span th:text="#{workspaces.submissions.upload.multifile.instructions.zip}" style="font-style: italic;"></span><a href="https://www.wikihow.com/Make-a-Zip-File" target="_blank" th:text="#{workspaces.submissions.upload.instructions.zip_link}"></a>
 
-                            <form th:action="@{/dashboard/workspaces/manage/{id}/submissions/upload(id=${workspace.getId()})}" enctype="multipart/form-data" data-js='form' data-js-target="#upload-parent" method="post" class="mt-3">
+                            <form th:action="@{/dashboard/workspaces/manage/{id}/submissions/upload(id=${workspace.getId()})}" enctype="multipart/form-data" data-js='form' data-js-target="#upload-parent" data-js-timeout="300000" method="post" class="mt-3">
                                 <div class="form-row">
                                     <div class="form-group col-md-12">
                                         <input type="file" name="files" accept=".zip,.tar,.tar.gz,.tgz">
