@@ -1,6 +1,8 @@
 package uk.ac.warwick.dcs.sherlock.module.web.controllers.dashboard.workspace;
 
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,6 +26,8 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 @Controller
 public class ResultsController {
+    private static final Logger logger = LoggerFactory.getLogger(ResultsController.class);
+
     @Autowired
     private WorkspaceRepository workspaceRepository;
 
@@ -257,7 +261,18 @@ public class ResultsController {
             @ModelAttribute("workspace") WorkspaceWrapper workspaceWrapper,
             @ModelAttribute("results") JobResultsData resultsWrapper
     ) {
+        logger.info(
+                "Deleting result job id={} from workspace id={} engineId={}",
+                resultsWrapper.getPersistentId(),
+                workspaceWrapper.getId(),
+                workspaceWrapper.getEngineId()
+        );
         resultsWrapper.getJob().remove();
+        logger.info(
+                "Finished deleting result job id={} from workspace id={}",
+                resultsWrapper.getPersistentId(),
+                workspaceWrapper.getId()
+        );
         return "redirect:/dashboard/workspaces/manage/"+workspaceWrapper.getId()+"?msg=deleted_job";
     }
 
