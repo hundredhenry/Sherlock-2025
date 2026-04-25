@@ -220,7 +220,7 @@ public class TemplateCmd implements Runnable {
                         readableDetectors.add(parent.detectorNameToReadable(detector));
                     }
                     //then output the detectors
-                    System.out.println(String.join(", ", readableDetectors));
+                    System.out.println(language + ": " + String.join(", ", readableDetectors));
                 }            
             }       
         } 
@@ -720,7 +720,7 @@ public class TemplateCmd implements Runnable {
          */
         @Override
         public void run() {
-            System.out.println("Viewing a template...");
+            System.out.println("All Templates:");
             //find all the templates owned by the user
             List<TemplateWrapper> wrapperList = TemplateWrapper.findByAccountAndPublic(parent.account.getAccount(), parent.templateRepository);
             //and output them all

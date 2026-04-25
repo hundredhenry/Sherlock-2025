@@ -84,7 +84,9 @@ dependencies {
             'org.springframework.boot:spring-boot-starter-test',
             'org.springframework.security:spring-security-test',
             'org.junit.jupiter:junit-jupiter-api:5.12.2',
-            'org.junit.jupiter:junit-jupiter-params:5.12.2'
+            'org.junit.jupiter:junit-jupiter-params:5.12.2',
+            'org.mockito:mockito-inline:5.2.0'
+
     )
 
     testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.12.2')

@@ -18,7 +18,7 @@ public class StringMatch extends AbstractMatch<StringMatch> {
     /**
      * The string shared between both files
      */
-    String string;
+    public String string;
 
     /**
      * Constructs a new AST match.
