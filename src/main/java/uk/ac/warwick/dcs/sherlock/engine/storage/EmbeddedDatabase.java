@@ -7,6 +7,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Database access stuff
@@ -55,25 +56,16 @@ public class EmbeddedDatabase {
 
 	public int executeUpdate(Query query) {
 		if (query != null) {
-			int count;
-			try {
-				em.getTransaction().begin();
-				count = query.executeUpdate();
-				em.getTransaction().commit();
-			}
-			finally {
-				if (em.getTransaction().isActive()) {
-					em.getTransaction().rollback();
-				}
-			}
-			return count;
+			return this.runInTransaction(query::executeUpdate);
 		}
 
 		return -1;
 	}
 
 	public void refreshObject(Object obj) {
-		this.em.refresh(obj);
+		if (obj != null && this.em.contains(obj)) {
+			this.em.refresh(obj);
+		}
 	}
 
 	public void removeObject(Object obj) {
@@ -81,32 +73,16 @@ public class EmbeddedDatabase {
 			this.removeObject(((List) obj).toArray());
 		}
 		else {
-			try {
-				em.getTransaction().begin();
-				em.remove(obj);
-				em.getTransaction().commit();
-			}
-			finally {
-				if (em.getTransaction().isActive()) {
-					em.getTransaction().rollback();
-				}
-			}
+			this.runInTransaction(() -> em.remove(this.getManagedObject(obj)));
 		}
 	}
 
 	public void removeObject(Object... objects) {
-		try {
-			em.getTransaction().begin();
+		this.runInTransaction(() -> {
 			for (Object obj : objects) {
-				em.remove(obj);
+				em.remove(this.getManagedObject(obj));
 			}
-			em.getTransaction().commit();
-		}
-		finally {
-			if (em.getTransaction().isActive()) {
-				em.getTransaction().rollback();
-			}
-		}
+		});
 	}
 
 	public <X> List<X> runQuery(String query, Class<X> xclass) {
@@ -119,31 +95,64 @@ public class EmbeddedDatabase {
 			this.storeObject(((List) obj).toArray());
 		}
 		else {
-			try {
-				em.getTransaction().begin();
-				em.persist(obj);
-				em.getTransaction().commit();
-			}
-			finally {
-				if (em.getTransaction().isActive()) {
-					em.getTransaction().rollback();
-				}
-			}
+			this.runInTransaction(() -> em.persist(obj));
 		}
 	}
 
 	public void storeObject(Object... objects) {
-		try {
-			em.getTransaction().begin();
+		this.runInTransaction(() -> {
 			for (Object obj : objects) {
 				em.persist(obj);
 			}
-			em.getTransaction().commit();
-		}
-		finally {
-			if (em.getTransaction().isActive()) {
-				em.getTransaction().rollback();
+		});
+	}
+
+	private Object getManagedObject(Object obj) {
+		return em.contains(obj) ? obj : em.merge(obj);
+	}
+
+	private void runInTransaction(Runnable operation) {
+		this.runInTransaction(() -> {
+			operation.run();
+			return null;
+		});
+	}
+
+	private <T> T runInTransaction(Supplier<T> operation) {
+		EntityTransaction transaction = em.getTransaction();
+		boolean startedTransaction = false;
+
+		try {
+			if (!transaction.isActive()) {
+				transaction.begin();
+				startedTransaction = true;
 			}
+
+			T result = operation.get();
+
+			if (startedTransaction) {
+				transaction.commit();
+			}
+
+			return result;
+		}
+		catch (RuntimeException e) {
+			if (startedTransaction) {
+				this.rollback(transaction, e);
+			}
+			throw e;
 		}
 	}
+
+	private void rollback(EntityTransaction transaction, RuntimeException cause) {
+		try {
+			if (transaction.isActive()) {
+				transaction.rollback();
+			}
+		}
+		catch (RuntimeException rollbackException) {
+			cause.addSuppressed(rollbackException);
+		}
+	}
+
 }
