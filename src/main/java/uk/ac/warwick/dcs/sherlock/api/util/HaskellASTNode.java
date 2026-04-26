@@ -7,6 +7,7 @@ public class HaskellASTNode extends ASTNode<HaskellASTNode.Kind> {
     public enum Kind implements ASTNode.NodeKind {
         // -- Top-level module structure
         MODULE,
+        MODULE_CONTENT,
         IMPORT,
         EXPORT,
         BLOCK,
@@ -124,4 +125,5 @@ public class HaskellASTNode extends ASTNode<HaskellASTNode.Kind> {
     public HaskellASTNode(Kind kind, String value) {
         super(kind, value);
     }
+
 }

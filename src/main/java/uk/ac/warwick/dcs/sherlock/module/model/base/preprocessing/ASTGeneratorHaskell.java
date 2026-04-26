@@ -45,43 +45,41 @@ public class ASTGeneratorHaskell implements IAdvancedPreProcessor<HaskellLexer> 
 class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
 
     private static final Set<Integer> OPERATOR_TOKEN_TYPES = Set.of(
-            HaskellLexer.Arrow,        // ->
-            HaskellLexer.DoubleArrow,  // =>
-            HaskellLexer.Revarrow,     // <-
-            HaskellLexer.LarrowTail,   // -<
-            HaskellLexer.RarrowTail,   // >-
-            HaskellLexer.LLarrowTail,  // -<<
-            HaskellLexer.RRarrowTail,  // >>-
-            HaskellLexer.Plus,         // +
-            HaskellLexer.Minus,        // -
-            HaskellLexer.Asterisk,     // *
-            HaskellLexer.Divide,       // /
-            HaskellLexer.Less,         // <
-            HaskellLexer.Greater,      // >
-            HaskellLexer.Ampersand,    // &
-            HaskellLexer.Pipe,         // |
-            HaskellLexer.Bang,         // !
-            HaskellLexer.Caret,        // ^
-            HaskellLexer.Percent,      // %
-            HaskellLexer.Tilde,        // ~
-            HaskellLexer.Dollar,       // $
-            HaskellLexer.DDollar,      // $$
-            HaskellLexer.Colon,        // :
-            HaskellLexer.Dot,          // .
-            HaskellLexer.Eq            // =  (operator context)
+            HaskellLexer.Arrow,
+            HaskellLexer.DoubleArrow,
+            HaskellLexer.Revarrow,
+            HaskellLexer.LarrowTail,
+            HaskellLexer.RarrowTail,
+            HaskellLexer.LLarrowTail,
+            HaskellLexer.RRarrowTail,
+            HaskellLexer.Plus,
+            HaskellLexer.Minus,
+            HaskellLexer.Asterisk,
+            HaskellLexer.Divide,
+            HaskellLexer.Less,
+            HaskellLexer.Greater,
+            HaskellLexer.Ampersand,
+            HaskellLexer.Bang,
+            HaskellLexer.Caret,
+            HaskellLexer.Percent,
+            HaskellLexer.Tilde,
+            HaskellLexer.Dollar,
+            HaskellLexer.DDollar,
+            HaskellLexer.Colon,
+            HaskellLexer.Dot,
+            HaskellLexer.Eq
     );
 
     private static final Map<String, HaskellASTNode.Kind> RULE_MAP = Map.ofEntries(
 
             // ── Top-level structure ──────────────────────────────────────────────
             Map.entry("module",         HaskellASTNode.Kind.MODULE),
-            Map.entry("module_content", HaskellASTNode.Kind.MODULE),
+            Map.entry("module_content", HaskellASTNode.Kind.MODULE_CONTENT),
             Map.entry("body",           HaskellASTNode.Kind.BLOCK),
             Map.entry("impdecl",        HaskellASTNode.Kind.IMPORT),
             Map.entry("exprt",          HaskellASTNode.Kind.EXPORT),
 
             // ── Type-level declarations ──────────────────────────────────────────
-            // ty_decl is further dispatched in visitTy_decl to data/newtype/type
             Map.entry("cl_decl",             HaskellASTNode.Kind.CLASS_DECL),
             Map.entry("inst_decl",           HaskellASTNode.Kind.INSTANCE_DECL),
             Map.entry("standalone_deriving", HaskellASTNode.Kind.DERIVING),
@@ -90,20 +88,19 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
             Map.entry("standalone_kind_sig", HaskellASTNode.Kind.KIND_SIG),
 
             // ── Value-level declarations ─────────────────────────────────────────
-            // decl_no_th and sigdecl have dedicated overrides below
-            Map.entry("rhs",         HaskellASTNode.Kind.BLOCK),               // '=' exp wherebinds? | gdrhs wherebinds?
-            Map.entry("gdrhs",       HaskellASTNode.Kind.BLOCK),               // container: gdrh+
-            Map.entry("gdrh",        HaskellASTNode.Kind.GUARD_EXPR),  // one guarded line: '|' guards '=' exp
-            Map.entry("wherebinds",  HaskellASTNode.Kind.WHERE_BLOCK), // 'where' binds  (in rhs)
-            Map.entry("where_decls", HaskellASTNode.Kind.WHERE_BLOCK), // 'where' open_ decls? close  (pattern synonyms)
+            Map.entry("rhs",         HaskellASTNode.Kind.BLOCK),
+            Map.entry("gdrhs",       HaskellASTNode.Kind.BLOCK),
+            Map.entry("gdrh",        HaskellASTNode.Kind.GUARD_EXPR),
+            Map.entry("wherebinds",  HaskellASTNode.Kind.WHERE_BLOCK),
+            Map.entry("where_decls", HaskellASTNode.Kind.WHERE_BLOCK),
             Map.entry("where_cls",   HaskellASTNode.Kind.WHERE_BLOCK),
             Map.entry("where_inst",  HaskellASTNode.Kind.WHERE_BLOCK),
             Map.entry("binds",       HaskellASTNode.Kind.BLOCK),
             Map.entry("decllist",    HaskellASTNode.Kind.BLOCK),
 
             // ── Case alternatives ────────────────────────────────────────────────
-            Map.entry("alt",    HaskellASTNode.Kind.EQUATION),     // one case branch: pat alt_rhs
-            Map.entry("gdpat",  HaskellASTNode.Kind.GUARD_EXPR),   // guarded case arm: '|' guards '->' exp
+            Map.entry("alt",    HaskellASTNode.Kind.EQUATION),
+            Map.entry("gdpat",  HaskellASTNode.Kind.GUARD_EXPR),
             Map.entry("gdpats", HaskellASTNode.Kind.BLOCK),
             Map.entry("alts",   HaskellASTNode.Kind.BLOCK),
 
@@ -113,12 +110,9 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
             Map.entry("fielddecl", HaskellASTNode.Kind.RECORD_FIELD),
 
             // ── Expressions ─────────────────────────────────────────────────────
-            // aexp, aexp2, exp, infixexp, exp10 all have dedicated overrides below
-            Map.entry("fexp", HaskellASTNode.Kind.APP_EXPR),  // function application spine: aexp+
+            Map.entry("fexp", HaskellASTNode.Kind.APP_EXPR),
 
             // ── Do-notation ──────────────────────────────────────────────────────
-            // qual has a dedicated override for bind/let/stmt classification
-            // stmt delegates to qual; override handles 'rec' blocks
             Map.entry("stmtlist", HaskellASTNode.Kind.BLOCK),
             Map.entry("stmts",    HaskellASTNode.Kind.BLOCK),
 
@@ -128,11 +122,14 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
             Map.entry("squals",          HaskellASTNode.Kind.BLOCK),
 
             // ── Types ────────────────────────────────────────────────────────────
-            // type_ has a dedicated override; ctype has an override for forall/constraint
+            Map.entry("sigtype",      HaskellASTNode.Kind.TYPE_APP),
+            Map.entry("sigtypedoc",   HaskellASTNode.Kind.TYPE_APP),
+
             Map.entry("ktype",        HaskellASTNode.Kind.TYPE_APP),
             Map.entry("ktypedoc",     HaskellASTNode.Kind.TYPE_APP),
             Map.entry("btype",        HaskellASTNode.Kind.TYPE_APP),
             Map.entry("atype",        HaskellASTNode.Kind.TYPE_APP),
+            Map.entry("ctypedoc", HaskellASTNode.Kind.TYPE_APP),
             Map.entry("opt_kind_sig", HaskellASTNode.Kind.KIND_SIG),
             Map.entry("tycl_hdr",     HaskellASTNode.Kind.TYPE_CONSTRAINT),
             Map.entry("tycl_context", HaskellASTNode.Kind.TYPE_CONSTRAINT)
@@ -141,7 +138,6 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
     private static final Map<Integer, HaskellASTNode.Kind> TOKEN_MAP = Map.ofEntries(
             Map.entry(HaskellLexer.VARID,       HaskellASTNode.Kind.VARID),
             Map.entry(HaskellLexer.CONID,       HaskellASTNode.Kind.CONID),
-            // All three integer literal forms map to the same Kind
             Map.entry(HaskellLexer.DECIMAL,     HaskellASTNode.Kind.INTEGER_LITERAL),
             Map.entry(HaskellLexer.OCTAL,       HaskellASTNode.Kind.INTEGER_LITERAL),
             Map.entry(HaskellLexer.HEXADECIMAL, HaskellASTNode.Kind.INTEGER_LITERAL),
@@ -154,6 +150,11 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
     public HaskellASTNode visitChildren(RuleNode node) {
         ParserRuleContext ctx = (ParserRuleContext) node;
         String ruleName = HaskellParser.ruleNames[ctx.getRuleIndex()];
+
+        if (ruleName.contains("gdr") || ruleName.contains("guard")) {
+            System.err.println("DEBUG rule: " + ruleName);
+        }
+
         HaskellASTNode.Kind kind = RULE_MAP.get(ruleName);
 
         List<HaskellASTNode> children = new ArrayList<>();
@@ -166,7 +167,7 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
 
         if (kind == null) {
             if (children.isEmpty()) return null;
-            if (children.size() == 1) return children.get(0); // transparent unwrap
+            if (children.size() == 1) return children.get(0);
             HaskellASTNode wrapper = new HaskellASTNode(HaskellASTNode.Kind.UNKNOWN);
             for (HaskellASTNode child : children) addChild(wrapper, child);
             attachMetadata(wrapper, ctx);
@@ -179,11 +180,9 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
         return nodeAST;
     }
 
-
     @Override
     public HaskellASTNode visitTerminal(TerminalNode node) {
         int type = node.getSymbol().getType();
-
         HaskellASTNode.Kind kind = TOKEN_MAP.get(type);
         if (kind == null && OPERATOR_TOKEN_TYPES.contains(type)) {
             kind = HaskellASTNode.Kind.OPERATOR;
@@ -216,12 +215,11 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
 
     @Override
     public HaskellASTNode visitSigdecl(HaskellParser.SigdeclContext ctx) {
-        // Pragma sigdecl alternatives start with '{-#' — no structural interest
         if (ctx.getChildCount() > 0 && ctx.getChild(0).getText().startsWith("{-#")) {
             return visitChildren(ctx);
         }
 
-        HaskellASTNode.Kind kind = HaskellASTNode.Kind.FIXITY_DECL; // default
+        HaskellASTNode.Kind kind = HaskellASTNode.Kind.FIXITY_DECL;
         for (int i = 0; i < ctx.getChildCount(); i++) {
             if ("::".equals(ctx.getChild(i).getText())) {
                 kind = HaskellASTNode.Kind.TYPE_SIG;
@@ -242,12 +240,92 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
 
     @Override
     public HaskellASTNode visitDecl_no_th(HaskellParser.Decl_no_thContext ctx) {
-        // sigdecl child — visitSigdecl handles it; transparent here
         if (ctx.getChildCount() == 1) return visitChildren(ctx);
-
-        // Classify the binding
         HaskellASTNode.Kind kind = classifyBinding(ctx);
         HaskellASTNode node = new HaskellASTNode(kind);
+        visitChildrenInto(node, ctx);
+        attachMetadata(node, ctx);
+        return node;
+    }
+
+    @Override
+    public HaskellASTNode visitSigtype(HaskellParser.SigtypeContext ctx) {
+        return classifyTypeRule(ctx);
+    }
+
+    @Override
+    public HaskellASTNode visitSigtypedoc(HaskellParser.SigtypedocContext ctx) {
+        return classifyTypeRule(ctx);
+    }
+
+    @Override
+    public HaskellASTNode visitCtype(HaskellParser.CtypeContext ctx) {
+        return classifyTypeRule(ctx);
+    }
+
+    @Override
+    public HaskellASTNode visitCtypedoc(HaskellParser.CtypedocContext ctx) {
+        return classifyTypeRule(ctx);
+    }
+
+    @Override
+    public HaskellASTNode visitType_(HaskellParser.Type_Context ctx) {
+        return classifyTypeRule(ctx);
+    }
+
+    private HaskellASTNode classifyTypeRule(ParserRuleContext ctx) {
+        boolean hasForall      = false;
+        boolean hasDoubleArrow = false;
+        boolean hasSingleArrow = false;
+
+        for (int i = 0; i < ctx.getChildCount(); i++) {
+            ParseTree child = ctx.getChild(i);
+            String text = child.getText();
+
+            if (child instanceof TerminalNode) {
+                if ("forall".equals(text))  { hasForall      = true; break; }
+                if ("=>".equals(text))      { hasDoubleArrow = true; }
+                if ("->".equals(text))      { hasSingleArrow = true; }
+
+            } else if (child instanceof ParserRuleContext) {
+                String ruleName = HaskellParser.ruleNames[((ParserRuleContext) child).getRuleIndex()];
+
+                if (ruleName.startsWith("forall")) {
+                    hasForall = true;
+                    break;
+                }
+                ParserRuleContext childRule = (ParserRuleContext) child;
+                for (int j = 0; j < childRule.getChildCount(); j++) {
+                    ParseTree grandchild = childRule.getChild(j);
+                    if (grandchild instanceof TerminalNode) {
+                        String gt = grandchild.getText();
+                        if ("=>".equals(gt)) { hasDoubleArrow = true; }
+                        if ("->".equals(gt)) { hasSingleArrow = true; }
+                    }
+                }
+            }
+        }
+
+        HaskellASTNode.Kind kind;
+        if (hasForall) {
+            kind = HaskellASTNode.Kind.TYPE_FORALL;
+        } else if (hasDoubleArrow) {
+            kind = HaskellASTNode.Kind.TYPE_CONSTRAINT;
+        } else if (hasSingleArrow) {
+            kind = HaskellASTNode.Kind.TYPE_FUN;
+        } else {
+            return visitChildren(ctx);
+        }
+
+        HaskellASTNode node = new HaskellASTNode(kind);
+        visitChildrenInto(node, ctx);
+        attachMetadata(node, ctx);
+        return node;
+    }
+
+    @Override
+    public HaskellASTNode visitForall(HaskellParser.ForallContext ctx) {
+        HaskellASTNode node = new HaskellASTNode(HaskellASTNode.Kind.TYPE_FORALL);
         visitChildrenInto(node, ctx);
         attachMetadata(node, ctx);
         return node;
@@ -257,7 +335,6 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
     public HaskellASTNode visitAexp(HaskellParser.AexpContext ctx) {
         if (ctx.getChildCount() == 0) return null;
 
-        // LCASE token: LambdaCase extension (\case)
         if (ctx.getChild(0) instanceof TerminalNode) {
             int ttype = ((TerminalNode) ctx.getChild(0)).getSymbol().getType();
             if (ttype == HaskellLexer.LCASE) {
@@ -279,12 +356,10 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
             case "mdo":  kind = HaskellASTNode.Kind.DO_EXPR;    break;
             case "~":    kind = HaskellASTNode.Kind.PAT_IRREFUTABLE; break;
             default:
-                // As-pattern: qvar '@' aexp — second token is '@'
                 if (ctx.getChildCount() >= 3 && "@".equals(ctx.getChild(1).getText())) {
                     kind = HaskellASTNode.Kind.PAT_AS;
                     break;
                 }
-                // All other aexp alternatives fall through to aexp1 — transparent
                 return visitChildren(ctx);
         }
 
@@ -300,14 +375,12 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
         String first = ctx.getChild(0).getText();
 
         if ("(".equals(first)) {
-            // '(' tup_exprs ')' — the second child is a tup_exprs rule node
             if (ctx.getChildCount() >= 2 && ctx.getChild(1) instanceof HaskellParser.Tup_exprsContext) {
                 HaskellASTNode node = new HaskellASTNode(HaskellASTNode.Kind.TUPLE_EXPR);
                 visitChildrenInto(node, ctx);
                 attachMetadata(node, ctx);
                 return node;
             }
-            // '(' texp ')' — check for sections
             if (ctx.getChildCount() == 3) {
                 HaskellASTNode.Kind sectionKind = detectSection(ctx.getChild(1));
                 if (sectionKind != null) {
@@ -317,42 +390,25 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
                     return node;
                 }
             }
-            // Plain parenthesised expression — transparent
             return visitChildren(ctx);
         }
-
-        // '[' list_ ']' — visitList_ classifies the content
-        if ("[".equals(first)) {
-            return visitChildren(ctx);
-        }
-
-        // '_' — wildcard pattern
+        if ("[".equals(first)) return visitChildren(ctx);
         if ("_".equals(first)) {
             HaskellASTNode node = new HaskellASTNode(HaskellASTNode.Kind.PAT_WILDCARD);
             attachMetadata(node, ctx);
             return node;
         }
-
-        // Literals, variables, constructors — transparent; leaves are captured by visitTerminal
         return visitChildren(ctx);
     }
 
     @Override
     public HaskellASTNode visitList_(HaskellParser.List_Context ctx) {
-        HaskellASTNode.Kind kind = HaskellASTNode.Kind.LIST_EXPR; // default
-
+        HaskellASTNode.Kind kind = HaskellASTNode.Kind.LIST_EXPR;
         for (int i = 0; i < ctx.getChildCount(); i++) {
             String t = ctx.getChild(i).getText();
-            if ("|".equals(t)) {
-                kind = HaskellASTNode.Kind.LIST_COMPREHENSION;
-                break;
-            }
-            if ("..".equals(t)) {
-                kind = HaskellASTNode.Kind.ARITHMETIC_SEQ;
-                break;
-            }
+            if ("|".equals(t))  { kind = HaskellASTNode.Kind.LIST_COMPREHENSION; break; }
+            if ("..".equals(t)) { kind = HaskellASTNode.Kind.ARITHMETIC_SEQ;     break; }
         }
-
         HaskellASTNode node = new HaskellASTNode(kind);
         visitChildrenInto(node, ctx);
         attachMetadata(node, ctx);
@@ -362,7 +418,6 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
     @Override
     public HaskellASTNode visitInfixexp(HaskellParser.InfixexpContext ctx) {
         if (ctx.getChildCount() == 1) return visit(ctx.getChild(0));
-
         HaskellASTNode node = new HaskellASTNode(HaskellASTNode.Kind.INFIX_EXPR);
         visitChildrenInto(node, ctx);
         attachMetadata(node, ctx);
@@ -377,7 +432,7 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
             attachMetadata(node, ctx);
             return node;
         }
-        return visitChildren(ctx); // transparent: just fexp
+        return visitChildren(ctx);
     }
 
     @Override
@@ -394,47 +449,13 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
     }
 
     @Override
-    public HaskellASTNode visitType_(HaskellParser.Type_Context ctx) {
-        for (int i = 0; i < ctx.getChildCount(); i++) {
-            if ("->".equals(ctx.getChild(i).getText())) {
-                HaskellASTNode node = new HaskellASTNode(HaskellASTNode.Kind.TYPE_FUN);
-                visitChildrenInto(node, ctx);
-                attachMetadata(node, ctx);
-                return node;
-            }
-        }
-        return visitChildren(ctx);
-    }
-
-    @Override
-    public HaskellASTNode visitCtype(HaskellParser.CtypeContext ctx) {
-        if (ctx.getChildCount() > 0 && "forall".equals(ctx.getChild(0).getText())) {
-            HaskellASTNode node = new HaskellASTNode(HaskellASTNode.Kind.TYPE_FORALL);
-            visitChildrenInto(node, ctx);
-            attachMetadata(node, ctx);
-            return node;
-        }
-        for (int i = 0; i < ctx.getChildCount(); i++) {
-            if ("=>".equals(ctx.getChild(i).getText())) {
-                HaskellASTNode node = new HaskellASTNode(HaskellASTNode.Kind.TYPE_CONSTRAINT);
-                visitChildrenInto(node, ctx);
-                attachMetadata(node, ctx);
-                return node;
-            }
-        }
-        return visitChildren(ctx);
-    }
-
-    @Override
     public HaskellASTNode visitQual(HaskellParser.QualContext ctx) {
-        HaskellASTNode.Kind kind = HaskellASTNode.Kind.DO_STMT; // plain expression statement
-
+        HaskellASTNode.Kind kind = HaskellASTNode.Kind.DO_STMT;
         for (int i = 0; i < ctx.getChildCount(); i++) {
             String t = ctx.getChild(i).getText();
-            if ("<-".equals(t)) { kind = HaskellASTNode.Kind.DO_BIND; break; }
+            if ("<-".equals(t))  { kind = HaskellASTNode.Kind.DO_BIND; break; }
             if ("let".equals(t)) { kind = HaskellASTNode.Kind.DO_LET;  break; }
         }
-
         HaskellASTNode node = new HaskellASTNode(kind);
         visitChildrenInto(node, ctx);
         attachMetadata(node, ctx);
@@ -449,7 +470,7 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
             attachMetadata(node, ctx);
             return node;
         }
-        return visitChildren(ctx); // transparent to qual
+        return visitChildren(ctx);
     }
 
     @Override
@@ -461,18 +482,15 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
     }
 
     @Override
-    public HaskellASTNode visitGuard_(HaskellParser.Guard_Context ctx) {
-        HaskellASTNode node = new HaskellASTNode(HaskellASTNode.Kind.COMP_GUARD);
-        visitChildrenInto(node, ctx);
+    public HaskellASTNode visitModid(HaskellParser.ModidContext ctx) {
+        HaskellASTNode node = new HaskellASTNode(HaskellASTNode.Kind.MODID, ctx.getText());
         attachMetadata(node, ctx);
         return node;
     }
 
     @Override
-    public HaskellASTNode visitModid(HaskellParser.ModidContext ctx) {
-        HaskellASTNode node = new HaskellASTNode(HaskellASTNode.Kind.MODID, ctx.getText());
-        attachMetadata(node, ctx);
-        return node;
+    public HaskellASTNode visitPragma(HaskellParser.PragmaContext ctx) {
+        return null;
     }
 
     private HaskellASTNode.Kind classifyBinding(ParserRuleContext ctx) {
@@ -537,4 +555,6 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
             child.setParent(parent);
         }
     }
+
+
 }
