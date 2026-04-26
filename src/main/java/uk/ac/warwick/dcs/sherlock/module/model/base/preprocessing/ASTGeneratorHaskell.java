@@ -150,11 +150,6 @@ class HaskellASTBuilder extends HaskellParserBaseVisitor<HaskellASTNode> {
     public HaskellASTNode visitChildren(RuleNode node) {
         ParserRuleContext ctx = (ParserRuleContext) node;
         String ruleName = HaskellParser.ruleNames[ctx.getRuleIndex()];
-
-        if (ruleName.contains("gdr") || ruleName.contains("guard")) {
-            System.err.println("DEBUG rule: " + ruleName);
-        }
-
         HaskellASTNode.Kind kind = RULE_MAP.get(ruleName);
 
         List<HaskellASTNode> children = new ArrayList<>();
