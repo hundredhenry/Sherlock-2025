@@ -103,7 +103,6 @@ class TemplateCmdTest {
     void tearDown() {
     }
 
-
     /**
      * Tests if the create command works as expected when correct inputs are provided
      */
@@ -302,7 +301,7 @@ class TemplateCmdTest {
      * Tests that the output when changing preprocessing params via the CLI is correct
      */
     @Test
-    void TemplateCmdTestPreProcesingParametersValid(){
+    void TemplateCmdTestPreProcessingParametersValid(){
         //Create a test template
         //template repository returns a list of all templates, so initialise our list
         List<Template> testTemplateList = new ArrayList<>();
@@ -377,7 +376,7 @@ class TemplateCmdTest {
      * Tests that the output when changing preprocessing parameters via the CLI the step is accurate
      */
     @Test
-    void TemplateCmdTestPreProcesingParametersCheckStep(){
+    void TemplateCmdTestPreProcessingParametersCheckStep(){
         //Create a test template
         //template repository returns a list of all templates, so initialise our list
         List<Template> testTemplateList = new ArrayList<>();
@@ -450,7 +449,7 @@ class TemplateCmdTest {
      * Check that when updating post processing params via the CLI the output is as expected
      */
     @Test
-    void TemplateCmdTestUpdatePostProcesingParameters(){
+    void TemplateCmdTestUpdatePostProcessingParameters(){
         //Create a test template
         //template repository returns a list of all templates, so initialise our list
         List<Template> testTemplateList = new ArrayList<>();

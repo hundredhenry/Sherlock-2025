@@ -8,6 +8,7 @@ import org.thymeleaf.TemplateEngine;
 
 import picocli.CommandLine;
 import uk.ac.warwick.dcs.sherlock.module.cli.commands.*;
+import uk.ac.warwick.dcs.sherlock.module.cli.services.WorkspaceManagementService;
 import uk.ac.warwick.dcs.sherlock.module.core.configuration.CoreSecurityConfig;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.*;
@@ -41,7 +42,7 @@ public class SherlockCli {
         
         System.out.println("Welcome to the Sherlock CLI Interface!");
 
-        WorkspaceCmd workspaceCmd = new WorkspaceCmd(workspaceRepository, templateRepository, accountWrapper, templateEngine);
+        WorkspaceCmd workspaceCmd = new WorkspaceCmd(workspaceRepository, templateRepository, accountWrapper, templateEngine, new WorkspaceManagementService());
         CommandLine workspaceCmdLine = new CommandLine(workspaceCmd);
         TemplateCmd templateCmd = new TemplateCmd(templateRepository, accountWrapper, tDetectorRepository, tParameterRepository);
         CommandLine templateCmdLine = new CommandLine(templateCmd);

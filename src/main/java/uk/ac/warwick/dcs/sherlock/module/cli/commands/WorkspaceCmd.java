@@ -89,12 +89,12 @@ public class WorkspaceCmd implements Runnable {
      * @param templateRepository the template repository
      * @param accountWrapper the wrapper for the active user account
      */
-    public WorkspaceCmd(WorkspaceRepository workspaceRepository, TemplateRepository templateRepository, AccountWrapper accountWrapper, TemplateEngine templateEngine) {
+    public WorkspaceCmd(WorkspaceRepository workspaceRepository, TemplateRepository templateRepository, AccountWrapper accountWrapper, TemplateEngine templateEngine, WorkspaceManagementService wMgmtService) {
         this.workspaceRepository = workspaceRepository;
         this.templateRepository = templateRepository;
         this.accountWrapper = accountWrapper;
         this.templateEngine = templateEngine;
-        this.wms = new WorkspaceManagementService();
+        this.wms = wMgmtService;
     }
 
 
@@ -175,10 +175,12 @@ public class WorkspaceCmd implements Runnable {
             AccountWrapper accountWrapper = parent.accountWrapper;
             WorkspaceRepository workspaceRepository = parent.workspaceRepository;
             WorkspaceManagementService service = parent.wms;
+            System.out.println(String.format("Creating workspace with name '%s' and language '%s'", workspaceName, matchLang));
             WorkspaceForm wForm = new WorkspaceForm();
             wForm.setName(workspaceName);
             wForm.setLanguage(matchLang);
             service.createWorkspace(accountWrapper, workspaceRepository, wForm);
+            System.out.println("Workspace created successfully");
         }
     }
 
@@ -374,9 +376,9 @@ public class WorkspaceCmd implements Runnable {
                                     try {
                                         workspace.addSubmissions(submissionForm);
                                     } catch (NoFilesUploaded nfu) {
-                                        System.out.println(String.format("No files uploaded for sub-directory '%s'.", subDir.getFileName()));
+                                        System.out.println(String.format("Failed as no files were uploaded for sub-directory '%s'.", subDir.getFileName()));
                                     } catch (FileUploadFailed fuf) {
-                                        System.out.println(String.format("File upload failed for sub-directory '%s'.", subDir.getFileName()));
+                                        System.out.println(String.format("Failed to upload sub-directory '%s'.", subDir.getFileName()));
                                     }
                                 } catch (IOException e) {
                                     System.out.println(String.format("Failed to create zip for sub-directory '%s'.", subDir.getFileName()));
@@ -473,7 +475,7 @@ public class WorkspaceCmd implements Runnable {
             WorkspaceManagementService service = parent.wms;
             WorkspaceWrapper workspace = service.getWorkspaceByName(accountWrapper, workspaceRepository, workspaceName);
             if (workspace == null) {
-                System.out.println("Could not find a workspace with that name.");
+                System.out.println(String.format("Could not find a workspace with name '%s'.", workspaceName));
                 return;
             }
             String name = workspace.getName();
@@ -517,7 +519,7 @@ public class WorkspaceCmd implements Runnable {
             }
 
             if (listResults) {
-                System.out.println(String.format("-- Results (%d)", jobCount));
+                System.out.println(String.format("-- Results (%d):", jobCount));
                 
                 if (jobCount == 0) {
                     System.out.println("---- There are no jobs in this workspace.");
@@ -551,6 +553,7 @@ public class WorkspaceCmd implements Runnable {
             AccountWrapper accountWrapper = parent.accountWrapper;
             WorkspaceRepository workspaceRepository = parent.workspaceRepository;
             WorkspaceManagementService service = parent.wms;
+            System.out.println("Deleting workspace...");
             service.deleteWorkspace(accountWrapper, workspaceRepository, workspaceName);
         }
     }
@@ -662,7 +665,7 @@ public class WorkspaceCmd implements Runnable {
                 try {
                     System.out.println("Running analysis...");
                     long jobid = workspace.runTemplate(template);
-                    System.out.println(String.format("Anaysis complete. Saved with job ID %s", jobid));
+                    System.out.println(String.format("Analysis complete. Saved with job ID %s", jobid));
                 } catch (TemplateContainsNoDetectors tcnd) {
                     System.out.println("Template does not have any associated detectors.");
                 } catch (ClassNotFoundException cnfe) {

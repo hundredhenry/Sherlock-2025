@@ -63,10 +63,10 @@ public class WorkspaceManagementService {
     public void deleteWorkspace(AccountWrapper accountWrapper, WorkspaceRepository workspaceRepository, String workspaceName) {
         WorkspaceWrapper workspaceToDelete = WorkspaceWrapper.findByName(accountWrapper.getAccount(), workspaceRepository, workspaceName);
         if (workspaceToDelete == null) {
-            System.out.println(String.format("No workspace found with name '%s.'", workspaceName));
+            System.out.println(String.format("No workspace found with name '%s'.", workspaceName));
         } else {
             workspaceToDelete.delete(workspaceRepository);
-            System.out.println("Workspace deleted successfully.");
+            System.out.println(String.format("Workspace '%s' deleted successfully.", workspaceName));
         }
     }
 }
