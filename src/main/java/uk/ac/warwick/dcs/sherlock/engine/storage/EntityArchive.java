@@ -259,18 +259,30 @@ public class EntityArchive implements ISubmission, Serializable {
 	private List<ISourceFile> getAllFilesRecursive(List<ISourceFile> filesRec) {
 		BaseStorage.instance.database.refreshObject(this);
 
-		if (this.children != null) {
-			for (EntityArchive child : new ArrayList<>(this.children)) {
-				child.getAllFilesRecursive(filesRec);
-			}
+		for (EntityArchive child : this.getChildSnapshot()) {
+			child.getAllFilesRecursive(filesRec);
 		}
 
-		if (this.files != null && this.files.size() > 0) {
-			for (ISourceFile file : this.files) {
-				filesRec.add(file);
-			}
+		for (ISourceFile file : this.getFileSnapshot()) {
+			filesRec.add(file);
 		}
 
 		return filesRec;
+	}
+
+	private List<EntityArchive> getChildSnapshot() {
+		if (this.id > 0) {
+			return BaseStorage.instance.database.runQuery("SELECT a FROM Archive a WHERE a.parent.id=" + this.id, EntityArchive.class);
+		}
+
+		return this.children != null ? new ArrayList<>(this.children) : new ArrayList<>();
+	}
+
+	private List<EntityFile> getFileSnapshot() {
+		if (this.id > 0) {
+			return BaseStorage.instance.database.runQuery("SELECT f FROM File f WHERE f.archive.id=" + this.id, EntityFile.class);
+		}
+
+		return this.files != null ? new ArrayList<>(this.files) : new ArrayList<>();
 	}
 }

@@ -80,6 +80,10 @@ public class EntityResultJob implements IResultJob, Serializable {
 
 	private List<EntityResultFile> getEntityFileResults() {
 		if (this.id <= 0) {
+			if (this.fileResults == null) {
+				return Collections.emptyList();
+			}
+
 			List<EntityResultFile> result = new LinkedList<>();
 			for (EntityResultFile fileResult : this.fileResults) {
 				result.add(fileResult);

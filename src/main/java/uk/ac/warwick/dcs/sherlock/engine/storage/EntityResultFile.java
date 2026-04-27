@@ -8,6 +8,7 @@ import uk.ac.warwick.dcs.sherlock.api.component.ITask;
 import jakarta.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -99,6 +100,10 @@ public class EntityResultFile implements IResultFile, Serializable {
 
 	@Override
 	public List<IResultTask> getTaskResults() {
+		if (this.taskResults == null) {
+			return Collections.emptyList();
+		}
+
 		return new LinkedList<>(this.taskResults);
 	}
 
