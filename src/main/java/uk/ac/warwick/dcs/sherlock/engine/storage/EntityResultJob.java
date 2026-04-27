@@ -7,6 +7,7 @@ import uk.ac.warwick.dcs.sherlock.api.component.IResultJob;
 import jakarta.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,7 +29,7 @@ public class EntityResultJob implements IResultJob, Serializable {
 	private EntityJob job;
 
 	@OneToMany (mappedBy = "jobRes", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private List<EntityResultFile> fileResults = Collections.synchronizedList(new LinkedList<>());
+	private List<EntityResultFile> fileResults = Collections.synchronizedList(new ArrayList<>());
 
 	EntityResultJob(EntityJob job) {
 		super();
@@ -51,7 +52,7 @@ public class EntityResultJob implements IResultJob, Serializable {
 
 	@Override
 	public List<IResultFile> getFileResults() {
-		return new LinkedList<>(this.fileResults);
+		return new LinkedList<>(this.getEntityFileResults());
 	}
 
 	@Override
@@ -61,7 +62,7 @@ public class EntityResultJob implements IResultJob, Serializable {
 
 	@Override
 	public void remove() {
-		for (EntityResultFile f : new LinkedList<>(this.fileResults)) {
+		for (EntityResultFile f : this.getEntityFileResults()) {
 			f.remove();
 		}
 		BaseStorage.instance.database.refreshObject(this);
@@ -72,8 +73,24 @@ public class EntityResultJob implements IResultJob, Serializable {
 	@Override
 	public void store() {
 		List<Object> list = new LinkedList<>();
-		this.fileResults.forEach(f -> list.addAll(f.store()));
+		this.getEntityFileResults().forEach(f -> list.addAll(f.store()));
 		list.add(this);
 		BaseStorage.instance.database.storeObject(list);
+	}
+
+	private List<EntityResultFile> getEntityFileResults() {
+		if (this.id <= 0) {
+			if (this.fileResults == null) {
+				return Collections.emptyList();
+			}
+
+			List<EntityResultFile> result = new LinkedList<>();
+			for (EntityResultFile fileResult : this.fileResults) {
+				result.add(fileResult);
+			}
+			return result;
+		}
+
+		return BaseStorage.instance.database.runQuery("SELECT f FROM ResultFile f WHERE f.jobRes.id=" + this.id, EntityResultFile.class);
 	}
 }

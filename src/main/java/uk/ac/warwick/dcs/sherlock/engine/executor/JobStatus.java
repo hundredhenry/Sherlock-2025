@@ -24,6 +24,7 @@ public class JobStatus implements IJobStatus {
 	private Duration duration;
 	private int step;
 	private String message;
+	private volatile boolean cancellationRequested;
 
 	public JobStatus(int id, Priority priority) {
 		this.id = id;
@@ -34,6 +35,7 @@ public class JobStatus implements IJobStatus {
 
 		this.step = 0;
 		this.message = "";
+		this.cancellationRequested = false;
 	}
 
 	public void calculateProgressIncrement(int nextStepTotalIncrements) {
@@ -78,6 +80,19 @@ public class JobStatus implements IJobStatus {
 		}
 	}
 
+	public void cancelJob() {
+		this.cancellationRequested = true;
+		this.message = "Cancelled";
+		this.duration = this.startTime != null ? Duration.between(this.startTime, Instant.now()) : Duration.ZERO;
+		this.startTime = null;
+	}
+
+	public void failJob() {
+		this.message = "Failed";
+		this.duration = this.startTime != null ? Duration.between(this.startTime, Instant.now()) : Duration.ZERO;
+		this.startTime = null;
+	}
+
 	@Override
 	public Duration getDuration() {
 		return this.isFinished() ? this.duration : Duration.between(this.startTime, Instant.now());
@@ -100,6 +115,15 @@ public class JobStatus implements IJobStatus {
 
 	public void setMessage(String msg) {
 		this.message = msg;
+	}
+
+	public void requestCancellation() {
+		this.cancellationRequested = true;
+		this.message = "Cancelling";
+	}
+
+	public boolean isCancellationRequested() {
+		return this.cancellationRequested;
 	}
 
 	/**

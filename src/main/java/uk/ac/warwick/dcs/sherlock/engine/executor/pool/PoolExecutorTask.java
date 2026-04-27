@@ -66,6 +66,10 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 
 	@Override
 	public ModelTaskProcessedResults call() {
+		if (this.status.isCancellationRequested() || Thread.currentThread().isInterrupted()) {
+			return null;
+		}
+
 		if (this.callType == 1) {
 			this.build();
 		}
@@ -108,6 +112,10 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 	}
 
 	void build() {
+		if (this.status.isCancellationRequested() || Thread.currentThread().isInterrupted()) {
+			return;
+		}
+
 		IDetector detector;
 		try {
 			detector = this.task.getDetector().getConstructor().newInstance();
@@ -141,11 +149,17 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 
 	private void runDetector() {
 		try {
+			if (this.status.isCancellationRequested() || Thread.currentThread().isInterrupted()) {
+				return;
+			}
 
 			int threshold = Math.min(Math.max(this.workers.size() / Runtime.getRuntime().availableProcessors(), 1), 4); //set min and max num workers in a thread
 
 			WorkDetect detect = new WorkDetect(this.status, this.workers, threshold);
 			this.scheduler.invokeWork(detect, Priority.DEFAULT);
+			if (this.status.isCancellationRequested() || Thread.currentThread().isInterrupted()) {
+				return;
+			}
 			List<AbstractModelTaskRawResult> rawResults = detect.getResults();
 
 			if (this.workers.size() != rawResults.size()) {
@@ -176,6 +190,10 @@ public class PoolExecutorTask implements Callable<ModelTaskProcessedResults>, IW
 	}
 
 	private ModelTaskProcessedResults runPostProcessing() {
+		if (this.status.isCancellationRequested() || Thread.currentThread().isInterrupted()) {
+			return null;
+		}
+
 		if (this.task.getStatus() == WorkStatus.COMPLETE) {
 			List<AbstractModelTaskRawResult> rawResults = task.getRawResults();
 			if (rawResults != null && rawResults.size() > 0) {

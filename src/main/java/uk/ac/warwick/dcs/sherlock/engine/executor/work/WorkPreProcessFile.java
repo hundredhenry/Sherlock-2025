@@ -78,9 +78,16 @@ public class WorkPreProcessFile extends RecursiveAction {
 
 	@SuppressWarnings ("Duplicates")
 	private void process(IWorkTask task) {
+		if (task.getJobStatus().isCancellationRequested() || Thread.currentThread().isInterrupted()) {
+			return;
+		}
+
 		Map<String, IPreprocessArtifact> map = new HashMap<>();
 
 		task.getPreProcessingStrategies().forEach(strategy -> {
+			if (task.getJobStatus().isCancellationRequested() || Thread.currentThread().isInterrupted()) {
+				return;
+			}
 			if (strategy.isAdvanced()) {
 				try {
 					Class<? extends IAdvancedPreProcessorGroup> groupClass = (Class<? extends IAdvancedPreProcessorGroup>) strategy.getPreProcessorClasses().get(0);

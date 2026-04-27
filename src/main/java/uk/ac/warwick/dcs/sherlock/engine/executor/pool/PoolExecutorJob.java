@@ -54,16 +54,28 @@ public class PoolExecutorJob implements Runnable {
 		return this.job;
 	}
 
+	private boolean stopIfCancelled() {
+		if (this.status.isCancellationRequested() || Thread.currentThread().isInterrupted()) {
+			this.status.requestCancellation();
+			this.job.setStatus(WorkStatus.INTERRUPTED);
+			return true;
+		}
+
+		return false;
+	}
+
 	@Override
 	public void run() {
 		List<PoolExecutorTask> tasks = job.getTasks().stream().map(x -> new PoolExecutorTask(this.status, scheduler, x, job.getWorkspace().getLanguage())).collect(Collectors.toList());
-		ExecutorService exServ = Executors.newFixedThreadPool(tasks.size());
+		ExecutorService exServ = Executors.newFixedThreadPool(Math.max(1, tasks.size()));
+		try {
 
 		if (tasks.isEmpty()) {
 			ExecutorUtils.logger.error("Could not generate tasks for job {}, exiting", this.job.getPersistentId());
 			job.setStatus(WorkStatus.INTERRUPTED);
 			return;
 		}
+		if (stopIfCancelled()) return;
 
 		// Run preprocessing, detection, and postprocessing
 		job.setStatus(WorkStatus.ACTIVE);
@@ -80,6 +92,7 @@ public class PoolExecutorJob implements Runnable {
 
 		RecursiveAction preProcess = new WorkPreProcessFiles(new ArrayList<>(detTasks), this.job.getWorkspace().getFiles());
 		this.scheduler.invokeWork(preProcess, Priority.DEFAULT);
+		if (stopIfCancelled()) return;
 
 		// Check that preprocessing went okay
 		detTasks.stream().filter(x -> x.dataItems.size() == 0).peek(x -> {
@@ -99,9 +112,11 @@ public class PoolExecutorJob implements Runnable {
 			exServ.invokeAll(detTasks); // build tasks
 		}
 		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 			job.setStatus(WorkStatus.INTERRUPTED);
 			return;
 		}
+		if (stopIfCancelled()) return;
 
 		this.status.nextStep();
 		this.status.calculateProgressIncrement(detTasks.stream().mapToInt(PoolExecutorTask::getWorkerSize).sum());
@@ -110,9 +125,11 @@ public class PoolExecutorJob implements Runnable {
 			exServ.invokeAll(detTasks); // run tasks
 		}
 		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 			job.setStatus(WorkStatus.INTERRUPTED);
 			return;
 		}
+		if (stopIfCancelled()) return;
 
 		job.setStatus(WorkStatus.REGEN_RESULTS);
 
@@ -272,6 +289,7 @@ public class PoolExecutorJob implements Runnable {
 		// Since D and S are small, this brings us to worst case O(L*M^2). Feel free to optimise further!
 
 		// Run postprocessing
+		if (stopIfCancelled()) return;
 		this.status.setStep(5);
 		List<PoolExecutorTask> postTasks = tasks.stream().filter(x -> x.getStatus() == WorkStatus.COMPLETE).collect(Collectors.toList());
 		List<ITuple<ITask, ModelTaskProcessedResults>> results = new LinkedList<>();
@@ -280,6 +298,7 @@ public class PoolExecutorJob implements Runnable {
 		try {
 			List<Future<ModelTaskProcessedResults>> tmp = exServ.invokeAll(postTasks);
 			for (int i = 0; i < postTasks.size(); i++) {
+				if (stopIfCancelled()) return;
 				ModelTaskProcessedResults m = tmp.get(i).get();
 				if (m != null && m.getGroups().size() > 0) {
 					results.add(new Tuple<>(postTasks.get(i).getTask(), m));
@@ -287,8 +306,13 @@ public class PoolExecutorJob implements Runnable {
 			}
 		}
 		catch (InterruptedException | ExecutionException e) {
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+				job.setStatus(WorkStatus.INTERRUPTED);
+			}
 			return;
 		}
+		if (stopIfCancelled()) return;
 
 
 		// score
@@ -310,6 +334,7 @@ public class PoolExecutorJob implements Runnable {
 			}
 			
 			for (ISourceFile file : this.job.getWorkspace().getFiles()) {
+				if (stopIfCancelled()) return;
 				IResultFile fileRes = jobRes.addFile(file);
 				List<ITuple<ICodeBlockGroup, Float>> overallGroupScores = new LinkedList<>();
 
@@ -389,6 +414,10 @@ public class PoolExecutorJob implements Runnable {
 		}
 
 		job.setStatus(WorkStatus.COMPLETE);
+		}
+		finally {
+			exServ.shutdownNow();
+		}
 	}
 
 	@SuppressWarnings ("Duplicates")

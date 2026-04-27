@@ -123,6 +123,9 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 		for (IndexedString lineC : file) {
 			// acquire line
 			line = lineC.getValue();
+			if (line.isBlank()) {
+				continue;
+			}
 			// if line is shorter than the ngram_size pad it with whitespace
 			// this should function without issue as an equivalent lines will also be too short and be padded the same
 			if (line.length() < ngram_size) {
@@ -137,6 +140,9 @@ public class NGramDetector extends PairwiseDetector<NGramDetectorWorker> {
 			for (int i = 0; i < line.length() - (ngram_size - 1); i++) {
 				// build an N-Gram of ngram_size
 				substr = line.substring(i, i + ngram_size);
+				if (substr.isBlank()) {
+					continue;
+				}
 				// create the next N-Gram object with its line number
 				ngram = new NGram(substr, line_number);
 				// add ngram to the list

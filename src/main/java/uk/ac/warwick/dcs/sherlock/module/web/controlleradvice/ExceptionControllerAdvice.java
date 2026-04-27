@@ -1,7 +1,8 @@
 package uk.ac.warwick.dcs.sherlock.module.web.controlleradvice;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.ui.Model;
@@ -9,21 +10,20 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.AccountRepository;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
 import uk.ac.warwick.dcs.sherlock.module.web.exceptions.*;
-
-import java.util.Arrays;
 
 /**
  * Handles exceptions thrown by all of the controllers
  */
 @ControllerAdvice
 public class ExceptionControllerAdvice {
+    private static final Logger logger = LoggerFactory.getLogger(ExceptionControllerAdvice.class);
+
     @Autowired
     private AccountRepository accountRepository;
-    @Autowired
-    private Environment environment;
 
     /**
      * Handles requests which occur before Spring has finished starting up
@@ -36,6 +36,7 @@ public class ExceptionControllerAdvice {
     @ExceptionHandler({SpringNotInitialised.class})
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public String notInitialised(Model model, Exception e) {
+        logger.warn("Request failed before Spring initialisation completed", e);
         model.addAttribute("msg", e.getClass().getName());
         return "error";
     }
@@ -68,11 +69,8 @@ public class ExceptionControllerAdvice {
     })
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String runtimeError(Model model, Exception e) {
-        //If running in dev mode, print the error
-        if (Arrays.asList(environment.getActiveProfiles()).contains("dev")) {
-            e.printStackTrace();
-        }
-
+        logger.error("Unhandled controller exception", e);
+        e.printStackTrace();
         return "error";
     }
 
@@ -94,10 +92,12 @@ public class ExceptionControllerAdvice {
             ResultsNotFound.class,
             SourceFileNotFound.class,
             AccountNotFound.class,
-            CompareSameSubmission.class
+            CompareSameSubmission.class,
+            NoResourceFoundException.class
     })
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String notFoundError(Model model, Authentication authentication, Exception e) {
+        logger.warn("Request failed with not-found error: {}", e.getClass().getName(), e);
         model = addAccountToModel(model, authentication);
         model.addAttribute("msg", e.getClass().getName());
         return "error-default";
@@ -118,6 +118,7 @@ public class ExceptionControllerAdvice {
     })
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public String notAuthorisedError(Model model, Authentication authentication, Exception e) {
+        logger.warn("Request failed with forbidden error: {}", e.getClass().getName(), e);
         model = addAccountToModel(model, authentication);
         model.addAttribute("msg", e.getClass().getName());
         return "error-default";
@@ -137,6 +138,7 @@ public class ExceptionControllerAdvice {
     })
     @ResponseStatus(HttpStatus.PAYLOAD_TOO_LARGE)
     public String uploadSizeExceededError(Model model, Authentication authentication, Exception e) {
+        logger.warn("Upload rejected because it exceeded the configured size limit", e);
         model = addAccountToModel(model, authentication);
         model.addAttribute("msg", e.getClass().getName());
         return "error-default";
