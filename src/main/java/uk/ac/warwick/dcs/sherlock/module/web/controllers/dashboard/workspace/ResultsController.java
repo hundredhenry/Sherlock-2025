@@ -261,12 +261,21 @@ public class ResultsController {
             @ModelAttribute("workspace") WorkspaceWrapper workspaceWrapper,
             @ModelAttribute("results") JobResultsData resultsWrapper
     ) {
+        IJobStatus status = SherlockEngine.executor.getJobStatus(resultsWrapper.getJob());
+        if (status != null && !status.isFinished()) {
+            SherlockEngine.executor.cancelJob(status);
+            return "redirect:/dashboard/workspaces/manage/" + workspaceWrapper.getId() + "?msg=cancelled_job";
+        }
+
         logger.info(
                 "Deleting result job id={} from workspace id={} engineId={}",
                 resultsWrapper.getPersistentId(),
                 workspaceWrapper.getId(),
                 workspaceWrapper.getEngineId()
         );
+        if (status != null) {
+            SherlockEngine.executor.dismissJob(status);
+        }
         resultsWrapper.getJob().remove();
         logger.info(
                 "Finished deleting result job id={} from workspace id={}",

@@ -30,6 +30,10 @@ public class WorkPreProcessFiles extends RecursiveAction {
 
 	@Override
 	protected void compute() {
+		if (!this.tasks.isEmpty() && this.tasks.get(0).getJobStatus().isCancellationRequested()) {
+			return;
+		}
+
 		int size = this.end - this.begin;
 
 		if (size > 1) {

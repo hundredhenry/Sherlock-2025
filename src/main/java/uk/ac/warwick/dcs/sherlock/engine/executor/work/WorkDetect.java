@@ -65,6 +65,9 @@ public class WorkDetect extends RecursiveTask<List<AbstractModelTaskRawResult>> 
 			res = new LinkedList<>();
 
 			for (int i = this.begin; i < this.end; i++) {
+				if (this.status.isCancellationRequested() || Thread.currentThread().isInterrupted()) {
+					break;
+				}
 				AbstractModelTaskRawResult raw = runWorker(this.workers.get(i));
 				if (raw != null) {
 					res.add(raw);

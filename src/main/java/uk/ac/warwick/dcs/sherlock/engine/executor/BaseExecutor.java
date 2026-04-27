@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 
 	final Map<IJob, JobStatus> jobMap;
+	private final Map<IJob, PoolExecutorJob> queuedJobs;
+	private final Map<IJob, Future<?>> runningJobs;
 
 	private final PriorityBlockingQueue<PoolExecutorJob> queue;
 	private final PriorityWorkScheduler scheduler;
@@ -35,6 +37,8 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 		this.execScheduler = Executors.newSingleThreadExecutor();
 		this.queue = new PriorityBlockingQueue<PoolExecutorJob>(5, Comparator.comparing(PoolExecutorJob::getPriority));
 		this.jobMap = new ConcurrentHashMap<>();
+		this.queuedJobs = new ConcurrentHashMap<>();
+		this.runningJobs = new ConcurrentHashMap<>();
 
 		this.curID = new AtomicInteger(0); //counter for jobstatus ids
 
@@ -43,15 +47,40 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 				try {
 					PoolExecutorJob job;
 					job = this.queue.take();
+					this.queuedJobs.remove(job.getJob());
 
 					ExecutorUtils.logger.info("Job {} starting", job.getId());
 
 					job.getStatus().startJob();
 
 					Future<?> f = this.exec.submit(job);
-					f.get();
+					this.runningJobs.put(job.getJob(), f);
+					try {
+						f.get();
+					}
+					catch (CancellationException e) {
+						ExecutorUtils.logger.info("Job {} cancelled", job.getId());
+					}
+					catch (ExecutionException e) {
+						ExecutorUtils.logger.error("Job {} failed", job.getId(), e);
+						job.getJob().setStatus(WorkStatus.INTERRUPTED);
+						job.getStatus().failJob();
+					}
+					finally {
+						this.runningJobs.remove(job.getJob());
+					}
 
-					job.getStatus().finishJob();
+					if (job.getStatus().isCancellationRequested()) {
+						job.getJob().setStatus(WorkStatus.INTERRUPTED);
+						job.getStatus().cancelJob();
+					}
+					else if (job.getJob().getStatus().equals(WorkStatus.COMPLETE)) {
+						job.getStatus().finishJob();
+					}
+					else {
+						job.getJob().setStatus(WorkStatus.INTERRUPTED);
+						job.getStatus().failJob();
+					}
 
 					//Remove after some configured time
 					if (job.getJob().getStatus().equals(WorkStatus.COMPLETE) && SherlockEngine.configuration.getJobCompleteDismissalTime() > 0) {
@@ -61,7 +90,8 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 
 					ExecutorUtils.logger.info("Job {} finished, took: {}", job.getId(), job.getStatus().getFormattedDuration());
 				}
-				catch (InterruptedException | ExecutionException e) {
+				catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
 					break;
 				}
 			}
@@ -113,7 +143,7 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 				task.wait();
 			}
 			catch (InterruptedException e) {
-				e.printStackTrace();
+				Thread.currentThread().interrupt();
 			}
 		}
 	}
@@ -147,10 +177,17 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 			return false;
 		}
 
+		JobStatus existingStatus = this.jobMap.get(job);
+		if (existingStatus != null && !existingStatus.isFinished()) {
+			ExecutorUtils.logger.error("Job {} is already queued or running", job.getPersistentId());
+			return false;
+		}
+
 		JobStatus s = new JobStatus(curID.getAndIncrement(), Priority.DEFAULT);
 		this.jobMap.put(job, s);
 
 		PoolExecutorJob j = new PoolExecutorJob(this, job, s);
+		this.queuedJobs.put(job, j);
 		this.queue.add(j);
 
 		ExecutorUtils.logger.info("Job {} added to queue", job.getPersistentId());
@@ -169,7 +206,7 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 	}
 
 	private boolean dismissJob(IJob job, IJobStatus jobStatus) {
-		if (this.jobMap.containsKey(job) && jobStatus.isFinished()) {
+		if (job != null && jobStatus != null && this.jobMap.containsKey(job) && jobStatus.isFinished()) {
 			this.jobMap.remove(job);
 			return true;
 		}
@@ -179,12 +216,33 @@ public class BaseExecutor implements IExecutor, IPriorityWorkSchedulerWrapper {
 
 	@Override
 	public boolean cancelJob(IJobStatus jobStatus) {
-		return false;
+		return this.cancelJob(this.getJob(jobStatus));
 	}
 
 	@Override
 	public boolean cancelJob(IJob job) {
-		return false;
+		JobStatus status = this.jobMap.get(job);
+		if (job == null || status == null || status.isFinished()) {
+			return false;
+		}
+
+		status.requestCancellation();
+		job.setStatus(WorkStatus.INTERRUPTED);
+
+		PoolExecutorJob queued = this.queuedJobs.remove(job);
+		if (queued != null) {
+			boolean removed = this.queue.remove(queued);
+			status.cancelJob();
+			return removed;
+		}
+
+		Future<?> running = this.runningJobs.get(job);
+		if (running != null) {
+			return true;
+		}
+
+		status.cancelJob();
+		return true;
 	}
 
 	@Override
