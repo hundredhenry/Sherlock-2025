@@ -68,6 +68,12 @@ public class ModelTaskProcessedResults {
 			if (this.totals.containsKey(file)) {
 				return this.totals.get(file);
 			}
+
+			for (Map.Entry<ISourceFile, Integer> entry : this.totals.entrySet()) {
+				if (entry.getKey().getPersistentId() == file.getPersistentId()) {
+					return entry.getValue();
+				}
+			}
 		}
 
 		return file.getTotalLineCount();

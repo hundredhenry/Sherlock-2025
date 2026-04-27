@@ -40,7 +40,7 @@ public class SubmissionMatchItem implements ISubmissionMatchItem {
 	 */
 	public SubmissionMatchItem(ISourceFile file, float score, List<ITuple<Integer, Integer>> lineNumbers, HashMap<ITuple, HashSet<ITuple<Integer, Integer>>> internalSkeletonCode) {
 		this.file = file;
-		this.score = score;
+		this.score = clampScore(score);
 		this.lineNumbers = lineNumbers;
 		this.internalSkeletonCode = internalSkeletonCode;
 	}
@@ -76,5 +76,10 @@ public class SubmissionMatchItem implements ISubmissionMatchItem {
 	@Override
 	public HashMap<ITuple, HashSet<ITuple<Integer, Integer>>> getInternalSkeletonCode() {
 		return this.internalSkeletonCode;
+	}
+
+	private float clampScore(float score) {
+		if (Float.isNaN(score)) return 0;
+		return Math.max(0, Math.min(1, score));
 	}
 }

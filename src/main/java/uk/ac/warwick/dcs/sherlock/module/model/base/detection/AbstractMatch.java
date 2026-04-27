@@ -71,7 +71,7 @@ public abstract class AbstractMatch<S extends AbstractMatch<S>> implements Seria
         this.lines.add(new Tuple<>(file1Start, file1End));
         this.lines.add(new Tuple<>(file2Start, file2End));
 
-        this.similarity = similarity;
+        this.similarity = clampScore(similarity);
 
         // init the array to a pair
         this.files = new ISourceFile[2];
@@ -121,6 +121,11 @@ public abstract class AbstractMatch<S extends AbstractMatch<S>> implements Seria
         this.lines = new ArrayList<>();
         this.lines.add(lines.getPoint1());
         this.lines.add(lines.getPoint2());
+    }
+
+    private float clampScore(float score) {
+        if (Float.isNaN(score)) return 0;
+        return Math.max(0, Math.min(1, score));
     }
     /**
      * Checks if two matches reference the same line ranges.
