@@ -193,7 +193,7 @@ class SkeletonCodeTest {
      * Checks that removing a match which encompasses only one file's range, but for two differnt matches, removes both
      *  matches from the RawResult
      */
-    @Test 
+    @Test
     void lineRemovalPartiallyEncompassesTwoRanges() {
         //inside the code we have ranges of 10-15 & 13-20, and 16-20 & 21-25 
         //removing 10-15 & 21-25, should fully remove both ranges
@@ -211,7 +211,7 @@ class SkeletonCodeTest {
      * Check that removing a match which exists across a boundary of one range of one match, just trims that
      *  range to be smaller, rather than removing it. Also checks that the other match is unaffected
      */
-    @Test 
+    @Test
     void lineRemovalTrimsOneLeftBoundary() {
         //inside the code we have ranges of 10-15 & 13-20, and 16-20 & 21-25
         //removing 8-12 & 1-1 should affect first range, setting it to 13-15 & 13-20, but not affecting second range
@@ -295,7 +295,7 @@ class SkeletonCodeTest {
      * Check that removing a match which exists across a right boundary of one range of one match, just trims that
      *  range to be smaller, rather than removing it. Also checks that the other match is unaffected
      */
-    @Test 
+    @Test
     void lineRemovalTrimsOneRightBoundary() {
         //inside the code we have ranges of 10-15 & 13-20, and 16-20 & 21-25
         //removing 18-21 & 1-1 should affect second range, setting it to 16-17 & 21-25, but not affecting first range
@@ -337,7 +337,7 @@ class SkeletonCodeTest {
      * Testing that removing a range that overlaps the right boundary of both ranges within a single match
      *  trims both of them
      */
-    @Test 
+    @Test
     void lineRemovalTrimsBothRightBoundaries() {
         //inside the code we have ranges of 10-15 & 13-20, and 16-20 & 21-25
         //removing 18-21 & 23-26 should affect both ranges, setting them to 16-17 & 21-22, but not affecting first range
@@ -512,7 +512,7 @@ class SkeletonCodeTest {
      * Testing that when creating internal skeleton code, trimming the initial range should
      *  create a new entry in the ISC map, maintianing the stored internal skeleton code
      */
-    @Test 
+    @Test
     void internalSCThenRemoveEdgeNoChange() {
         //inside the code we have ranges of 10-15 & 13-20, and 16-20 & 21-25
         //removing 11-12 & 1-1 should affect first range, ie we should have:
@@ -584,7 +584,7 @@ class SkeletonCodeTest {
      *  that the internal skeleton code becomes external, then the internal skeleton code is also removed
      *   from the range.
      */
-    @Test 
+    @Test
     void internalSCThenRemoveEdgeWithChange() {
         //inside the code we have ranges of 10-15 & 13-20, and 16-20 & 21-25
         //removing 11-12 & 1-1 should affect first range, ie we should have:
@@ -653,7 +653,7 @@ class SkeletonCodeTest {
      * Checking that when removing two internal skeleton code values, they are both added
      *  to the correct file's ISC map
      */
-    @Test 
+    @Test
     void internalSCTwice() {
         //inside the code we have ranges of 10-15 & 13-20, and 16-20 & 21-25
 
@@ -721,7 +721,7 @@ class SkeletonCodeTest {
      * Testing that when a file has multiple internal skeleton code ranges that are connected
      *  that when removing a range that makes one ISC range external, both ISC ranges are removed.
      */
-    @Test 
+    @Test
     void internalSCTwiceThenRemoveEdgeWithDoubleChange() {
         //inside the code we have ranges of 10-15 & 13-20, and 16-20 & 21-25
 
@@ -803,7 +803,7 @@ class SkeletonCodeTest {
      *  that when removing a range that makes one ISC range external, both ISC ranges are removed. Checks that this
      *  works when the ranges are added backwards, ie a later range is added first.
      */
-    @Test 
+    @Test
     void internalSCTwiceThenRemoveEdgeWithDoubleChangeInverted() {
         //inside the code we have ranges of 10-15 & 13-20, and 16-20 & 21-25
 
