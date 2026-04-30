@@ -1,5 +1,4 @@
-package uk.ac.warwick.dcs.sherlock.module.core.util;
-
+package uk.ac.warwick.dcs.sherlock.api.util;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
