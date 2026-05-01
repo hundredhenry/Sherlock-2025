@@ -5,113 +5,82 @@
     <title>Plagiarism Report</title>
     <style>
         @page { size: A4; margin: 1.0cm; }
-        body { font-family: 'DejaVu Sans', Arial, sans-serif; font-size: 8pt; color: #333; line-height: 1.2; }
-        
+        body { font-family: sans-serif; font-size: 8pt; color: #333; line-height: 1.2; }
         .report-header { text-align: center; margin-bottom: 20px; }
         .report-header h1 { font-size: 22pt; margin: 0; color: #222; font-weight: bold; }
         .report-header h3 { font-size: 12pt; margin: 5px 0; color: #666; font-weight: normal; }
-        
-        .score-box { background: #f8f9fa; border: 1px solid #dee2e6; padding: 10px; display: inline-block; min-width: 200px; margin-top: 10px; border-radius: 4px; }
-        .score-large { font-size: 18pt; font-weight: bold; color: #d9534f; display: block; }
-        
         .section-banner { background: #000; color: white; padding: 8px 15px; font-size: 10pt; font-weight: bold; text-transform: uppercase; margin: 20px 0 10px 0; }
-
         .match-card { border: 1px solid #444; margin-bottom: 25px; page-break-inside: avoid; }
         .match-header { background: #f1f1f1; padding: 6px 10px; border-bottom: 1px solid #444; font-size: 9pt; }
         .match-id { font-weight: bold; }
-        .match-similarity { float: right; color: #d9534f; font-weight: bold; }
-
+        .match-similarity { float: right; color: #000000; font-weight: bold; }
         .comparison-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
-        .file-column { width: 50%; vertical-align: top; border-right: 1px solid #444; }
+        .file-column { width: 50%; vertical-align: top; border-right: 1px solid #000000; }
         .file-column:last-child { border-right: none; }
-        
         .filename-banner { background: #343a40; color: white; padding: 6px; font-family: monospace; font-size: 7.5pt; display: block; overflow: hidden; }
-        .line-meta { background: #e9ecef; color: #444; padding: 3px 8px; font-size: 7pt; border-bottom: 1px solid #ccc; font-weight: bold; }
-
+        .line-meta { background: #e9ecef; color: #000000; padding: 3px 8px; font-size: 7pt; border-bottom: 1px solid #ccc; font-weight: bold; }
         .code-table { width: 100%; border-collapse: collapse; background: #fff; }
-        .code-row { font-family: "Courier New", Courier, monospace; font-size: 6.5pt; }
-        .line-number { width: 30px; color: #999; text-align: right; padding-right: 5px; border-right: 1px solid #eee; }
+        .code-row { font-family: monospace; font-size: 7pt; }
+        .line-number { width: 30px; color: #000000; text-align: right; padding-right: 5px; border-right: 1px solid #eee; }
         .code-cell { padding-left: 8px; white-space: pre-wrap; word-break: break-all; color: #000; }
-
         .highlighted-match { background-color: #fff9c4; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="report-header">
-        <h1 th:text="|Primary Submission: ${submission.getName()}|">Submission Name</h1>
-        <h3 th:if="${sourceFile != null}" th:text="|Primary Source File: ${sourceFile.getFileDisplayName()}|"></h3>
-        <div class="score-box">
-            <span style="font-size: 7pt; color: #666; text-transform: uppercase;">Overall Score</span>
-            <span class="score-large" th:text="|${#numbers.formatDecimal(wrapper.getScore(), 1, 2)}%|"></span>
-        </div>
+        <h1 th:text="|Comparison: ${submission1.getName()} AND ${submission2.getName()}|">Submissions</h1>
+        <h3 th:text="|Files: ${sourceFile1.getFileDisplayName()} AND ${sourceFile2.getFileDisplayName()}|"></h3>
     </div>
-
-    <div class="section-banner">Plagiarism Analysis</div>
 
     <div th:each="groupEntry : ${groupedMatches}">
         <div th:each="matchGroup : ${groupEntry.value}">
-            
             <th:block th:with="allFileMatches=${matchGroup.getAllFileMatches()}, 
-                               myName=${submission.getName()},
-                               myFileProp=${sourceFile != null ? sourceFile.getFileDisplayPath() : null}">
+                               path1=${sourceFile1.getFileDisplayPath()},
+                               path2=${sourceFile2.getFileDisplayPath()}">
                 
-                <th:block th:each="leftEntry : ${allFileMatches}">
-                    
-                    <th:block th:if="${(myFileProp != null and leftEntry.key == myFileProp) or (myFileProp == null and #strings.startsWith(leftEntry.key, myName + '/'))}">
-                        
-                        <th:block th:each="rightEntry : ${allFileMatches}">
-                            
-                            <th:block th:if="${not #strings.startsWith(rightEntry.key, myName + '/') and (myFileProp == null or rightEntry.key != myFileProp)}">
-                                
-                                <div class="match-card">
-                                    <div class="match-header">
-                                        <span class="match-id" th:text="|Match ID: ${matchGroup.getMatchId()} (${groupEntry.key})|"></span>
-                                        <span class="match-similarity" th:text="|${#numbers.formatDecimal(matchGroup.getScore(), 1, 2)}% Similarity|"></span>
-                                    </div>
+                <div class="match-card">
+                    <div class="match-header">
+                        <span class="match-id" th:text="|Match ID: ${matchGroup.getMatchId()} (${matchGroup.getGroupName()})|"></span>
+                        <span class="match-similarity" th:text="|${matchGroup.getScore()}% Similarity|"></span>
+                    </div>
 
-                                    <table class="comparison-table">
-                                        <tr>
-                                            <td class="file-column">
-                                                <div class="filename-banner" th:text="| ${leftEntry.key} |"></div>
-                                                <div th:each="pBlock : ${leftEntry.value}">
-                                                    <div class="line-meta" th:text="|Lines: ${pBlock.getStartLine()} - ${pBlock.getEndLine()}|"></div>
-                                                    <table class="code-table">
-                                                        <tr th:each="line, iter : ${pBlock.getCode()}" 
-                                                            th:with="ln=${pBlock.getContextStartLine() + iter.index}"
-                                                            th:classappend="${ln >= pBlock.getStartLine() and ln <= pBlock.getEndLine()} ? 'highlighted-match' : ''"
-                                                            class="code-row">
-                                                            <td class="line-number" th:text="|${ln}|"></td>
-                                                            <td class="code-cell" th:text="|${line}|"></td>
-                                                        </tr>
-                                                    </table>
-                                                </div>
-                                            </td>
-
-                                            <td class="file-column">
-                                                <div class="filename-banner" th:text="| ${rightEntry.key} |"></div>
-                                                <div th:each="oBlock : ${rightEntry.value}">
-                                                    <div class="line-meta" th:text="|Lines: ${oBlock.getStartLine()} - ${oBlock.getEndLine()}|"></div>
-                                                    <table class="code-table">
-                                                        <tr th:each="line, iter : ${oBlock.getCode()}" 
-                                                            th:with="ln=${oBlock.getContextStartLine() + iter.index}"
-                                                            th:classappend="${ln >= oBlock.getStartLine() and ln <= oBlock.getEndLine()} ? 'highlighted-match' : ''"
-                                                            class="code-row">
-                                                            <td class="line-number" th:text="|${ln}|"></td>
-                                                            <td class="code-cell" th:text="|${line}|"></td>
-                                                        </tr>
-                                                    </table>
-                                                </div>
-                                            </td>
+                    <table class="comparison-table">
+                        <tr>
+                            <td class="file-column">
+                                <div class="filename-banner" th:text="| ${path1} |"></div>
+                                <div th:each="leftBlock : ${allFileMatches.get(path1)}">
+                                    <div class="line-meta" th:text="|Lines: ${leftBlock.getStartLine()} - ${leftBlock.getEndLine()}|"></div>
+                                    <table class="code-table">
+                                        <tr th:each="line, iter : ${leftBlock.getCode()}" 
+                                            th:with="ln=${leftBlock.getContextStartLine() + iter.index}"
+                                            th:classappend="${(ln >= leftBlock.getStartLine() and ln <= leftBlock.getEndLine()) and (leftBlock.internalSkeletonCode == null or leftBlock.internalSkeletonCode.?[getKey() <= #ln and getValue() >= #ln].isEmpty())} ? 'highlighted-match' : ''"
+                                            class="code-row">
+                                            <td class="line-number" th:text="|${ln}|"></td>
+                                            <td class="code-cell" th:text="|${line}|"></td>
                                         </tr>
                                     </table>
-                                </div> <!-- End match-card -->
+                                </div>
+                            </td>
 
-                            </th:block>
-                        </th:block>
-                    </th:block>
-                </th:block>
-
+                            <td class="file-column">
+                                <div class="filename-banner" th:text="| ${path2} |"></div>
+                                <div th:each="rightBlock : ${allFileMatches.get(path2)}">
+                                    <div class="line-meta" th:text="|Lines: ${rightBlock.getStartLine()} - ${rightBlock.getEndLine()}|"></div>
+                                    <table class="code-table">
+                                        <tr th:each="line, iter : ${rightBlock.getCode()}" 
+                                            th:with="ln=${rightBlock.getContextStartLine() + iter.index}"
+                                            th:classappend="${(ln >= rightBlock.getStartLine() and ln <= rightBlock.getEndLine()) and (rightBlock.internalSkeletonCode == null or rightBlock.internalSkeletonCode.?[getKey() <= #ln and getValue() >= #ln].isEmpty())} ? 'highlighted-match' : ''"
+                                            class="code-row">
+                                            <td class="line-number" th:text="|${ln}|"></td>
+                                            <td class="code-cell" th:text="|${line}|"></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
             </th:block>
         </div>
     </div>

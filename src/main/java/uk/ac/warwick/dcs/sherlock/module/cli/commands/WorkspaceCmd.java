@@ -17,6 +17,7 @@ import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.SubmissionsForm;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.forms.WorkspaceForm;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.internal.CodeBlock;
 import uk.ac.warwick.dcs.sherlock.module.core.data.models.internal.FileMatch;
+import uk.ac.warwick.dcs.sherlock.module.core.data.models.internal.SubmissionScore;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.TemplateRepository;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.WorkspaceRepository;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
@@ -706,8 +707,14 @@ public class WorkspaceCmd implements Runnable {
         @CommandLine.Option(names = {"-s", "--scores"}, description="View all submission overall match scores")
         boolean matchScores;
 
-        @CommandLine.Option(names = {"-r", "--report"}, description="ID of a submission to view its match report")
-        String submissionID;
+        @CommandLine.Option(names = {"-m", "--matches"}, description="ID of submission to view related match scores")
+        String matchID;
+
+        @CommandLine.Option(names = {"-x"}, description="ID of the first matching submission")
+        String firstID;
+
+        @CommandLine.Option(names = {"-y"}, description="ID of the second matching submission")
+        String secondID;
 
         @CommandLine.Option(names = {"-t", "--thresh"}, description="Similarity threshold for the report", defaultValue="80")
         int thresh;
@@ -757,25 +764,48 @@ public class WorkspaceCmd implements Runnable {
                 }
             }
 
-            if (submissionID != null) {
+            if (matchID != null) {
+                try {
+                    ISubmission submission = ResultsHelper.getSubmission(workspace, Long.parseLong(matchID));
+                    SubmissionResultsData resultsWrapper = new SubmissionResultsData(job, submission);
+                    List<SubmissionScore> scores = resultsWrapper.getSubmissions();
+                    System.out.println(String.format("Match scores with submission %s", submission.getName()));
+                    for (SubmissionScore s : scores) {
+                        System.out.println(String.format("(ID: %s) %s: %s", s.getId(), s.getName(), s.getScore()));
+                    }
+                } catch (SubmissionNotFound snf) {
+                    System.out.println("Submission not found.");
+                } catch (MapperException me) {
+                    System.out.println("FileMapper was not initialised correctly.");
+                }
+            }
+
+            if (firstID != null && secondID != null) {
                 TemplateEngine templateEngine = parent.templateEngine;
                 try {
                     System.out.println("Fetching match data...");
-                    ISubmission submission = ResultsHelper.getSubmission(workspace, Long.parseLong(submissionID));
+                    ISubmission submission1 = ResultsHelper.getSubmission(workspace, Long.parseLong(firstID));
+                    ISubmission submission2 = ResultsHelper.getSubmission(workspace, Long.parseLong(secondID));
                     List<ISourceFile> allSourceFiles = workspace.getFiles();
-                    ISourceFile submissionFile = null;
+
+                    ISourceFile submissionFile1 = null;
+                    ISourceFile submissionFile2 = null;
                     for (ISourceFile isf : allSourceFiles) {
-                        if (isf.getArchiveId() == submission.getId() && isf.getFileDisplayName().equals(isf.getFileDisplayPath())) {
-                            submissionFile = isf;
-                            break;
+                        if (isf.getArchiveId() == submission1.getId() && isf.getFileDisplayName().equals(isf.getFileDisplayPath())) {
+                            submissionFile1 = isf;
+                        } else if (isf.getArchiveId() == submission2.getId() && isf.getFileDisplayName().equals(isf.getFileDisplayPath())) {
+                            submissionFile2 = isf;
                         }
+                        if (submissionFile1 != null && submissionFile2 != null) {break;}
                     }
-                    SubmissionResultsData resultsWrapper = new SubmissionResultsData(job, submission);
+
+                    SubmissionResultsData resultsWrapper = new SubmissionResultsData(job, submission1, submission2);
                     if (resultsWrapper == null) return;
     
                     JobResultsData jobData = new JobResultsData(job);
                     String mapJSON = resultsWrapper.getMapJSON();
                     String matchesJSON = resultsWrapper.getMatchesJSON();
+
                     int contextLines = 5;
 
                     Map<String, List<FileMatch>> matches = resultsWrapper.getMatches();
@@ -788,7 +818,7 @@ public class WorkspaceCmd implements Runnable {
                         // Loop through the match groups; these are collections of identical matches between n files
                         for (FileMatch match : group.getValue()) {
                             if ((int) match.getScore() < thresh) {continue;}
-                            MatchGroupData matchGroups = new MatchGroupData(match.getId(), group.getKey(), match.getScore());
+                            MatchGroupData matchGroups = new MatchGroupData(match.getId(), match.getReason(), match.getScore());
 
                             // Loop through each file to get their shared code blocks
                             for (Map.Entry<ISourceFile, List<CodeBlock>> entry : match.getMap().entrySet()) {
@@ -801,7 +831,7 @@ public class WorkspaceCmd implements Runnable {
                                     int startingLine = Math.max(1, cb.getStartLine() - contextLines);
                                     int endingLine = Math.min(entryfile.getFileContentsAsStringList().size(), cb.getEndLine() + contextLines);
                                     List<String> fileLines = entryfile.getFileContentsAsStringList().subList(startingLine - 1, endingLine);
-                                    CodeMatchData md = new CodeMatchData(cb.getMatchId(), fileLines, cb.getStartLine(), cb.getEndLine(), startingLine, endingLine);
+                                    CodeMatchData md = new CodeMatchData(cb.getMatchId(), fileLines, cb.getStartLine(), cb.getEndLine(), startingLine, endingLine, cb.getInternalSkeletonCode());
                                     fileLinesList.add(md);
                                 }
 
@@ -828,14 +858,16 @@ public class WorkspaceCmd implements Runnable {
                     Context context = new Context();
                     context.setVariable("workspace", workspace);
                     context.setVariable("results", jobData);
-                    context.setVariable("submission", submission);
-                    context.setVariable("sourceFile", submissionFile);
+                    context.setVariable("submission1", submission1);
+                    context.setVariable("submission2", submission2);
+                    context.setVariable("sourceFile1", submissionFile1);
+                    context.setVariable("sourceFile2", submissionFile2);
                     context.setVariable("wrapper", resultsWrapper);
                     context.setVariable("groupedMatches", groupedMatches);
                     context.setVariable("printing", true);
                     
                     String htmlStr = templateEngine.process("dashboard/workspaces/results/reportPDF", context);
-                    String reportFilename = String.format("report_WSPACE_%s_SUBM_%s_JID%s_THRESH%s.pdf", workspace.getName(), submission.getName(), jobId, thresh);
+                    String reportFilename = String.format("report_WSPACE_%s_SUBM1_%s_SUBM2_%s_JID%s_THRESH%s.pdf", workspace.getName(), submission1.getName(), submission2.getName(), jobId, thresh);
     
                     try (OutputStream os = new FileOutputStream(reportFilename)) {
                         PdfRendererBuilder builder = new PdfRendererBuilder();

@@ -15,7 +15,7 @@ public class MatchGroupData {
     private int matchId;
 
     /* Name (ID) of the overall group */
-    private String groupId;
+    private String groupName;
 
     /* Match score */
     private float score;
@@ -27,12 +27,12 @@ public class MatchGroupData {
      * Constructor without the code block matches data; sets a default value
      * 
      * @param matchId ID of the match
-     * @param groupId ID of the group
+     * @param groupId Name of the group
      * @param score the raw match score
      */
-    public MatchGroupData(int matchId, String groupId, float score) {
+    public MatchGroupData(int matchId, String groupName, float score) {
         this.matchId = matchId;
-        this.groupId = groupId;
+        this.groupName = groupName;
         this.score = score;
         this.fileMatches = new HashMap<>();
         
@@ -42,13 +42,13 @@ public class MatchGroupData {
      * Constructor with the code block matches data provided
      * 
      * @param matchId ID of the match
-     * @param groupId ID of the group
+     * @param groupName Name of the group
      * @param score the raw match score
      * @param fileMatches the code block data
      */
-    public MatchGroupData(int matchId, String groupId, float score, Map<String, List<CodeMatchData>> fileMatches) {
+    public MatchGroupData(int matchId, String groupName, float score, Map<String, List<CodeMatchData>> fileMatches) {
         this.matchId = matchId;
-        this.groupId = groupId;
+        this.groupName = groupName;
         this.score = score;
         this.fileMatches = fileMatches;
     }
@@ -57,8 +57,8 @@ public class MatchGroupData {
         return matchId;
     }
 
-    public String getGroupId() {
-        return groupId;
+    public String getGroupName() {
+        return groupName;
     }
 
     /**
