@@ -68,4 +68,13 @@ public class CodeMatchData {
     public HashSet<ITuple<Integer, Integer>> getInternalSkeletonCode() {
         return internalSkeletonCode;
     }
+
+    public boolean isSkeletonLine(int lineNumber) {
+        for (ITuple<Integer, Integer> lineRange : internalSkeletonCode) {
+            if (lineNumber >= lineRange.getKey() && lineNumber <= lineRange.getValue()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

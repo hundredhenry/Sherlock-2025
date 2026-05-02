@@ -54,7 +54,7 @@
                                     <table class="code-table">
                                         <tr th:each="line, iter : ${leftBlock.getCode()}" 
                                             th:with="ln=${leftBlock.getContextStartLine() + iter.index}"
-                                            th:classappend="${(ln >= leftBlock.getStartLine() and ln <= leftBlock.getEndLine()) and (leftBlock.internalSkeletonCode == null or leftBlock.internalSkeletonCode.?[getKey() <= #ln and getValue() >= #ln].isEmpty())} ? 'highlighted-match' : ''"
+                                            th:classappend="${(ln >= leftBlock.getStartLine() and ln <= leftBlock.getEndLine()) and !leftBlock.isSkeletonLine(ln)} ? 'highlighted-match' : ''"
                                             class="code-row">
                                             <td class="line-number" th:text="|${ln}|"></td>
                                             <td class="code-cell" th:text="|${line}|"></td>
@@ -70,7 +70,7 @@
                                     <table class="code-table">
                                         <tr th:each="line, iter : ${rightBlock.getCode()}" 
                                             th:with="ln=${rightBlock.getContextStartLine() + iter.index}"
-                                            th:classappend="${(ln >= rightBlock.getStartLine() and ln <= rightBlock.getEndLine()) and (rightBlock.internalSkeletonCode == null or rightBlock.internalSkeletonCode.?[getKey() <= #ln and getValue() >= #ln].isEmpty())} ? 'highlighted-match' : ''"
+                                            th:classappend="${(ln >= rightBlock.getStartLine() and ln <= rightBlock.getEndLine()) and !rightBlock.isSkeletonLine(ln)} ? 'highlighted-match' : ''"
                                             class="code-row">
                                             <td class="line-number" th:text="|${ln}|"></td>
                                             <td class="code-cell" th:text="|${line}|"></td>
