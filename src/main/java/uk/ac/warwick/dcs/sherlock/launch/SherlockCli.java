@@ -12,6 +12,10 @@ import uk.ac.warwick.dcs.sherlock.module.cli.services.WorkspaceManagementService
 import uk.ac.warwick.dcs.sherlock.module.core.configuration.CoreSecurityConfig;
 import uk.ac.warwick.dcs.sherlock.module.core.data.wrappers.AccountWrapper;
 import uk.ac.warwick.dcs.sherlock.module.core.data.repositories.*;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import java.util.ArrayList;
+import java.util.List;
 
 /** 
  * The base Sherlock CLI command.
@@ -54,6 +58,8 @@ public class SherlockCli {
         cmd.addSubcommand("template", templateCmdLine);
         Scanner scanner = new Scanner(System.in);
 
+        Pattern regex = Pattern.compile("([^\\s\"']|(\"[^\"]*\")|('[^']*'))+");
+
         while (true) {
             try {
                 System.out.print("> ");
@@ -67,10 +73,18 @@ public class SherlockCli {
                     break;
                 }
 
-                String[] args = line.split("\\s+");
+                List<String> argsList = new ArrayList<>();
+                Matcher m = regex.matcher(line);
+
+                while (m.find()) {
+                    argsList.add(m.group().replace("\"", "").replace("'", ""));
+                }
+
+                String[] args = argsList.toArray(new String[0]);
 
                 try {
                     cmd.execute(args);
+
                 } catch (Exception e) {
                     System.out.println("Error executing command: " + e.getMessage());
                 }

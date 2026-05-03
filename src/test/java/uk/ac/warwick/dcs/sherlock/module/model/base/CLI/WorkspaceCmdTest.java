@@ -388,33 +388,7 @@ public class WorkspaceCmdTest {
         assertFalse(out.toString().contains("No files uploaded."));
         assertFalse(out.toString().contains("File upload failed."));
     }
-
-    // Supposed to test that a directory>directory>file can be uploaded to a workspace
-    @Disabled("Might require a static WorkspaceManagementService? This might be too complex at the moment.")
-    @Test
-    void uploadDirectoryTest() throws IOException, IWorkspaceNotFound, NoFilesUploaded, FileUploadFailed {
-        IWorkspace iws = mockStorage.createWorkspace("test", "Java");
-        Workspace ws = new Workspace(account.getAccount(), iws.getPersistentId());
-        WorkspaceWrapper mockWorkspaceWrapper = mock(WorkspaceWrapper.class);
-        when(mockWorkspaceWrapper.findByName(any(), workspaceRepository, anyString())).thenReturn(new WorkspaceWrapper(ws));
-
-        when(iws.getName()).thenReturn("test");
-        
-        when(mockStorage.getWorkspaces(List.of(1L))).thenReturn(List.of(iws));
-        when(workspaceRepository.findByAccount(any())).thenReturn(List.of(ws));
-
-        Path folder = tempDir.resolve("toplevel");
-        Path subfolder = folder.resolve("nextlevel");
-        Files.createDirectories(subfolder);
-        Files.writeString(subfolder.resolve("example.java"), "public class example {}");
-
-        cmd.execute("workspace", "files", "-n=test", "-a" + folder.toString());
-
-        verify(mockWorkspaceWrapper, atLeastOnce()).addSubmissions(any(SubmissionsForm.class));
-        
-        assertFalse(out.toString().contains("Failed"), "Should not contain fail messages");
-    }
-
+    
     // Tests that a workspace can be used to analyse files, given a template
     //  and at least two submissions
     @Test

@@ -1,6 +1,9 @@
 package uk.ac.warwick.dcs.sherlock.module.core.data.results;
 
+import java.util.HashSet;
 import java.util.List;
+
+import uk.ac.warwick.dcs.sherlock.api.util.ITuple;
 
 /**
  * Stores the data of a code block from a match
@@ -25,13 +28,17 @@ public class CodeMatchData {
     /* Ending line number of the added context */
     private int contextEndLine;
 
-    public CodeMatchData(int codeBlockId, List<String> code, int startLine, int endLine, int contextStartLine, int contextEndLine) {
+    /* The internal skeleton code for this block */
+    private HashSet<ITuple<Integer, Integer>> internalSkeletonCode;
+
+    public CodeMatchData(int codeBlockId, List<String> code, int startLine, int endLine, int contextStartLine, int contextEndLine, HashSet<ITuple<Integer, Integer>> internalSkeletonCode) {
         this.codeBlockId = codeBlockId;
         this.code = code;
         this.startLine = startLine;
         this.endLine = endLine;
         this.contextStartLine = contextStartLine;
         this.contextEndLine = contextEndLine;
+        this.internalSkeletonCode = (internalSkeletonCode != null) ? internalSkeletonCode : new HashSet<>();;
     }
     
     public int getCodeBlockId() {
@@ -56,5 +63,18 @@ public class CodeMatchData {
 
     public int getContextEndLine() {
         return contextEndLine;
+    }
+
+    public HashSet<ITuple<Integer, Integer>> getInternalSkeletonCode() {
+        return internalSkeletonCode;
+    }
+
+    public boolean isSkeletonLine(int lineNumber) {
+        for (ITuple<Integer, Integer> lineRange : internalSkeletonCode) {
+            if (lineNumber >= lineRange.getKey() && lineNumber <= lineRange.getValue()) {
+                return true;
+            }
+        }
+        return false;
     }
 }
